@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katapult — A simple launcher for Mudita Kompakt</title>
+    <meta name="description" content="A simple grid launcher for the Mudita Kompakt. Notification indicators, app re-ordering, and customizable home screen shortcuts.">
+    <meta name="author" content="Gezim">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Katapult — A simple launcher for Mudita Kompakt">
+    <meta property="og:description" content="A simple grid launcher for the Mudita Kompakt. Notification indicators, app re-ordering, and customizable home screen shortcuts.">
+    <meta property="og:image" content="img/screenshots/home-rounded.png">
+    <meta property="og:url" content="https://gezimos.github.io/Katapult/">
+
+    <link rel="icon" href="img/K.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="page">
+    <header>
+        <div class="wrap">
+            <a href="index.html" class="wordmark"><img src="img/katapult.svg" alt="Katapult" class="logo-img"></a>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#faq">FAQ</a>
+                <a href="https://github.com/gezimos/Katapult" target="_blank" rel="noopener">GitHub</a>
+            </nav>
+            <a href="https://www.buymeacoffee.com/gezimos" target="_blank" rel="noopener" class="bmc-btn"><img src="img/bmc.svg" alt="Buy me a coffee"></a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="wrap">
+            <h1>A simple launcher for the <strong>Mudita Kompakt</strong></h1>
+            <p class="subtitle">Similar to the default launcher, but with notification indicators, app re-ordering, and customizable home screen shortcuts.</p>
+            <div class="hero-actions">
+                <a href="https://github.com/gezimos/Katapult/releases" class="btn">Download APK</a>
+                <a href="https://github.com/gezimos/Katapult/releases" class="btn">All Releases</a>
+                <a href="https://github.com/gezimos/Katapult" class="btn">Source Code</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="hero-mockups">
+        <div class="wrap">
+            <div class="hero-screenshots">
+                <div class="device center"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/home-rounded.png" alt="Home screen"></div>
+                                <div class="device side"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/grid.png" alt="App grid"></div>
+                <div class="device side"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/widget.png" alt="Widget"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features">
+        <div class="wrap">
+            <div class="features-grid">
+                <div class="card">
+                    <h3>3x4 App Grid</h3>
+                    <p>Horizontal swipe navigation with dot indicators. Infinite scroll wraps around pages.</p>
+                </div>
+                <div class="card">
+                    <h3>Music Widget</h3>
+                    <p>Playback controls with song info. Works with Auxio, Spotify, Fossify Music, Foobar, and more.</p>
+                </div>
+                <div class="card">
+                    <h3>Icon Tinting &amp; Shaping</h3>
+                    <p>Circle or rounded shapes. Uniform black &amp; white across ~95% of apps.</p>
+                </div>
+                <div class="card">
+                    <h3>Notification Badges</h3>
+                    <p>Badge counts on app icons. Works with any app that sends notifications.</p>
+                </div>
+                <div class="card">
+                    <h3>E-Ink Optimized</h3>
+                    <p>Zero animations, instant swaps, screen refresh on home press to clear ghosting.</p>
+                </div>
+                <div class="card">
+                    <h3>Extra Dock Row</h3>
+                    <p>Optional 3 additional shortcuts above the Phone/SMS bar.</p>
+                </div>
+                <div class="card">
+                    <h3>Battery &amp; Clock</h3>
+                    <p>Battery percentage with level icon, alarm indicator, AM/PM display.</p>
+                </div>
+                <div class="card">
+                    <h3>Simple Wallpaper</h3>
+                    <p>Set a background image directly. Not managed by Android.</p>
+                </div>
+                <div class="card">
+                    <h3>Hide &amp; Rename Apps</h3>
+                    <p>Hide from the context menu or bulk-hide. Rename any app.</p>
+                </div>
+                <div class="card">
+                    <h3>Reorder Apps</h3>
+                    <p>Swap-based reordering with reset to alphabetical.</p>
+                </div>
+                <div class="card">
+                    <h3>Double-Tap Brightness</h3>
+                    <p>Toggle display brightness by double-tapping the background.</p>
+                </div>
+                <div class="card">
+                    <h3>Hide Status Bar</h3>
+                    <p>Remove the Android status bar for a cleaner look.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="permissions">
+        <div class="wrap">
+            <div class="faq-list">
+                <details>
+                    <summary>Notification Listener</summary>
+                    <p>Required to read incoming notifications from Android and display badge counts on app icons. Without this, notification indicators won't work. Grant it in Settings &gt; Notification Access.</p>
+                </details>
+                <details>
+                    <summary>System Settings</summary>
+                    <p>Required for the double-tap brightness toggle. Katapult needs write access to system settings to change screen brightness. Grant it in Settings &gt; Apps &gt; Katapult &gt; Modify System Settings.</p>
+                </details>
+                <details>
+                    <summary>Package Access</summary>
+                    <p>Required to query all installed apps and display them in the grid. Also used to trigger the Android uninstall dialog from the app context menu.</p>
+                </details>
+                <details>
+                    <summary>Call Log &amp; SMS (Mudita Kompakt only)</summary>
+                    <p>The Mudita Phone and Messages apps don't post Android notifications, so badges won't appear via the notification listener. To show missed call and unread SMS counts on these apps, Katapult reads the call log and SMS databases directly. These permissions are only requested on Mudita Kompakt devices.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <div class="screenshot-grid">
+        <div class="screenshot-card">
+            <img src="img/screenshots/home-minimal.png" alt="Minimal home screen">
+            <span>Minimal</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/home-circle.png" alt="Circle icons home">
+            <span>Circle Icons</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/home-rounded.png" alt="Rounded icons home">
+            <span>Rounded Icons</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/grid-rounded.png" alt="App grid">
+            <span>App Grid</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/reorder.png" alt="Reorder mode">
+            <span>Reorder</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/settings.png" alt="Settings">
+            <span>Settings</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/hide_names.png" alt="Hide app names">
+            <span>Hide Names</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/wallpapers.png" alt="Wallpaper">
+            <span>Wallpaper</span>
+        </div>
+        <div class="screenshot-card">
+            <img src="img/screenshots/grid-page.png" alt="App grid page">
+            <span>Grid Pages</span>
+        </div>
+    </div>
+
+    <section id="faq">
+        <div class="wrap">
+            <div class="faq-list">
+                <details>
+                    <summary>Will it have customizable fonts?</summary>
+                    <p>No.</p>
+                </details>
+                <details>
+                    <summary>Will it have a customizable grid?</summary>
+                    <p>No.</p>
+                </details>
+                <details>
+                    <summary>Will it have third-party icon packs?</summary>
+                    <p>No.</p>
+                </details>
+                <details>
+                    <summary>Can I change date/clock formats?</summary>
+                    <p>No. It follows the system format. Change it in Android Settings.</p>
+                </details>
+                <details>
+                    <summary>Can I reorder apps?</summary>
+                    <p>Yes. Long-press an app, tap Reorder, then tap another app to swap. Tap Save when done.</p>
+                </details>
+                <details>
+                    <summary>Will this launcher have a notification tray?</summary>
+                    <p>No. No notification tray, no letters screen.</p>
+                </details>
+                <details>
+                    <summary>Notification indicators not showing?</summary>
+                    <p>Go to Settings &gt; Notification Log and check if the notification exists in Android. Many apps require Google Play Services for push notifications.</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="wrap">
+            <div class="footer-row">
+                <span class="wordmark"><img src="img/katapult.svg" alt="Katapult" class="logo-img"></span>
+                <nav>
+                    <a href="https://github.com/gezimos/Katapult">GitHub</a>
+                    <a href="https://github.com/gezimos/Katapult/releases">Releases</a>
+                    <a href="https://github.com/gezimos/inkOS">inkOS</a>
+                    <a href="https://youtube.com/@gezimos" target="_blank" rel="noopener">YouTube</a>
+                </nav>
+                <a href="https://www.buymeacoffee.com/gezimos" target="_blank" rel="noopener" class="bmc-btn"><img src="img/bmc.svg" alt="Buy me a coffee"></a>
+            </div>
+        </div>
+    </footer>
+</div>
+</body>
+</html>

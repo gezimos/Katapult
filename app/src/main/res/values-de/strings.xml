@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Katapult</string>
+
+    <!-- Common -->
+    <string name="save">Speichern</string>
+    <string name="save_uppercase">SPEICHERN</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="reset">Zurücksetzen</string>
+    <string name="finish">Fertig</string>
+    <string name="rename">Umbenennen</string>
+
+    <!-- Home screen -->
+    <string name="phone">Telefon</string>
+    <string name="sms">SMS</string>
+    <string name="music">Musik</string>
+    <string name="calendar">Kalender</string>
+    <string name="camera">Kamera</string>
+    <string name="settings">Einstellungen</string>
+    <string name="hidden_apps">Versteckte Apps</string>
+    <string name="hidden_apps_count">Versteckte Apps (%1$d)</string>
+    <string name="clear_wallpaper">Hintergrund entfernen</string>
+    <string name="set_wallpaper">Hintergrund festlegen</string>
+    <string name="donate_label">buymeacoffee.com/gezimos</string>
+    <string name="no_media">Keine Medien</string>
+    <string name="battery_percent">%1$d%%</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_alarm">Wecker</string>
+    <string name="cd_battery">Akku</string>
+    <string name="cd_album_art">Albumcover</string>
+    <string name="cd_music">Musik</string>
+    <string name="cd_previous">Zurück</string>
+    <string name="cd_play_pause">Wiedergabe/Pause</string>
+    <string name="cd_next">Weiter</string>
+    <string name="cd_stop">Stopp</string>
+    <string name="cd_reset_order">Reihenfolge zurücksetzen</string>
+
+    <!-- App picker -->
+    <string name="set_left_app">Linke App festlegen</string>
+    <string name="set_right_app">Rechte App festlegen</string>
+    <string name="set_clock_app">Uhr-App festlegen</string>
+    <string name="set_date_app">Datum-App festlegen</string>
+    <string name="set_extra_left_app">Extra linke App festlegen</string>
+    <string name="set_extra_center_app">Extra mittlere App festlegen</string>
+    <string name="set_extra_right_app">Extra rechte App festlegen</string>
+    <string name="choose_app">App auswählen</string>
+
+    <!-- Context menu -->
+    <string name="reorder">Neu anordnen</string>
+    <string name="hide">Ausblenden</string>
+    <string name="app_info">App-Info</string>
+    <string name="notifications">Benachrichtigungen</string>
+    <string name="uninstall">Deinstallieren</string>
+    <string name="reset_order_confirm">Alphabetische Reihenfolge wiederherstellen?</string>
+
+    <!-- All apps -->
+    <string name="all_apps">Apps</string>
+
+    <!-- Notification badge -->
+    <string name="badge_overflow">99+</string>
+
+    <!-- Settings -->
+    <string name="icon_shape">Symbolform</string>
+    <string name="icon_shape_rounded">Abgerundet</string>
+    <string name="icon_shape_circle">Kreis</string>
+    <string name="notification_indicators">Benachrichtigungsanzeigen</string>
+    <string name="notification_indicators_desc">Benachrichtigungsbadges auf App-Symbolen anzeigen</string>
+    <string name="hide_status_bar">Statusleiste ausblenden</string>
+    <string name="hide_status_bar_desc">Blendet die Systemstatusleiste aus</string>
+    <string name="eink_refresh">E-Ink-Aktualisierung auf Startseite</string>
+    <string name="eink_refresh_desc">Entfernt Ghosting beim Drücken der Home-Taste</string>
+    <string name="extra_dock_row">Extra Dock-Reihe</string>
+    <string name="extra_dock_row_desc">3 zusätzliche Apps über dem Dock anzeigen</string>
+    <string name="infinite_scroll">Endloses Scrollen</string>
+    <string name="infinite_scroll_desc">Seiten von beiden Seiten wischen</string>
+    <string name="double_tap_brightness">Doppeltippen Helligkeit</string>
+    <string name="double_tap_brightness_desc">Doppeltippen auf der Startseite schaltet Helligkeit aus.</string>
+    <string name="show_ampm">AM/PM anzeigen</string>
+    <string name="show_ampm_desc">AM/PM neben der Uhr anzeigen</string>
+    <string name="show_battery">Akku %% anzeigen</string>
+    <string name="show_battery_desc">Akku %% über der Uhr anzeigen</string>
+    <string name="show_katapult_icon">Katapult-Symbol anzeigen</string>
+    <string name="show_katapult_icon_desc">Katapult in der App-Liste anzeigen</string>
+    <string name="hide_app_names">App-Namen ausblenden</string>
+    <string name="hide_app_names_desc">Beschriftungen unter App-Symbolen ausblenden</string>
+    <string name="app_notifications">App-Benachrichtigungen</string>
+    <string name="app_notifications_desc">Benachrichtigungseinstellungen verwalten</string>
+    <string name="notification_log">Benachrichtigungsprotokoll</string>
+    <string name="notification_log_desc">Benachrichtigungsverlauf anzeigen</string>
+    <string name="set_default_launcher">Als Standard-Launcher festlegen</string>
+    <string name="set_default_launcher_desc">Katapult als Startbildschirm wählen</string>
+
+    <!-- Notifications -->
+    <string name="notification_access_title">Benachrichtigungszugriff aktivieren</string>
+    <string name="notification_access_message">Katapult benötigt Benachrichtigungszugriff um Badges anzuzeigen. Zugriff in den Einstellungen gewähren?</string>
+    <string name="no_alarm">Kein Wecker gestellt</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_icon">K</string>
+    <string name="welcome_title">Willkommen bei Katapult</string>
+    <string name="onboarding_notification_desc">Aktiviert Benachrichtigungsbadges auf Drittanbieter-Apps wie WhatsApp, Signal usw.</string>
+    <string name="onboarding_launcher_desc">Katapult als Startbildschirm festlegen, damit die Home-Taste hierher führt</string>
+    <string name="required_hint">* erforderlich</string>
+    <string name="call_sms_badges">Anruf- &amp; SMS-Badges</string>
+    <string name="call_sms_badges_desc">Liest Anrufliste und SMS direkt für Mudita Phone &amp; SMS, die nicht mit dem Benachrichtigungs-Listener funktionieren</string>
+</resources>

@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Katapult</string>
+
+    <!-- Common -->
+    <string name="save">Save</string>
+    <string name="save_uppercase">SAVE</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset">Reset</string>
+    <string name="finish">Finish</string>
+    <string name="rename">Rename</string>
+
+    <!-- Home screen -->
+    <string name="phone">Phone</string>
+    <string name="sms">SMS</string>
+    <string name="music">Music</string>
+    <string name="calendar">Calendar</string>
+    <string name="camera">Camera</string>
+    <string name="settings">Settings</string>
+    <string name="hidden_apps">Hidden Apps</string>
+    <string name="hidden_apps_count">Hidden Apps (%1$d)</string>
+    <string name="clear_wallpaper">Clear Wallpaper</string>
+    <string name="set_wallpaper">Set Wallpaper</string>
+    <string name="donate_label">buymeacoffee.com/gezimos</string>
+    <string name="no_media">No media</string>
+    <string name="battery_percent">%1$d%%</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_alarm">Alarm</string>
+    <string name="cd_battery">Battery</string>
+    <string name="cd_album_art">Album art</string>
+    <string name="cd_music">Music</string>
+    <string name="cd_previous">Previous</string>
+    <string name="cd_play_pause">Play/Pause</string>
+    <string name="cd_next">Next</string>
+    <string name="cd_stop">Stop</string>
+    <string name="cd_reset_order">Reset order</string>
+
+    <!-- App picker -->
+    <string name="set_left_app">Set left app</string>
+    <string name="set_right_app">Set right app</string>
+    <string name="set_clock_app">Set clock app</string>
+    <string name="set_date_app">Set date app</string>
+    <string name="set_extra_left_app">Set extra left app</string>
+    <string name="set_extra_center_app">Set extra center app</string>
+    <string name="set_extra_right_app">Set extra right app</string>
+    <string name="choose_app">Choose App</string>
+
+    <!-- Context menu -->
+    <string name="reorder">Reorder</string>
+    <string name="hide">Hide</string>
+    <string name="app_info">App Info</string>
+    <string name="notifications">Notifications</string>
+    <string name="uninstall">Uninstall</string>
+    <string name="reset_order_confirm">Reset app order to alphabetical?</string>
+
+    <!-- All apps -->
+    <string name="all_apps">Apps</string>
+
+    <!-- Notification badge -->
+    <string name="badge_overflow">99+</string>
+
+    <!-- Settings -->
+    <string name="icon_shape">Icon Shape</string>
+    <string name="icon_shape_rounded">Rounded</string>
+    <string name="icon_shape_circle">Circle</string>
+    <string name="notification_indicators">Notification Indicators</string>
+    <string name="notification_indicators_desc">Show notification badges on app icons</string>
+    <string name="hide_status_bar">Hide Status Bar</string>
+    <string name="hide_status_bar_desc">Hide the system status bar</string>
+    <string name="eink_refresh">E-Ink Refresh on Home</string>
+    <string name="eink_refresh_desc">Clear-ghosting when home button is pressed</string>
+    <string name="extra_dock_row">Extra Dock Row</string>
+    <string name="extra_dock_row_desc">Show 3 extra apps above the dock</string>
+    <string name="infinite_scroll">Infinite Scroll</string>
+    <string name="infinite_scroll_desc">Swipe pages from both sides</string>
+    <string name="double_tap_brightness">Double-Tap Brightness</string>
+    <string name="double_tap_brightness_desc">Double-tap in home to turn off brightness.</string>
+    <string name="show_ampm">Show AM/PM</string>
+    <string name="show_ampm_desc">Display AM/PM next to the clock</string>
+    <string name="show_battery">Show Battery %%</string>
+    <string name="show_battery_desc">Display battery %% above the clock</string>
+    <string name="show_katapult_icon">Show Katapult Icon</string>
+    <string name="show_katapult_icon_desc">Show Katapult in the app list</string>
+    <string name="hide_app_names">Hide App Names</string>
+    <string name="hide_app_names_desc">Hide labels under app icons</string>
+    <string name="app_notifications">App Notifications</string>
+    <string name="app_notifications_desc">Manage app notification settings</string>
+    <string name="notification_log">Notification Log</string>
+    <string name="notification_log_desc">View notification history</string>
+    <string name="set_default_launcher">Set as Default Launcher</string>
+    <string name="set_default_launcher_desc">Choose Katapult as your home</string>
+
+    <!-- Notifications -->
+    <string name="notification_access_title">Enable Notification Access</string>
+    <string name="notification_access_message">Katapult needs notification access to show notification badges. Grant access in Settings?</string>
+    <string name="no_alarm">No alarm set</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_icon">K</string>
+    <string name="welcome_title">Welcome to Katapult</string>
+    <string name="onboarding_notification_desc">Enables notification badges on third-party apps like WhatsApp, Signal, etc.</string>
+    <string name="onboarding_launcher_desc">Make Katapult your home screen so pressing the home button brings you here</string>
+    <string name="required_hint">* required</string>
+    <string name="call_sms_badges">Call &amp; SMS Badges</string>
+    <string name="call_sms_badges_desc">Reads call log and SMS directly for Mudita Phone &amp; SMS, which don\'t work with the notification listener</string>
+</resources>

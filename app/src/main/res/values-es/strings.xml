@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Katapult</string>
+
+    <!-- Common -->
+    <string name="save">Guardar</string>
+    <string name="save_uppercase">GUARDAR</string>
+    <string name="cancel">Cancelar</string>
+    <string name="reset">Restablecer</string>
+    <string name="finish">Finalizar</string>
+    <string name="rename">Renombrar</string>
+
+    <!-- Home screen -->
+    <string name="phone">Teléfono</string>
+    <string name="sms">SMS</string>
+    <string name="music">Música</string>
+    <string name="calendar">Calendario</string>
+    <string name="camera">Cámara</string>
+    <string name="settings">Ajustes</string>
+    <string name="hidden_apps">Apps ocultas</string>
+    <string name="hidden_apps_count">Apps ocultas (%1$d)</string>
+    <string name="clear_wallpaper">Quitar fondo</string>
+    <string name="set_wallpaper">Establecer fondo</string>
+    <string name="donate_label">buymeacoffee.com/gezimos</string>
+    <string name="no_media">Sin multimedia</string>
+    <string name="battery_percent">%1$d%%</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_alarm">Alarma</string>
+    <string name="cd_battery">Batería</string>
+    <string name="cd_album_art">Portada del álbum</string>
+    <string name="cd_music">Música</string>
+    <string name="cd_previous">Anterior</string>
+    <string name="cd_play_pause">Reproducir/Pausar</string>
+    <string name="cd_next">Siguiente</string>
+    <string name="cd_stop">Detener</string>
+    <string name="cd_reset_order">Restablecer orden</string>
+
+    <!-- App picker -->
+    <string name="set_left_app">Establecer app izquierda</string>
+    <string name="set_right_app">Establecer app derecha</string>
+    <string name="set_clock_app">Establecer app de reloj</string>
+    <string name="set_date_app">Establecer app de fecha</string>
+    <string name="set_extra_left_app">Establecer app extra izquierda</string>
+    <string name="set_extra_center_app">Establecer app extra central</string>
+    <string name="set_extra_right_app">Establecer app extra derecha</string>
+    <string name="choose_app">Elegir app</string>
+
+    <!-- Context menu -->
+    <string name="reorder">Reordenar</string>
+    <string name="hide">Ocultar</string>
+    <string name="app_info">Info de la app</string>
+    <string name="notifications">Notificaciones</string>
+    <string name="uninstall">Desinstalar</string>
+    <string name="reset_order_confirm">¿Restablecer orden alfabético?</string>
+
+    <!-- All apps -->
+    <string name="all_apps">Apps</string>
+
+    <!-- Notification badge -->
+    <string name="badge_overflow">99+</string>
+
+    <!-- Settings -->
+    <string name="icon_shape">Forma del icono</string>
+    <string name="icon_shape_rounded">Redondeado</string>
+    <string name="icon_shape_circle">Círculo</string>
+    <string name="notification_indicators">Indicadores de notificaciones</string>
+    <string name="notification_indicators_desc">Mostrar insignias de notificaciones en los iconos</string>
+    <string name="hide_status_bar">Ocultar barra de estado</string>
+    <string name="hide_status_bar_desc">Oculta la barra de estado del sistema</string>
+    <string name="eink_refresh">Actualización E-Ink en inicio</string>
+    <string name="eink_refresh_desc">Elimina el ghosting al pulsar el botón Inicio</string>
+    <string name="extra_dock_row">Fila de dock extra</string>
+    <string name="extra_dock_row_desc">Mostrar 3 apps extra sobre el dock</string>
+    <string name="infinite_scroll">Desplazamiento infinito</string>
+    <string name="infinite_scroll_desc">Deslizar páginas desde ambos lados</string>
+    <string name="double_tap_brightness">Doble toque brillo</string>
+    <string name="double_tap_brightness_desc">Doble toque en inicio para apagar el brillo.</string>
+    <string name="show_ampm">Mostrar AM/PM</string>
+    <string name="show_ampm_desc">Mostrar AM/PM junto al reloj</string>
+    <string name="show_battery">Mostrar batería %%</string>
+    <string name="show_battery_desc">Mostrar batería %% sobre el reloj</string>
+    <string name="show_katapult_icon">Mostrar icono Katapult</string>
+    <string name="show_katapult_icon_desc">Mostrar Katapult en la lista de apps</string>
+    <string name="hide_app_names">Ocultar nombres de apps</string>
+    <string name="hide_app_names_desc">Ocultar etiquetas bajo los iconos</string>
+    <string name="app_notifications">Notificaciones de apps</string>
+    <string name="app_notifications_desc">Gestionar ajustes de notificaciones</string>
+    <string name="notification_log">Registro de notificaciones</string>
+    <string name="notification_log_desc">Ver historial de notificaciones</string>
+    <string name="set_default_launcher">Establecer como launcher predeterminado</string>
+    <string name="set_default_launcher_desc">Elegir Katapult como pantalla de inicio</string>
+
+    <!-- Notifications -->
+    <string name="notification_access_title">Activar acceso a notificaciones</string>
+    <string name="notification_access_message">Katapult necesita acceso a notificaciones para mostrar insignias. ¿Conceder acceso en Ajustes?</string>
+    <string name="no_alarm">Sin alarma establecida</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_icon">K</string>
+    <string name="welcome_title">Bienvenido a Katapult</string>
+    <string name="onboarding_notification_desc">Activa insignias de notificación en apps de terceros como WhatsApp, Signal, etc.</string>
+    <string name="onboarding_launcher_desc">Establecer Katapult como pantalla de inicio para volver aquí al pulsar el botón Inicio</string>
+    <string name="required_hint">* obligatorio</string>
+    <string name="call_sms_badges">Badges de llamadas y SMS</string>
+    <string name="call_sms_badges_desc">Lee el registro de llamadas y SMS directamente para Mudita Phone y SMS, que no funcionan con el listener de notificaciones</string>
+</resources>

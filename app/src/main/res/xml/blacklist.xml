@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Apps that should never appear in the app drawer or home screen. -->
+<blacklist>
+    <!-- OEM test/debug apps -->
+    <app packageName="com.mediatek.gnss.nonframeworklbs" />
+    <app packageName="com.phdtaui.mainactivity" />
+    <!-- Mudita system apps that are not user-facing -->
+    <app packageName="com.mudita.launcher" />
+    <app packageName="com.mudita.onboarding" />
+    <app packageName="com.mudita.service" />
+    <app packageName="com.mudita.keyboard" />
+    <app packageName="com.mudita.muditacenter" />
+</blacklist>

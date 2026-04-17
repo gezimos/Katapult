@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Katapult</string>
+
+    <!-- Common -->
+    <string name="save">Opslaan</string>
+    <string name="save_uppercase">OPSLAAN</string>
+    <string name="cancel">Annuleren</string>
+    <string name="reset">Herstellen</string>
+    <string name="finish">Voltooien</string>
+    <string name="rename">Hernoemen</string>
+
+    <!-- Home screen -->
+    <string name="phone">Telefoon</string>
+    <string name="sms">SMS</string>
+    <string name="music">Muziek</string>
+    <string name="calendar">Agenda</string>
+    <string name="camera">Camera</string>
+    <string name="settings">Instellingen</string>
+    <string name="hidden_apps">Verborgen apps</string>
+    <string name="hidden_apps_count">Verborgen apps (%1$d)</string>
+    <string name="clear_wallpaper">Achtergrond verwijderen</string>
+    <string name="set_wallpaper">Achtergrond instellen</string>
+    <string name="donate_label">buymeacoffee.com/gezimos</string>
+    <string name="no_media">Geen media</string>
+    <string name="battery_percent">%1$d%%</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_alarm">Wekker</string>
+    <string name="cd_battery">Batterij</string>
+    <string name="cd_album_art">Albumhoes</string>
+    <string name="cd_music">Muziek</string>
+    <string name="cd_previous">Vorige</string>
+    <string name="cd_play_pause">Afspelen/Pauzeren</string>
+    <string name="cd_next">Volgende</string>
+    <string name="cd_stop">Stoppen</string>
+    <string name="cd_reset_order">Volgorde herstellen</string>
+
+    <!-- App picker -->
+    <string name="set_left_app">Linker app instellen</string>
+    <string name="set_right_app">Rechter app instellen</string>
+    <string name="set_clock_app">Klok-app instellen</string>
+    <string name="set_date_app">Datum-app instellen</string>
+    <string name="set_extra_left_app">Extra linker app instellen</string>
+    <string name="set_extra_center_app">Extra middelste app instellen</string>
+    <string name="set_extra_right_app">Extra rechter app instellen</string>
+    <string name="choose_app">Kies app</string>
+
+    <!-- Context menu -->
+    <string name="reorder">Herordenen</string>
+    <string name="hide">Verbergen</string>
+    <string name="app_info">App-info</string>
+    <string name="notifications">Meldingen</string>
+    <string name="uninstall">Verwijderen</string>
+    <string name="reset_order_confirm">Volgorde alfabetisch herstellen?</string>
+
+    <!-- All apps -->
+    <string name="all_apps">Apps</string>
+
+    <!-- Notification badge -->
+    <string name="badge_overflow">99+</string>
+
+    <!-- Settings -->
+    <string name="icon_shape">Pictogramvorm</string>
+    <string name="icon_shape_rounded">Afgerond</string>
+    <string name="icon_shape_circle">Cirkel</string>
+    <string name="notification_indicators">Meldingsindicatoren</string>
+    <string name="notification_indicators_desc">Toon meldingsbadges op app-pictogrammen</string>
+    <string name="hide_status_bar">Statusbalk verbergen</string>
+    <string name="hide_status_bar_desc">Verberg de systeemstatusbalk</string>
+    <string name="eink_refresh">E-Ink vernieuwen op Home</string>
+    <string name="eink_refresh_desc">Ghosting verwijderen bij thuisknop</string>
+    <string name="extra_dock_row">Extra dock-rij</string>
+    <string name="extra_dock_row_desc">Toon 3 extra apps boven het dock</string>
+    <string name="infinite_scroll">Oneindig scrollen</string>
+    <string name="infinite_scroll_desc">Veeg pagina\'s van beide kanten</string>
+    <string name="double_tap_brightness">Dubbeltik helderheid</string>
+    <string name="double_tap_brightness_desc">Dubbeltik op Home om helderheid uit te schakelen.</string>
+    <string name="show_ampm">AM/PM tonen</string>
+    <string name="show_ampm_desc">Toon AM/PM naast de klok</string>
+    <string name="show_battery">Batterij %% tonen</string>
+    <string name="show_battery_desc">Toon batterij %% boven de klok</string>
+    <string name="show_katapult_icon">Katapult-pictogram tonen</string>
+    <string name="show_katapult_icon_desc">Toon Katapult in de app-lijst</string>
+    <string name="hide_app_names">App-namen verbergen</string>
+    <string name="hide_app_names_desc">Verberg labels onder app-pictogrammen</string>
+    <string name="app_notifications">App-meldingen</string>
+    <string name="app_notifications_desc">Beheer app-meldingsinstellingen</string>
+    <string name="notification_log">Meldingenlogboek</string>
+    <string name="notification_log_desc">Bekijk meldingsgeschiedenis</string>
+    <string name="set_default_launcher">Als standaard launcher instellen</string>
+    <string name="set_default_launcher_desc">Kies Katapult als je startscherm</string>
+
+    <!-- Notifications -->
+    <string name="notification_access_title">Meldingstoegang inschakelen</string>
+    <string name="notification_access_message">Katapult heeft meldingstoegang nodig om badges te tonen. Toegang verlenen in Instellingen?</string>
+    <string name="no_alarm">Geen wekker ingesteld</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_icon">K</string>
+    <string name="welcome_title">Welkom bij Katapult</string>
+    <string name="onboarding_notification_desc">Schakelt meldingsbadges in op apps van derden zoals WhatsApp, Signal, enz.</string>
+    <string name="onboarding_launcher_desc">Maak Katapult je startscherm zodat de thuisknop je hierheen brengt</string>
+    <string name="required_hint">* vereist</string>
+    <string name="call_sms_badges">Oproep- &amp; SMS-badges</string>
+    <string name="call_sms_badges_desc">Leest oproeplog en SMS direct voor Mudita Phone &amp; SMS, die niet werken met de meldingslistener</string>
+</resources>

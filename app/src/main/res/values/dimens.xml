@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="clock_text_size">72sp</dimen>
+    <dimen name="date_text_size">18sp</dimen>
+    <dimen name="alarm_text_size">16sp</dimen>
+    <dimen name="app_icon_size">48dp</dimen>
+    <dimen name="app_label_size">16sp</dimen>
+    <dimen name="shortcut_icon_size">40dp</dimen>
+    <dimen name="shortcut_box_size">81dp</dimen>
+    <dimen name="grid_icon_box_size">72dp</dimen>
+    <dimen name="badge_size">18dp</dimen>
+    <dimen name="badge_text_size">10sp</dimen>
+    <dimen name="grid_spacing">4dp</dimen>
+    <dimen name="shortcut_spacing">24dp</dimen>
+    <dimen name="icon_border_radius">19dp</dimen>
+    <dimen name="icon_border_width">2.5dp</dimen>
+</resources>

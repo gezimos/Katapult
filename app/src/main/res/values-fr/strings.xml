@@ -1,0 +1,106 @@
+<resources>
+    <string name="app_name">Katapult</string>
+
+    <!-- Common -->
+    <string name="save">Enregistrer</string>
+    <string name="save_uppercase">ENREGISTRER</string>
+    <string name="cancel">Annuler</string>
+    <string name="reset">Réinitialiser</string>
+    <string name="finish">Terminer</string>
+    <string name="rename">Renommer</string>
+
+    <!-- Home screen -->
+    <string name="phone">Téléphone</string>
+    <string name="sms">SMS</string>
+    <string name="music">Musique</string>
+    <string name="calendar">Calendrier</string>
+    <string name="camera">Appareil photo</string>
+    <string name="settings">Paramètres</string>
+    <string name="hidden_apps">Apps masquées</string>
+    <string name="hidden_apps_count">Apps masquées (%1$d)</string>
+    <string name="clear_wallpaper">Supprimer le fond d\'écran</string>
+    <string name="set_wallpaper">Définir le fond d\'écran</string>
+    <string name="donate_label">buymeacoffee.com/gezimos</string>
+    <string name="no_media">Aucun média</string>
+    <string name="battery_percent">%1$d%%</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_alarm">Alarme</string>
+    <string name="cd_battery">Batterie</string>
+    <string name="cd_album_art">Pochette d\'album</string>
+    <string name="cd_music">Musique</string>
+    <string name="cd_previous">Précédent</string>
+    <string name="cd_play_pause">Lecture/Pause</string>
+    <string name="cd_next">Suivant</string>
+    <string name="cd_stop">Arrêter</string>
+    <string name="cd_reset_order">Réinitialiser l\'ordre</string>
+
+    <!-- App picker -->
+    <string name="set_left_app">Définir l\'app de gauche</string>
+    <string name="set_right_app">Définir l\'app de droite</string>
+    <string name="set_clock_app">Définir l\'app horloge</string>
+    <string name="set_date_app">Définir l\'app date</string>
+    <string name="set_extra_left_app">Définir l\'app supplémentaire gauche</string>
+    <string name="set_extra_center_app">Définir l\'app supplémentaire centrale</string>
+    <string name="set_extra_right_app">Définir l\'app supplémentaire droite</string>
+    <string name="choose_app">Choisir une app</string>
+
+    <!-- Context menu -->
+    <string name="reorder">Réorganiser</string>
+    <string name="hide">Masquer</string>
+    <string name="app_info">Infos de l\'app</string>
+    <string name="notifications">Notifications</string>
+    <string name="uninstall">Désinstaller</string>
+    <string name="reset_order_confirm">Rétablir l\'ordre alphabétique ?</string>
+
+    <!-- All apps -->
+    <string name="all_apps">Apps</string>
+
+    <!-- Notification badge -->
+    <string name="badge_overflow">99+</string>
+
+    <!-- Settings -->
+    <string name="icon_shape">Forme des icônes</string>
+    <string name="icon_shape_rounded">Arrondie</string>
+    <string name="icon_shape_circle">Cercle</string>
+    <string name="notification_indicators">Indicateurs de notifications</string>
+    <string name="notification_indicators_desc">Afficher les badges de notifications sur les icônes</string>
+    <string name="hide_status_bar">Masquer la barre d\'état</string>
+    <string name="hide_status_bar_desc">Masque la barre d\'état du système</string>
+    <string name="eink_refresh">Rafraîchissement E-Ink à l\'accueil</string>
+    <string name="eink_refresh_desc">Supprime le ghosting en appuyant sur le bouton Accueil</string>
+    <string name="extra_dock_row">Rangée de dock supplémentaire</string>
+    <string name="extra_dock_row_desc">Afficher 3 apps supplémentaires au-dessus du dock</string>
+    <string name="infinite_scroll">Défilement infini</string>
+    <string name="infinite_scroll_desc">Faire défiler les pages des deux côtés</string>
+    <string name="double_tap_brightness">Double appui luminosité</string>
+    <string name="double_tap_brightness_desc">Double appui sur l\'accueil pour éteindre la luminosité.</string>
+    <string name="show_ampm">Afficher AM/PM</string>
+    <string name="show_ampm_desc">Afficher AM/PM à côté de l\'horloge</string>
+    <string name="show_battery">Afficher batterie %%</string>
+    <string name="show_battery_desc">Afficher batterie %% au-dessus de l\'horloge</string>
+    <string name="show_katapult_icon">Afficher l\'icône Katapult</string>
+    <string name="show_katapult_icon_desc">Afficher Katapult dans la liste des apps</string>
+    <string name="hide_app_names">Masquer les noms des apps</string>
+    <string name="hide_app_names_desc">Masquer les libellés sous les icônes</string>
+    <string name="app_notifications">Notifications des apps</string>
+    <string name="app_notifications_desc">Gérer les paramètres de notifications</string>
+    <string name="notification_log">Journal des notifications</string>
+    <string name="notification_log_desc">Consulter l\'historique des notifications</string>
+    <string name="set_default_launcher">Définir comme lanceur par défaut</string>
+    <string name="set_default_launcher_desc">Choisir Katapult comme écran d\'accueil</string>
+
+    <!-- Notifications -->
+    <string name="notification_access_title">Activer l\'accès aux notifications</string>
+    <string name="notification_access_message">Katapult a besoin de l\'accès aux notifications pour afficher les badges. Accorder l\'accès dans les Paramètres ?</string>
+    <string name="no_alarm">Aucune alarme définie</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_icon">K</string>
+    <string name="welcome_title">Bienvenue dans Katapult</string>
+    <string name="onboarding_notification_desc">Active les badges de notification sur les apps tierces comme WhatsApp, Signal, etc.</string>
+    <string name="onboarding_launcher_desc">Définir Katapult comme écran d\'accueil pour y revenir en appuyant sur le bouton Accueil</string>
+    <string name="required_hint">* requis</string>
+    <string name="call_sms_badges">Badges appels &amp; SMS</string>
+    <string name="call_sms_badges_desc">Lit le journal d\'appels et les SMS directement pour Mudita Phone &amp; SMS, qui ne fonctionnent pas avec le listener de notifications</string>
+</resources>
