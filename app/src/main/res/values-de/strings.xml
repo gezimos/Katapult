@@ -50,6 +50,7 @@
     <string name="hide">Ausblenden</string>
     <string name="app_info">App-Info</string>
     <string name="notifications">Benachrichtigungen</string>
+    <string name="clear_notifications">Benachrichtigungen löschen</string>
     <string name="uninstall">Deinstallieren</string>
     <string name="reset_order_confirm">Alphabetische Reihenfolge wiederherstellen?</string>
 
@@ -63,12 +64,18 @@
     <string name="icon_shape">Symbolform</string>
     <string name="icon_shape_rounded">Abgerundet</string>
     <string name="icon_shape_circle">Kreis</string>
+    <string name="change_icon">Symbol ändern</string>
+    <string name="import_icon">Symbol importieren</string>
+    <string name="katapult_icons">Katapult-Symbole</string>
+    <string name="choose_png">Symbol importieren (png, svg)</string>
+    <string name="reset_icon">Auf Standard zurücksetzen</string>
     <string name="notification_indicators">Benachrichtigungsanzeigen</string>
     <string name="notification_indicators_desc">Benachrichtigungsbadges auf App-Symbolen anzeigen</string>
     <string name="hide_status_bar">Statusleiste ausblenden</string>
     <string name="hide_status_bar_desc">Blendet die Systemstatusleiste aus</string>
     <string name="eink_refresh">E-Ink-Aktualisierung auf Startseite</string>
     <string name="eink_refresh_desc">Entfernt Ghosting beim Drücken der Home-Taste</string>
+    <string name="eink_auto_mode">E-Ink-Modus</string>
     <string name="extra_dock_row">Extra Dock-Reihe</string>
     <string name="extra_dock_row_desc">3 zusätzliche Apps über dem Dock anzeigen</string>
     <string name="infinite_scroll">Endloses Scrollen</string>
@@ -83,6 +90,14 @@
     <string name="show_katapult_icon_desc">Katapult in der App-Liste anzeigen</string>
     <string name="hide_app_names">App-Namen ausblenden</string>
     <string name="hide_app_names_desc">Beschriftungen unter App-Symbolen ausblenden</string>
+    <string name="hide_arrow_buttons">Pfeiltasten ausblenden</string>
+    <string name="hide_arrow_buttons_desc">Seitenpfeile und Punkte in Alle Apps ausblenden</string>
+    <string name="disable_home_editing">Startseite-Bearbeitung deaktivieren</string>
+    <string name="disable_home_editing_desc">Langes Drücken auf Verknüpfungen öffnet App-Info</string>
+    <string name="hide_all_apps_button">Alle-Apps-Schaltfläche ausblenden</string>
+    <string name="hide_all_apps_button_desc">Alle-Apps-Schaltfläche durch eine Verknüpfung ersetzen</string>
+    <string name="contacts">Kontakte</string>
+    <string name="set_center_app">Mittlere App festlegen</string>
     <string name="app_notifications">App-Benachrichtigungen</string>
     <string name="app_notifications_desc">Benachrichtigungseinstellungen verwalten</string>
     <string name="notification_log">Benachrichtigungsprotokoll</string>

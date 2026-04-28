@@ -50,6 +50,7 @@
     <string name="hide">Hide</string>
     <string name="app_info">App Info</string>
     <string name="notifications">Notifications</string>
+    <string name="clear_notifications">Clear Notifications</string>
     <string name="uninstall">Uninstall</string>
     <string name="reset_order_confirm">Reset app order to alphabetical?</string>
 
@@ -63,12 +64,18 @@
     <string name="icon_shape">Icon Shape</string>
     <string name="icon_shape_rounded">Rounded</string>
     <string name="icon_shape_circle">Circle</string>
+    <string name="change_icon">Change Icon</string>
+    <string name="import_icon">Import Icon</string>
+    <string name="katapult_icons">Katapult Icons</string>
+    <string name="choose_png">Import icon (png, svg)</string>
+    <string name="reset_icon">Reset to Default</string>
     <string name="notification_indicators">Notification Indicators</string>
     <string name="notification_indicators_desc">Show notification badges on app icons</string>
     <string name="hide_status_bar">Hide Status Bar</string>
     <string name="hide_status_bar_desc">Hide the system status bar</string>
     <string name="eink_refresh">E-Ink Refresh on Home</string>
     <string name="eink_refresh_desc">Clear-ghosting when home button is pressed</string>
+    <string name="eink_auto_mode">E-Ink Mode</string>
     <string name="extra_dock_row">Extra Dock Row</string>
     <string name="extra_dock_row_desc">Show 3 extra apps above the dock</string>
     <string name="infinite_scroll">Infinite Scroll</string>
@@ -83,6 +90,14 @@
     <string name="show_katapult_icon_desc">Show Katapult in the app list</string>
     <string name="hide_app_names">Hide App Names</string>
     <string name="hide_app_names_desc">Hide labels under app icons</string>
+    <string name="hide_arrow_buttons">Hide Arrow Buttons</string>
+    <string name="hide_arrow_buttons_desc">Hide page arrows and dots in All Apps</string>
+    <string name="disable_home_editing">Disable Home Editing</string>
+    <string name="disable_home_editing_desc">Long-press shortcuts opens app info</string>
+    <string name="hide_all_apps_button">Hide All Apps Button</string>
+    <string name="hide_all_apps_button_desc">Replace the All Apps button with a shortcut</string>
+    <string name="contacts">Contacts</string>
+    <string name="set_center_app">Set center app</string>
     <string name="app_notifications">App Notifications</string>
     <string name="app_notifications_desc">Manage app notification settings</string>
     <string name="notification_log">Notification Log</string>

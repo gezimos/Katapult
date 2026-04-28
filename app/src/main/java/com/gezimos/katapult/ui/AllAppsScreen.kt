@@ -3,13 +3,18 @@ package com.gezimos.katapult.ui
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Image
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.NotificationsOff
 import androidx.compose.material.icons.rounded.RestartAlt
+import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.SwapVert
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -17,6 +22,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +37,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -51,20 +58,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.model.AppModel
+import com.gezimos.katapult.service.DirectBadgeHelper
+import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import kotlin.math.abs
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun AllAppsScreen(viewModel: MainViewModel) {
+fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<Array<String>>) {
     val context = LocalContext.current
     var showResetConfirm by remember { mutableStateOf(false) }
+    var changeIconApp by remember { mutableStateOf<AppModel?>(null) }
     val pageApps = remember(viewModel.currentPage, viewModel.orderedApps) {
         viewModel.getPageApps(viewModel.currentPage)
     }
@@ -118,7 +127,12 @@ fun AllAppsScreen(viewModel: MainViewModel) {
             verticalArrangement = Arrangement.SpaceEvenly,
         ) {
             for (row in 0 until 4) {
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     for (col in 0 until 3) {
                         Box(
                             modifier = Modifier.weight(1f),
@@ -134,6 +148,7 @@ fun AllAppsScreen(viewModel: MainViewModel) {
                                         viewModel.notificationCounts[app.packageName] ?: 0 else 0,
                                     isHighlighted = viewModel.reorderMode && absoluteIndex == viewModel.reorderHighlightIndex,
                                     hideLabel = viewModel.prefs.hideAppNames,
+                                    refresh = viewModel.shortcutRefresh,
                                     onClick = {
                                         if (viewModel.reorderMode) {
                                             viewModel.reorderTap(absoluteIndex)
@@ -162,6 +177,7 @@ fun AllAppsScreen(viewModel: MainViewModel) {
 
         // Arrow row + dots
         val wrap = viewModel.prefs.infiniteScroll
+        if (viewModel.reorderMode || (!viewModel.prefs.hideArrowButtons && viewModel.totalPages > 1)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -204,18 +220,23 @@ fun AllAppsScreen(viewModel: MainViewModel) {
                                 .padding(8.dp),
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(R.string.save_uppercase),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = LatoFamily,
-                            color = Color.Black,
-                            maxLines = 1,
+                        Box(
                             modifier = Modifier
+                                .height(ArrowSize)
                                 .border(2.5.dp, Color.Black, buttonShape)
                                 .clickable { viewModel.finishReorder() }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                        )
+                                .padding(horizontal = 12.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.save_uppercase),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = LatoFamily,
+                                color = Color.Black,
+                                maxLines = 1,
+                            )
+                        }
                     }
                 } else {
                     Row(
@@ -255,6 +276,7 @@ fun AllAppsScreen(viewModel: MainViewModel) {
                 }
             }
         }
+        }
     }
 
     // Context menu bottom sheet (only when NOT renaming and NOT reordering)
@@ -275,6 +297,10 @@ fun AllAppsScreen(viewModel: MainViewModel) {
             BottomSheetOption(stringResource(R.string.rename), icon = Icons.Rounded.Edit) {
                 viewModel.showRenameDialog = true
             }
+            BottomSheetOption(stringResource(R.string.change_icon), icon = Icons.Rounded.Image) {
+                changeIconApp = menuApp
+                viewModel.contextMenuApp = null
+            }
             BottomSheetOption(stringResource(R.string.hide), icon = Icons.Rounded.VisibilityOff) {
                 viewModel.hideApp(menuApp.packageName)
             }
@@ -289,6 +315,17 @@ fun AllAppsScreen(viewModel: MainViewModel) {
                 viewModel.launchIntent(context, Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
                     putExtra(Settings.EXTRA_APP_PACKAGE, menuApp.packageName)
                 })
+            }
+            val isDirectBadge = DeviceHelper.isMuditaKompakt() &&
+                menuApp.packageName in DirectBadgeHelper.DIRECT_PACKAGES
+            if (!isDirectBadge && (viewModel.notificationCounts[menuApp.packageName] ?: 0) > 0) {
+                BottomSheetOption(
+                    stringResource(R.string.clear_notifications),
+                    icon = Icons.Rounded.NotificationsOff,
+                ) {
+                    viewModel.clearNotificationsFor(menuApp.packageName)
+                    viewModel.contextMenuApp = null
+                }
             }
             // Only show uninstall for user-installed apps
             val isSystemApp = try {
@@ -334,6 +371,19 @@ fun AllAppsScreen(viewModel: MainViewModel) {
                 showResetConfirm = false
             }
         }
+    }
+
+    changeIconApp?.let { app ->
+        ChangeIconDialog(
+            viewModel = viewModel,
+            app = app,
+            onDismiss = { changeIconApp = null },
+            onImportClick = {
+                viewModel.iconOverrideTarget = app.packageName
+                iconPicker.launch(arrayOf("image/png", "image/svg+xml"))
+                changeIconApp = null
+            },
+        )
     }
 }
 
@@ -413,12 +463,13 @@ private fun AppGridItem(
     notificationCount: Int,
     isHighlighted: Boolean = false,
     hideLabel: Boolean = false,
+    refresh: Int = 0,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
     val context = LocalContext.current
     val sizePx = remember { (IconSize.value * context.resources.displayMetrics.density).toInt() }
-    val bitmap = remember(app.packageName, app.activityName) {
+    val bitmap = remember(app.packageName, app.activityName, refresh) {
         IconUtility.loadIcon(context, app.packageName, app.activityName, sizePx)
     }
     val isRounded = LocalIconShape.current != CircleShape
@@ -472,5 +523,178 @@ private fun AppGridItem(
             textAlign = TextAlign.Center,
             modifier = Modifier.width(110.dp),
         )
+    }
+}
+
+@Composable
+private fun ChangeIconDialog(
+    viewModel: MainViewModel,
+    app: AppModel,
+    onDismiss: () -> Unit,
+    onImportClick: () -> Unit,
+) {
+    val context = LocalContext.current
+    val pickerShape = if (viewModel.roundedIcons) RoundedCornerShape(percent = 26) else CircleShape
+    val sizePx = remember { (36 * context.resources.displayMetrics.density).toInt() }
+    val hasOverride = remember(viewModel.shortcutRefresh) {
+        viewModel.prefs.getIconOverride(app.packageName) != null
+    }
+
+    val bundled = remember { IconUtility.bundledIcons }
+    val columns = 5
+    val rows = 4
+    val itemsPerPage = columns * rows
+    var page by remember { mutableIntStateOf(0) }
+    val totalPages = (bundled.size + itemsPerPage - 1) / itemsPerPage
+    val pageIcons = remember(page) {
+        val start = page * itemsPerPage
+        val end = minOf(start + itemsPerPage, bundled.size)
+        bundled.subList(start, end)
+    }
+    var dragAccumulator by remember { mutableFloatStateOf(0f) }
+
+    BottomSheet(onDismiss = onDismiss) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = app.label,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = Color.Black,
+                modifier = Modifier.weight(1f),
+            )
+            if (hasOverride) {
+                Icon(
+                    imageVector = Icons.Rounded.Restore,
+                    contentDescription = stringResource(R.string.reset_icon),
+                    tint = Color.Black,
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            viewModel.clearIconOverride(app.packageName)
+                            onDismiss()
+                        },
+                )
+            }
+        }
+
+        Text(
+            text = stringResource(R.string.import_icon),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+        BottomSheetOption(stringResource(R.string.choose_png), icon = Icons.Rounded.Upload) {
+            onImportClick()
+        }
+
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = stringResource(R.string.katapult_icons),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 4.dp),
+        )
+
+        Column(
+            modifier = Modifier
+                .pointerInput(page, totalPages) {
+                    detectHorizontalDragGestures(
+                        onDragStart = { dragAccumulator = 0f },
+                        onDragEnd = {
+                            if (abs(dragAccumulator) > 80f) {
+                                if (dragAccumulator < 0 && page < totalPages - 1) page++
+                                else if (dragAccumulator > 0 && page > 0) page--
+                            }
+                        },
+                        onHorizontalDrag = { _, amount -> dragAccumulator += amount },
+                    )
+                },
+        ) {
+            for (row in 0 until rows) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    for (col in 0 until columns) {
+                        val idx = row * columns + col
+                        if (idx < pageIcons.size) {
+                            val icon = pageIcons[idx]
+                            val bitmap = remember(icon.resId) {
+                                IconUtility.renderDrawableResource(context, icon.resId, sizePx)
+                            }
+                            Box(
+                                modifier = Modifier.clickable {
+                                    viewModel.setBundledIcon(app.packageName, icon.resName)
+                                    onDismiss()
+                                },
+                            ) {
+                                AppIconCircle(
+                                    bitmap = bitmap,
+                                    size = 48.dp,
+                                    borderWidth = 1.5.dp,
+                                    shape = pickerShape,
+                                )
+                            }
+                        } else {
+                            Box(Modifier.size(48.dp))
+                        }
+                    }
+                }
+            }
+            if (totalPages > 1) {
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (page > 0) {
+                        ArrowButton(
+                            iconRes = R.drawable.ic_arrow_left,
+                            onClick = { page-- },
+                        )
+                    } else {
+                        Spacer(Modifier.size(ArrowSize))
+                    }
+
+                    Row(
+                        Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        for (i in 0 until totalPages) {
+                            Box(
+                                Modifier
+                                    .padding(horizontal = 2.dp)
+                                    .size(6.dp)
+                                    .then(
+                                        if (i == page) Modifier.background(Color.Black, CircleShape)
+                                        else Modifier.border(1.5.dp, Color.Black, CircleShape)
+                                    )
+                            )
+                        }
+                    }
+
+                    if (page < totalPages - 1) {
+                        ArrowButton(
+                            iconRes = R.drawable.ic_arrow_right,
+                            onClick = { page++ },
+                        )
+                    } else {
+                        Spacer(Modifier.size(ArrowSize))
+                    }
+                }
+            }
+        }
     }
 }

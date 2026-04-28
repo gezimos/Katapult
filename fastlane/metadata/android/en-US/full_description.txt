@@ -1,0 +1,44 @@
+Katapult is a minimal grid-based home screen launcher designed for the Mudita Kompakt, but works on any Android device running Android 12 or newer.
+
+It gives you a clean black-and-white interface with a 3×4 app grid, a dock for Phone/SMS, and a music widget — nothing more than you need.
+
+Setup
+
+• Long-press any empty area of the home screen to open Settings
+• Long-press the Phone, SMS, or extra dock shortcuts to replace them
+• Long-press the clock or date to assign an app shortcut
+
+Features
+
+• 3×4 app grid with swipe or chevron pagination
+• Music widget with playback controls — works with Auxio, Fossify Music, Spotify, Foobar, CalmCast, AntennaPod, and more
+• Icon tinting and shaping for a uniform black-and-white look (works with ~95% of apps)
+• Monochrome icons automatically used when the app provides one
+• Custom icon import — pick a bundled Katapult icon or import your own PNG/SVG
+• Icon shape: Circle or Rounded — affects all icons, buttons, and indicators
+• Extra dock row with 3 additional shortcuts
+• Notification indicators on app icons (requires notification listener permission)
+• Clear notifications for a specific app from the app context menu
+• Battery percentage with a level-based icon above the clock — tap to open battery settings
+• AM/PM indicator for 12-hour clocks
+• Hide status bar for a cleaner look
+• E-Ink refresh on home: flashes the screen when pressing the home button to clear ghosting
+• E-Ink mode cycle (Mudita Kompakt only): Disabled, Clear, Contrast, Reading
+• Double-tap brightness: toggle display brightness by double-tapping the home background (requires Write Settings)
+• Infinite scroll: wrap from the last page back to the first
+• Simple wallpaper support (not managed by Android)
+• Hide apps from the context menu or in bulk from the home menu
+• Rename any app by long-pressing it in the grid
+• App context menu: Reorder, Rename, Change Icon, Hide, App Info, Notifications, Clear Notifications, Uninstall
+• Reorder apps with swap-based reordering, or reset back to alphabetical order
+
+Permissions
+
+• QUERY_ALL_PACKAGES — list installed apps
+• WRITE_SETTINGS — double-tap brightness toggle
+• REQUEST_DELETE_PACKAGES — uninstall apps from the context menu
+• BIND_NOTIFICATION_LISTENER_SERVICE — read notifications for badge counts
+• READ_CALL_LOG — missed call badge on Mudita Phone (Mudita Kompakt only)
+• READ_SMS — unread SMS badge on Mudita Messages (Mudita Kompakt only)
+
+Katapult is free, open source, and ad-free forever.

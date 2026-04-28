@@ -8,7 +8,11 @@ import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.Screen
 
 @Composable
-fun App(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<String>) {
+fun App(
+    viewModel: MainViewModel,
+    imagePicker: ActivityResultLauncher<String>,
+    iconPicker: ActivityResultLauncher<Array<String>>,
+) {
     val noIndication = object : androidx.compose.foundation.IndicationNodeFactory {
         override fun create(interactionSource: androidx.compose.foundation.interaction.InteractionSource): androidx.compose.ui.Modifier.Node {
             return object : androidx.compose.ui.Modifier.Node() {}
@@ -28,7 +32,7 @@ fun App(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<String>) {
         when (viewModel.screen) {
             Screen.ONBOARDING -> OnboardingScreen(viewModel)
             Screen.HOME -> HomeScreen(viewModel, imagePicker)
-            Screen.ALL_APPS -> AllAppsScreen(viewModel)
+            Screen.ALL_APPS -> AllAppsScreen(viewModel, iconPicker)
             Screen.SETTINGS -> SettingsScreen(viewModel)
         }
     }

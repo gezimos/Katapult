@@ -50,6 +50,7 @@
     <string name="hide">Ocultar</string>
     <string name="app_info">Info da app</string>
     <string name="notifications">Notificações</string>
+    <string name="clear_notifications">Limpar notificações</string>
     <string name="uninstall">Desinstalar</string>
     <string name="reset_order_confirm">Repor ordem alfabética?</string>
 
@@ -63,12 +64,18 @@
     <string name="icon_shape">Forma do ícone</string>
     <string name="icon_shape_rounded">Arredondado</string>
     <string name="icon_shape_circle">Círculo</string>
+    <string name="change_icon">Alterar ícone</string>
+    <string name="import_icon">Importar ícone</string>
+    <string name="katapult_icons">Ícones Katapult</string>
+    <string name="choose_png">Importar ícone (png, svg)</string>
+    <string name="reset_icon">Repor predefinição</string>
     <string name="notification_indicators">Indicadores de notificações</string>
     <string name="notification_indicators_desc">Mostrar emblemas de notificações nos ícones</string>
     <string name="hide_status_bar">Ocultar barra de estado</string>
     <string name="hide_status_bar_desc">Oculta a barra de estado do sistema</string>
     <string name="eink_refresh">Atualização E-Ink no ecrã inicial</string>
     <string name="eink_refresh_desc">Remove ghosting ao premir o botão Home</string>
+    <string name="eink_auto_mode">Modo E-Ink</string>
     <string name="extra_dock_row">Linha de dock extra</string>
     <string name="extra_dock_row_desc">Mostrar 3 apps extra acima do dock</string>
     <string name="infinite_scroll">Deslocamento infinito</string>
@@ -83,6 +90,14 @@
     <string name="show_katapult_icon_desc">Mostrar Katapult na lista de apps</string>
     <string name="hide_app_names">Ocultar nomes das apps</string>
     <string name="hide_app_names_desc">Ocultar rótulos sob os ícones</string>
+    <string name="hide_arrow_buttons">Ocultar setas</string>
+    <string name="hide_arrow_buttons_desc">Ocultar setas de página e pontos em Todas as Apps</string>
+    <string name="disable_home_editing">Desativar edição do início</string>
+    <string name="disable_home_editing_desc">Toque longo nos atalhos abre as informações da app</string>
+    <string name="hide_all_apps_button">Ocultar botão Todas as Apps</string>
+    <string name="hide_all_apps_button_desc">Substituir o botão Todas as Apps por um atalho</string>
+    <string name="contacts">Contactos</string>
+    <string name="set_center_app">Definir app central</string>
     <string name="app_notifications">Notificações de apps</string>
     <string name="app_notifications_desc">Gerir definições de notificações</string>
     <string name="notification_log">Registo de notificações</string>

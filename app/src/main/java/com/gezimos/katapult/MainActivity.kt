@@ -10,14 +10,23 @@ import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import com.gezimos.katapult.ui.App
 import com.gezimos.katapult.util.AudioWidgetHelper
+import com.gezimos.katapult.util.DeviceHelper
+import com.gezimos.katapult.util.EinkHelper
 import com.gezimos.katapult.util.EinkRefreshHelper
 
 class MainActivity : ComponentActivity() {
 
     val viewModel: MainViewModel by viewModels()
 
+    private var einkHelper: EinkHelper? = null
+
     val imagePicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { viewModel.setWallpaper(this, it) }
+    }
+
+    val iconPicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) viewModel.saveImportedIcon(this, uri)
+        else viewModel.cancelIconImport()
     }
 
     private val backCallback = object : OnBackPressedCallback(true) {
@@ -35,9 +44,21 @@ class MainActivity : ComponentActivity() {
 
         onBackPressedDispatcher.addCallback(this, backCallback)
 
-        setContent {
-            App(viewModel = viewModel, imagePicker = imagePicker)
+        if (DeviceHelper.isMuditaKompakt()) {
+            einkHelper = EinkHelper(packageName).also { helper ->
+                lifecycle.addObserver(helper)
+                val saved = viewModel.prefs.einkHelperMode
+                if (saved != EinkHelper.MEINK_MODE_DISABLED) helper.setMeinkMode(saved)
+            }
         }
+
+        setContent {
+            App(viewModel = viewModel, imagePicker = imagePicker, iconPicker = iconPicker)
+        }
+    }
+
+    fun setMeinkMode(mode: Int) {
+        einkHelper?.setMeinkMode(mode)
     }
 
     override fun onResume() {
@@ -49,6 +70,11 @@ class MainActivity : ComponentActivity() {
         viewModel.refreshNotifications()
         viewModel.startNotificationListener()
         AudioWidgetHelper.getInstance(this).resetDismissalState()
+
+        val savedMode = viewModel.prefs.einkHelperMode
+        if (savedMode != EinkHelper.MEINK_MODE_DISABLED) {
+            einkHelper?.setMeinkMode(savedMode)
+        }
     }
 
     override fun onPause() {
@@ -61,6 +87,11 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         overridePendingTransition(0, 0)
         viewModel.navigateTo(Screen.HOME)
+
+        val savedMode = viewModel.prefs.einkHelperMode
+        if (savedMode != EinkHelper.MEINK_MODE_DISABLED) {
+            einkHelper?.setMeinkMode(savedMode)
+        }
 
         if (viewModel.prefs.einkRefreshOnHome) {
             EinkRefreshHelper.refresh(this)

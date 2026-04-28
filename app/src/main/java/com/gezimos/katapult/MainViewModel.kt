@@ -7,6 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
+import android.graphics.Paint
+import androidx.core.graphics.createBitmap
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
@@ -48,6 +52,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var showRenameDialog by mutableStateOf(false)
     var reorderMode by mutableStateOf(false)
     var reorderHighlightIndex by mutableIntStateOf(-1)
+    var iconOverrideTarget by mutableStateOf<String?>(null)
     var orderedApps by mutableStateOf(listOf<AppModel>())
         private set
     var currentPage by mutableIntStateOf(0)
@@ -372,6 +377,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             "extra_left" -> "com.mudita.audio.player".takeIfInstalled()
             "extra_center" -> "com.mudita.calendar".takeIfInstalled()
             "extra_right" -> "com.mudita.camera".takeIfInstalled()
+            "center" -> {
+                val intent = Intent(Intent.ACTION_VIEW, android.provider.ContactsContract.Contacts.CONTENT_URI)
+                val ri = ctx.packageManager.resolveActivity(intent, 0)
+                ri?.activityInfo?.packageName
+            }
             else -> null
         }
     }
@@ -388,6 +398,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshNotifications() {
         val counts = NotificationListener.getAllCounts()
         notificationCounts = if (directBadgeHelper != null) counts + directBadgeHelper.getCounts() else counts
+    }
+
+    fun clearNotificationsFor(pkg: String) {
+        NotificationListener.cancelFor(pkg)
     }
 
     private val audioHelper get() = AudioWidgetHelper.getInstance(ctx)
@@ -440,6 +454,106 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         prefs.wallpaperPath?.let { File(it).delete() }
         prefs.wallpaperPath = null
         wallpaperBitmap = null
+    }
+
+    // --- Icon overrides ---
+
+    fun saveImportedIcon(context: Context, uri: Uri) {
+        val pkg = iconOverrideTarget ?: return
+        iconOverrideTarget = null
+
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val mime = context.contentResolver.getType(uri).orEmpty()
+                val isSvg = mime == "image/svg+xml" ||
+                    uri.toString().endsWith(".svg", ignoreCase = true)
+
+                val targetPx = 256
+                val bitmap: Bitmap? = if (isSvg) {
+                    context.contentResolver.openInputStream(uri)?.use { input ->
+                        com.gezimos.katapult.util.SvgRasterizer.rasterize(input, targetPx)
+                    }
+                } else {
+                    decodeSampled(context, uri, targetPx * 2)?.let { fitToIcon(it, targetPx) }
+                }
+                if (bitmap == null) return@launch
+
+                val dir = File(ctx.filesDir, "icons").apply { mkdirs() }
+                val file = File(dir, "$pkg.png")
+                file.outputStream().use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+                prefs.setIconOverride(pkg, "file:${file.absolutePath}")
+                IconUtility.clearCacheFor(pkg)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    shortcutRefresh++
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    // Two-pass decode: read bounds first, downsample to keep memory bounded.
+    private fun decodeSampled(context: Context, uri: Uri, maxSide: Int): Bitmap? {
+        return try {
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            context.contentResolver.openInputStream(uri)?.use {
+                BitmapFactory.decodeStream(it, null, bounds)
+            }
+            val srcW = bounds.outWidth
+            val srcH = bounds.outHeight
+            if (srcW <= 0 || srcH <= 0) return null
+
+            var sample = 1
+            while (srcW / sample > maxSide || srcH / sample > maxSide) sample *= 2
+
+            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+            context.contentResolver.openInputStream(uri)?.use {
+                BitmapFactory.decodeStream(it, null, opts)
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun cancelIconImport() {
+        iconOverrideTarget = null
+    }
+
+    fun setBundledIcon(pkg: String, resName: String) {
+        deleteOverrideFile(pkg)
+        prefs.setIconOverride(pkg, "res:$resName")
+        IconUtility.clearCacheFor(pkg)
+        shortcutRefresh++
+    }
+
+    fun clearIconOverride(pkg: String) {
+        deleteOverrideFile(pkg)
+        prefs.clearIconOverride(pkg)
+        IconUtility.clearCacheFor(pkg)
+        shortcutRefresh++
+    }
+
+    private fun deleteOverrideFile(pkg: String) {
+        val existing = prefs.getIconOverride(pkg) ?: return
+        if (existing.startsWith("file:")) {
+            File(existing.removePrefix("file:")).delete()
+        }
+    }
+
+    // Matches SvgRasterizer: draw the source centered at 60% of the target canvas.
+    private fun fitToIcon(source: Bitmap, targetPx: Int): Bitmap {
+        val target = createBitmap(targetPx, targetPx, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(target)
+        val maxSide = kotlin.math.max(source.width, source.height).toFloat().coerceAtLeast(1f)
+        val scale = (targetPx * 0.6f) / maxSide
+        val drawnW = source.width * scale
+        val drawnH = source.height * scale
+        val matrix = Matrix().apply {
+            postScale(scale, scale)
+            postTranslate((targetPx - drawnW) / 2f, (targetPx - drawnH) / 2f)
+        }
+        canvas.drawBitmap(source, matrix, Paint(Paint.FILTER_BITMAP_FLAG))
+        return target
     }
 
     private fun loadWallpaper() {

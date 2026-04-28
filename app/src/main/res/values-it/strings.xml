@@ -50,6 +50,7 @@
     <string name="hide">Nascondi</string>
     <string name="app_info">Info app</string>
     <string name="notifications">Notifiche</string>
+    <string name="clear_notifications">Cancella notifiche</string>
     <string name="uninstall">Disinstalla</string>
     <string name="reset_order_confirm">Ripristinare l\'ordine alfabetico?</string>
 
@@ -63,12 +64,18 @@
     <string name="icon_shape">Forma icona</string>
     <string name="icon_shape_rounded">Arrotondata</string>
     <string name="icon_shape_circle">Cerchio</string>
+    <string name="change_icon">Cambia icona</string>
+    <string name="import_icon">Importa icona</string>
+    <string name="katapult_icons">Icone Katapult</string>
+    <string name="choose_png">Importa icona (png, svg)</string>
+    <string name="reset_icon">Ripristina predefinita</string>
     <string name="notification_indicators">Indicatori notifiche</string>
     <string name="notification_indicators_desc">Mostra badge notifiche sulle icone</string>
     <string name="hide_status_bar">Nascondi barra di stato</string>
     <string name="hide_status_bar_desc">Nasconde la barra di stato del sistema</string>
     <string name="eink_refresh">Aggiornamento E-Ink alla Home</string>
     <string name="eink_refresh_desc">Rimuove i residui quando si preme il tasto Home</string>
+    <string name="eink_auto_mode">Modalità E-Ink</string>
     <string name="extra_dock_row">Riga dock extra</string>
     <string name="extra_dock_row_desc">Mostra 3 app extra sopra il dock</string>
     <string name="infinite_scroll">Scorrimento infinito</string>
@@ -83,6 +90,14 @@
     <string name="show_katapult_icon_desc">Mostra Katapult nella lista app</string>
     <string name="hide_app_names">Nascondi nomi app</string>
     <string name="hide_app_names_desc">Nascondi le etichette sotto le icone</string>
+    <string name="hide_arrow_buttons">Nascondi frecce</string>
+    <string name="hide_arrow_buttons_desc">Nascondi frecce e puntini in Tutte le app</string>
+    <string name="disable_home_editing">Disabilita modifica home</string>
+    <string name="disable_home_editing_desc">La pressione prolungata sulle scorciatoie apre le info dell\'app</string>
+    <string name="hide_all_apps_button">Nascondi pulsante Tutte le app</string>
+    <string name="hide_all_apps_button_desc">Sostituisci il pulsante Tutte le app con una scorciatoia</string>
+    <string name="contacts">Contatti</string>
+    <string name="set_center_app">Imposta app centrale</string>
     <string name="app_notifications">Notifiche app</string>
     <string name="app_notifications_desc">Gestisci impostazioni notifiche app</string>
     <string name="notification_log">Registro notifiche</string>

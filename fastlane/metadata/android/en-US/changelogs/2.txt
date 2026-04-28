@@ -1,0 +1,17 @@
+Added
+• Custom icon import (bundled, PNG, or SVG)
+• Clear Notifications in app context menu
+• Hide Arrow Buttons setting for All Apps
+• Disable Home Editing setting — long-press shortcuts opens App Info instead of the picker
+• Hide All Apps Button — replace the All Apps tile with a shortcut (drawer reachable via the home long-press menu)
+• Tap battery % to open battery settings
+• Version shown in Settings
+
+Changed
+• Monochrome icons always used when available
+• Notification counts no longer inflate on updated notifications
+• Translations updated
+
+Fixed
+• Icon cache invalidated on re-import
+• Accurate count after opening multi-message chats

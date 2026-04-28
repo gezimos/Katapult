@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+base {
+    archivesName.set("katapult-v1.1")
+}
+
 android {
     namespace = "com.gezimos.katapult"
     compileSdk {
@@ -13,16 +17,12 @@ android {
 
     defaultConfig {
         applicationId = "com.gezimos.katapult"
-        minSdk = 31
+        minSdk = 30
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    base {
-        archivesName.set("katapult-v1.0")
     }
 
     signingConfigs {

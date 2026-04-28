@@ -1,0 +1,1 @@
+A simple black-and-white grid launcher for Mudita Kompakt.

@@ -45,18 +45,49 @@ class PrefsManager(context: Context) {
             }
         }
 
-        // Insert newly installed apps in alphabetical position
-        for (app in appMap.values.sortedBy { it.label.lowercase() }) {
+        val newApps = appMap.values.sortedBy { it.label.lowercase() }
+        for (app in newApps) {
             val label = app.label.lowercase()
-            val insertIndex = result.indexOfFirst { it.label.lowercase() > label }
-            if (insertIndex >= 0) {
-                result.add(insertIndex, app)
-            } else {
-                result.add(app)
+            val anchors = longestNonDecreasingIndices(result)
+            val insertIndex = when {
+                anchors.isEmpty() -> 0
+                else -> {
+                    val idx = anchors.indexOfFirst { result[it].label.lowercase() > label }
+                    if (idx < 0) anchors.last() + 1 else anchors[idx]
+                }
             }
+            result.add(insertIndex, app)
         }
 
         return result
+    }
+
+    private fun longestNonDecreasingIndices(list: List<AppModel>): List<Int> {
+        val n = list.size
+        if (n == 0) return emptyList()
+        val labels = List(n) { list[it].label.lowercase() }
+        val tails = IntArray(n)
+        val prev = IntArray(n) { -1 }
+        var length = 0
+        for (i in 0 until n) {
+            val l = labels[i]
+            var lo = 0
+            var hi = length
+            while (lo < hi) {
+                val mid = (lo + hi) ushr 1
+                if (labels[tails[mid]] > l) hi = mid else lo = mid + 1
+            }
+            if (lo > 0) prev[i] = tails[lo - 1]
+            tails[lo] = i
+            if (lo == length) length++
+        }
+        val out = ArrayDeque<Int>()
+        var k = tails[length - 1]
+        while (k != -1) {
+            out.addFirst(k)
+            k = prev[k]
+        }
+        return out.toList()
     }
 
     var notificationIndicators: Boolean
@@ -83,6 +114,10 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_EINK_REFRESH_HOME, false)
         set(value) = prefs.edit().putBoolean(KEY_EINK_REFRESH_HOME, value).apply()
 
+    var einkHelperMode: Int
+        get() = prefs.getInt(KEY_EINK_HELPER_MODE, EinkHelper.MEINK_MODE_DISABLED)
+        set(value) = prefs.edit().putInt(KEY_EINK_HELPER_MODE, value).apply()
+
     var doubleTapBrightness: Boolean
         get() = prefs.getBoolean(KEY_DOUBLE_TAP_BRIGHTNESS, false)
         set(value) = prefs.edit().putBoolean(KEY_DOUBLE_TAP_BRIGHTNESS, value).apply()
@@ -106,6 +141,18 @@ class PrefsManager(context: Context) {
     var hideAppNames: Boolean
         get() = prefs.getBoolean(KEY_HIDE_APP_NAMES, false)
         set(value) = prefs.edit().putBoolean(KEY_HIDE_APP_NAMES, value).apply()
+
+    var hideArrowButtons: Boolean
+        get() = prefs.getBoolean(KEY_HIDE_ARROW_BUTTONS, false)
+        set(value) = prefs.edit().putBoolean(KEY_HIDE_ARROW_BUTTONS, value).apply()
+
+    var disableHomeEditing: Boolean
+        get() = prefs.getBoolean(KEY_DISABLE_HOME_EDITING, false)
+        set(value) = prefs.edit().putBoolean(KEY_DISABLE_HOME_EDITING, value).apply()
+
+    var hideAllAppsButton: Boolean
+        get() = prefs.getBoolean(KEY_HIDE_ALL_APPS_BUTTON, false)
+        set(value) = prefs.edit().putBoolean(KEY_HIDE_ALL_APPS_BUTTON, value).apply()
 
     var onboardingComplete: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDING_COMPLETE, false)
@@ -132,6 +179,19 @@ class PrefsManager(context: Context) {
         setHiddenApps(getHiddenApps() - packageName)
     }
 
+    // Icon overrides: value is "file:<absolute path>" or "res:<drawable name>", null if none.
+    fun getIconOverride(packageName: String): String? {
+        return prefs.getString("${KEY_ICON_OVERRIDE_PREFIX}$packageName", null)
+    }
+
+    fun setIconOverride(packageName: String, value: String) {
+        prefs.edit().putString("${KEY_ICON_OVERRIDE_PREFIX}$packageName", value).apply()
+    }
+
+    fun clearIconOverride(packageName: String) {
+        prefs.edit().remove("${KEY_ICON_OVERRIDE_PREFIX}$packageName").apply()
+    }
+
     // Renamed apps
     fun getAppRename(packageName: String): String? {
         return prefs.getString("${KEY_RENAME_PREFIX}$packageName", null)
@@ -153,6 +213,7 @@ class PrefsManager(context: Context) {
         private const val KEY_ROUNDED_ICONS = "rounded_icons"
         private const val KEY_HIDE_STATUS_BAR = "hide_status_bar"
         private const val KEY_EINK_REFRESH_HOME = "eink_refresh_home"
+        private const val KEY_EINK_HELPER_MODE = "eink_helper_mode"
         private const val KEY_DOUBLE_TAP_BRIGHTNESS = "double_tap_brightness"
         private const val KEY_LAST_BRIGHTNESS = "last_brightness"
         private const val KEY_INFINITE_SCROLL = "infinite_scroll"
@@ -160,8 +221,12 @@ class PrefsManager(context: Context) {
         private const val KEY_WALLPAPER_PATH = "wallpaper_path"
         private const val KEY_HIDDEN_APPS = "hidden_apps"
         private const val KEY_RENAME_PREFIX = "rename_"
+        private const val KEY_ICON_OVERRIDE_PREFIX = "icon_override_"
         private const val KEY_SHOW_KATAPULT_ICON = "show_katapult_icon"
         private const val KEY_HIDE_APP_NAMES = "hide_app_names"
+        private const val KEY_HIDE_ARROW_BUTTONS = "hide_arrow_buttons"
+        private const val KEY_DISABLE_HOME_EDITING = "disable_home_editing"
+        private const val KEY_HIDE_ALL_APPS_BUTTON = "hide_all_apps_button"
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
     }
 }

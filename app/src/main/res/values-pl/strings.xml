@@ -50,6 +50,7 @@
     <string name="hide">Ukryj</string>
     <string name="app_info">Info o aplikacji</string>
     <string name="notifications">Powiadomienia</string>
+    <string name="clear_notifications">Wyczyść powiadomienia</string>
     <string name="uninstall">Odinstaluj</string>
     <string name="reset_order_confirm">Przywrócić kolejność alfabetyczną?</string>
 
@@ -63,12 +64,18 @@
     <string name="icon_shape">Kształt ikony</string>
     <string name="icon_shape_rounded">Zaokrąglony</string>
     <string name="icon_shape_circle">Koło</string>
+    <string name="change_icon">Zmień ikonę</string>
+    <string name="import_icon">Importuj ikonę</string>
+    <string name="katapult_icons">Ikony Katapult</string>
+    <string name="choose_png">Importuj ikonę (png, svg)</string>
+    <string name="reset_icon">Przywróć domyślną</string>
     <string name="notification_indicators">Wskaźniki powiadomień</string>
     <string name="notification_indicators_desc">Pokaż znaczniki powiadomień na ikonach</string>
     <string name="hide_status_bar">Ukryj pasek stanu</string>
     <string name="hide_status_bar_desc">Ukrywa systemowy pasek stanu</string>
     <string name="eink_refresh">Odświeżanie E-Ink na ekranie głównym</string>
     <string name="eink_refresh_desc">Usuwa ghosting po naciśnięciu przycisku Home</string>
+    <string name="eink_auto_mode">Tryb E-Ink</string>
     <string name="extra_dock_row">Dodatkowy rząd doku</string>
     <string name="extra_dock_row_desc">Pokaż 3 dodatkowe aplikacje nad dokiem</string>
     <string name="infinite_scroll">Nieskończone przewijanie</string>
@@ -83,6 +90,14 @@
     <string name="show_katapult_icon_desc">Pokaż Katapult na liście aplikacji</string>
     <string name="hide_app_names">Ukryj nazwy aplikacji</string>
     <string name="hide_app_names_desc">Ukryj etykiety pod ikonami aplikacji</string>
+    <string name="hide_arrow_buttons">Ukryj strzałki</string>
+    <string name="hide_arrow_buttons_desc">Ukryj strzałki stron i kropki w Wszystkie aplikacje</string>
+    <string name="disable_home_editing">Wyłącz edycję ekranu głównego</string>
+    <string name="disable_home_editing_desc">Długie naciśnięcie skrótu otwiera informacje o aplikacji</string>
+    <string name="hide_all_apps_button">Ukryj przycisk Wszystkie aplikacje</string>
+    <string name="hide_all_apps_button_desc">Zastąp przycisk Wszystkie aplikacje skrótem</string>
+    <string name="contacts">Kontakty</string>
+    <string name="set_center_app">Ustaw aplikację środkową</string>
     <string name="app_notifications">Powiadomienia aplikacji</string>
     <string name="app_notifications_desc">Zarządzaj ustawieniami powiadomień</string>
     <string name="notification_log">Dziennik powiadomień</string>

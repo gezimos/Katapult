@@ -22,10 +22,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,24 +32,25 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.util.AppLoader
+import com.gezimos.katapult.MainActivity
 import com.gezimos.katapult.util.DeviceHelper
+import com.gezimos.katapult.util.EinkHelper
 import com.gezimos.katapult.util.IconUtility
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
@@ -59,6 +58,11 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val context = LocalContext.current
     val prefs = viewModel.prefs
     val isMudita = remember { DeviceHelper.isMuditaKompakt() }
+    val versionName = remember {
+        try {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
+        } catch (_: Exception) { "" }
+    }
 
     var notificationIndicators by remember { mutableStateOf(prefs.notificationIndicators) }
     var showAmPm by remember { mutableStateOf(prefs.showAmPm) }
@@ -66,11 +70,15 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
     var hideStatusBar by remember { mutableStateOf(prefs.hideStatusBar) }
     var einkRefreshOnHome by remember { mutableStateOf(prefs.einkRefreshOnHome) }
+    var einkHelperMode by remember { mutableIntStateOf(prefs.einkHelperMode) }
     var doubleTapBrightness by remember { mutableStateOf(prefs.doubleTapBrightness) }
     var homeExtraRow by remember { mutableStateOf(prefs.homeExtraRow) }
     var infiniteScroll by remember { mutableStateOf(prefs.infiniteScroll) }
     var showKatapultIcon by remember { mutableStateOf(prefs.showKatapultIcon) }
     var hideAppNames by remember { mutableStateOf(prefs.hideAppNames) }
+    var hideArrowButtons by remember { mutableStateOf(prefs.hideArrowButtons) }
+    var disableHomeEditing by remember { mutableStateOf(prefs.disableHomeEditing) }
+    var hideAllAppsButton by remember { mutableStateOf(prefs.hideAllAppsButton) }
 
     // Poll notification listener permission to sync toggle state
     LaunchedEffect(context) {
@@ -85,37 +93,19 @@ fun SettingsScreen(viewModel: MainViewModel) {
         }
     }
 
-    val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
-    var viewportHeight by remember { mutableIntStateOf(0) }
     var currentPage by remember { mutableIntStateOf(0) }
     var pageCount by remember { mutableIntStateOf(1) }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
-    val overlapFraction = 0.2f
 
-    LaunchedEffect(scrollState.value, scrollState.maxValue, viewportHeight) {
-        if (viewportHeight <= 0) return@LaunchedEffect
-        val overlap = (viewportHeight * overlapFraction).toInt()
-        val step = (viewportHeight - overlap).coerceAtLeast(1)
-        val maxScroll = scrollState.maxValue.coerceAtLeast(0)
-        val pages = if (maxScroll <= 0) 1 else (1 + ((maxScroll + step - 1) / step))
-
-        var bestPage = 0
-        var bestDist = abs(scrollState.value)
-        for (i in 1 until pages) {
-            val pageStart = (i * step).coerceAtMost(maxScroll)
-            val dist = abs(scrollState.value - pageStart)
-            if (dist < bestDist) { bestPage = i; bestDist = dist }
-        }
-        currentPage = bestPage
-        pageCount = pages
+    LaunchedEffect(pageCount) {
+        if (currentPage >= pageCount) currentPage = (pageCount - 1).coerceAtLeast(0)
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
-            .then(if (!viewModel.prefs.hideStatusBar) Modifier.statusBarsPadding() else Modifier)
+            .then(if (!hideStatusBar) Modifier.statusBarsPadding() else Modifier)
             .navigationBarsPadding()
             .padding(16.dp),
     ) {
@@ -150,206 +140,316 @@ fun SettingsScreen(viewModel: MainViewModel) {
 
         Spacer(Modifier.height(8.dp))
 
-        Column(
+        val rows = buildList<@Composable () -> Unit> {
+            add {
+                SettingsCycleRow(
+                    title = stringResource(R.string.icon_shape),
+                    description = if (roundedIcons) stringResource(R.string.icon_shape_rounded) else stringResource(R.string.icon_shape_circle),
+                    onClick = {
+                        roundedIcons = !roundedIcons
+                        prefs.roundedIcons = roundedIcons
+                        viewModel.roundedIcons = roundedIcons
+                    },
+                )
+            }
+            if (isMudita) {
+                add {
+                    SettingsCycleRow(
+                        title = stringResource(R.string.eink_auto_mode),
+                        description = EinkHelper.modeName(einkHelperMode),
+                        onClick = {
+                            val next = EinkHelper.nextMode(einkHelperMode)
+                            einkHelperMode = next
+                            prefs.einkHelperMode = next
+                            (context as? MainActivity)?.setMeinkMode(next)
+                        },
+                    )
+                }
+                add {
+                    SettingsToggleRow(
+                        title = stringResource(R.string.eink_refresh),
+                        description = stringResource(R.string.eink_refresh_desc),
+                        checked = einkRefreshOnHome,
+                        onCheckedChange = {
+                            einkRefreshOnHome = it
+                            prefs.einkRefreshOnHome = it
+                        },
+                    )
+                }
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.notification_indicators),
+                    description = stringResource(R.string.notification_indicators_desc),
+                    checked = notificationIndicators,
+                    onCheckedChange = { requested ->
+                        val hasPermission = NotificationManagerCompat.getEnabledListenerPackages(context)
+                            .contains(context.packageName)
+                        if (requested) {
+                            if (hasPermission) {
+                                notificationIndicators = true
+                                prefs.notificationIndicators = true
+                            } else {
+                                try {
+                                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                                } catch (_: Exception) {
+                                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                        data = Uri.fromParts("package", context.packageName, null)
+                                    })
+                                }
+                            }
+                        } else {
+                            try {
+                                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                            } catch (_: Exception) {}
+                        }
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.hide_status_bar),
+                    description = stringResource(R.string.hide_status_bar_desc),
+                    checked = hideStatusBar,
+                    onCheckedChange = {
+                        hideStatusBar = it
+                        prefs.hideStatusBar = it
+                        viewModel.applyStatusBar(context)
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.extra_dock_row),
+                    description = stringResource(R.string.extra_dock_row_desc),
+                    checked = homeExtraRow,
+                    onCheckedChange = {
+                        homeExtraRow = it
+                        prefs.homeExtraRow = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.infinite_scroll),
+                    description = stringResource(R.string.infinite_scroll_desc),
+                    checked = infiniteScroll,
+                    onCheckedChange = {
+                        infiniteScroll = it
+                        prefs.infiniteScroll = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.double_tap_brightness),
+                    description = stringResource(R.string.double_tap_brightness_desc),
+                    checked = doubleTapBrightness,
+                    onCheckedChange = {
+                        doubleTapBrightness = it
+                        prefs.doubleTapBrightness = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.show_ampm),
+                    description = stringResource(R.string.show_ampm_desc),
+                    checked = showAmPm,
+                    onCheckedChange = {
+                        showAmPm = it
+                        prefs.showAmPm = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.show_battery),
+                    description = stringResource(R.string.show_battery_desc),
+                    checked = showBattery,
+                    onCheckedChange = {
+                        showBattery = it
+                        prefs.showBattery = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.show_katapult_icon),
+                    description = stringResource(R.string.show_katapult_icon_desc),
+                    checked = showKatapultIcon,
+                    onCheckedChange = {
+                        showKatapultIcon = it
+                        prefs.showKatapultIcon = it
+                        viewModel.loadApps()
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.hide_app_names),
+                    description = stringResource(R.string.hide_app_names_desc),
+                    checked = hideAppNames,
+                    onCheckedChange = {
+                        hideAppNames = it
+                        prefs.hideAppNames = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.hide_arrow_buttons),
+                    description = stringResource(R.string.hide_arrow_buttons_desc),
+                    checked = hideArrowButtons,
+                    onCheckedChange = {
+                        hideArrowButtons = it
+                        prefs.hideArrowButtons = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.hide_all_apps_button),
+                    description = stringResource(R.string.hide_all_apps_button_desc),
+                    checked = hideAllAppsButton,
+                    onCheckedChange = {
+                        hideAllAppsButton = it
+                        prefs.hideAllAppsButton = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.disable_home_editing),
+                    description = stringResource(R.string.disable_home_editing_desc),
+                    checked = disableHomeEditing,
+                    onCheckedChange = {
+                        disableHomeEditing = it
+                        prefs.disableHomeEditing = it
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.app_notifications),
+                    description = stringResource(R.string.app_notifications_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent().apply {
+                                component = android.content.ComponentName(
+                                    "com.android.settings",
+                                    "com.android.settings.Settings\$NotificationAppListActivity"
+                                )
+                            })
+                        } catch (_: Exception) {}
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.notification_log),
+                    description = stringResource(R.string.notification_log_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent().apply {
+                                component = android.content.ComponentName(
+                                    "com.android.settings",
+                                    "com.android.settings.Settings\$NotificationStationActivity"
+                                )
+                            })
+                        } catch (_: Exception) {}
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.set_default_launcher),
+                    description = stringResource(R.string.set_default_launcher_desc),
+                    onClick = {
+                        context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
+                    },
+                )
+            }
+            add {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = LatoFamily,
+                            color = Color.Black,
+                        )
+                        Text(
+                            text = versionName,
+                            fontSize = 14.sp,
+                            fontFamily = LatoFamily,
+                            color = Color.Black,
+                        )
+                    }
+                }
+            }
+        }
+
+        SubcomposeLayout(
             modifier = Modifier
                 .weight(1f)
-                .onSizeChanged { viewportHeight = it.height }
-                .verticalScroll(scrollState, enabled = false)
+                .fillMaxWidth()
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
                         onDragStart = { dragAccumulator = 0f },
                         onDragEnd = {
-                            if (abs(dragAccumulator) > 80f && viewportHeight > 0) {
-                                val overlap = (viewportHeight * overlapFraction).toInt()
-                                val step = (viewportHeight - overlap).coerceAtLeast(1)
-                                val maxScroll = scrollState.maxValue.coerceAtLeast(0)
-                                val pages = if (maxScroll <= 0) 1 else (1 + ((maxScroll + step - 1) / step))
+                            if (abs(dragAccumulator) > 80f && pageCount > 1) {
                                 val delta = if (dragAccumulator < 0) 1 else -1
-                                val targetPage = (currentPage + delta).coerceIn(0, pages - 1)
-                                if (targetPage != currentPage) {
-                                    val targetScroll = (targetPage * step).coerceAtMost(maxScroll)
-                                    scope.launch { scrollState.scrollTo(targetScroll) }
-                                }
+                                currentPage = (currentPage + delta).coerceIn(0, pageCount - 1)
                             }
                         },
                         onVerticalDrag = { _, amount -> dragAccumulator += amount },
                     )
                 },
-        ) {
-            SettingsCycleRow(
-                title = stringResource(R.string.icon_shape),
-                description = if (roundedIcons) stringResource(R.string.icon_shape_rounded) else stringResource(R.string.icon_shape_circle),
-                onClick = {
-                    roundedIcons = !roundedIcons
-                    prefs.roundedIcons = roundedIcons
-                    viewModel.roundedIcons = roundedIcons
-                },
-            )
-
-            SettingsToggleRow(
-                title = stringResource(R.string.notification_indicators),
-                description = stringResource(R.string.notification_indicators_desc),
-                checked = notificationIndicators,
-                onCheckedChange = { requested ->
-                    val hasPermission = NotificationManagerCompat.getEnabledListenerPackages(context)
-                        .contains(context.packageName)
-                    if (requested) {
-                        if (hasPermission) {
-                            notificationIndicators = true
-                            prefs.notificationIndicators = true
-                        } else {
-                            // Open permission settings — don't enable until permission granted
-                            try {
-                                context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                            } catch (_: Exception) {
-                                context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                    data = Uri.fromParts("package", context.packageName, null)
-                                })
-                            }
-                        }
-                    } else {
-                        try {
-                            context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                        } catch (_: Exception) {}
-                    }
-                },
-            )
-
-            SettingsToggleRow(
-                title = stringResource(R.string.hide_status_bar),
-                description = stringResource(R.string.hide_status_bar_desc),
-                checked = hideStatusBar,
-                onCheckedChange = {
-                    hideStatusBar = it
-                    prefs.hideStatusBar = it
-                    viewModel.applyStatusBar(context)
-                },
-            )
-
-            if (isMudita) {
-                SettingsToggleRow(
-                    title = stringResource(R.string.eink_refresh),
-                    description = stringResource(R.string.eink_refresh_desc),
-                    checked = einkRefreshOnHome,
-                    onCheckedChange = {
-                        einkRefreshOnHome = it
-                        prefs.einkRefreshOnHome = it
-                    },
-                )
+        ) { constraints ->
+            val childConstraints = Constraints(maxWidth = constraints.maxWidth)
+            val rowPlaceables = rows.mapIndexed { i, content ->
+                subcompose(i) { content() }.map { it.measure(childConstraints) }
             }
+            val rowHeights = rowPlaceables.map { ps -> ps.sumOf { it.height } }
 
-            SettingsToggleRow(
-                title = stringResource(R.string.extra_dock_row),
-                description = stringResource(R.string.extra_dock_row_desc),
-                checked = homeExtraRow,
-                onCheckedChange = {
-                    homeExtraRow = it
-                    prefs.homeExtraRow = it
-                },
-            )
+            val groups = mutableListOf<IntRange>()
+            var groupStart = 0
+            var accH = 0
+            for (i in rowHeights.indices) {
+                if (accH + rowHeights[i] > constraints.maxHeight && i > groupStart) {
+                    groups.add(groupStart until i)
+                    groupStart = i
+                    accH = rowHeights[i]
+                } else {
+                    accH += rowHeights[i]
+                }
+            }
+            if (groupStart < rowHeights.size) groups.add(groupStart until rowHeights.size)
+            if (groups.isEmpty()) groups.add(0 until 0)
 
-            SettingsToggleRow(
-                title = stringResource(R.string.infinite_scroll),
-                description = stringResource(R.string.infinite_scroll_desc),
-                checked = infiniteScroll,
-                onCheckedChange = {
-                    infiniteScroll = it
-                    prefs.infiniteScroll = it
-                },
-            )
+            if (pageCount != groups.size) pageCount = groups.size
 
-            SettingsToggleRow(
-                title = stringResource(R.string.double_tap_brightness),
-                description = stringResource(R.string.double_tap_brightness_desc),
-                checked = doubleTapBrightness,
-                onCheckedChange = {
-                    doubleTapBrightness = it
-                    prefs.doubleTapBrightness = it
-                },
-            )
+            val page = currentPage.coerceIn(0, groups.size - 1)
+            val visible = groups[page]
 
-            SettingsToggleRow(
-                title = stringResource(R.string.show_ampm),
-                description = stringResource(R.string.show_ampm_desc),
-                checked = showAmPm,
-                onCheckedChange = {
-                    showAmPm = it
-                    prefs.showAmPm = it
-                },
-            )
-
-            SettingsToggleRow(
-                title = stringResource(R.string.show_battery),
-                description = stringResource(R.string.show_battery_desc),
-                checked = showBattery,
-                onCheckedChange = {
-                    showBattery = it
-                    prefs.showBattery = it
-                },
-            )
-
-            SettingsToggleRow(
-                title = stringResource(R.string.show_katapult_icon),
-                description = stringResource(R.string.show_katapult_icon_desc),
-                checked = showKatapultIcon,
-                onCheckedChange = {
-                    showKatapultIcon = it
-                    prefs.showKatapultIcon = it
-                    viewModel.loadApps()
-                },
-            )
-
-            SettingsToggleRow(
-                title = stringResource(R.string.hide_app_names),
-                description = stringResource(R.string.hide_app_names_desc),
-                checked = hideAppNames,
-                onCheckedChange = {
-                    hideAppNames = it
-                    prefs.hideAppNames = it
-                },
-            )
-
-            SettingsActionRow(
-                title = stringResource(R.string.app_notifications),
-                description = stringResource(R.string.app_notifications_desc),
-                onClick = {
-                    try {
-                        context.startActivity(Intent().apply {
-                            component = android.content.ComponentName(
-                                "com.android.settings",
-                                "com.android.settings.Settings\$NotificationAppListActivity"
-                            )
-                        })
-                    } catch (_: Exception) {}
-                },
-            )
-
-            SettingsActionRow(
-                title = stringResource(R.string.notification_log),
-                description = stringResource(R.string.notification_log_desc),
-                onClick = {
-                    try {
-                        context.startActivity(Intent().apply {
-                            component = android.content.ComponentName(
-                                "com.android.settings",
-                                "com.android.settings.Settings\$NotificationStationActivity"
-                            )
-                        })
-                    } catch (_: Exception) {}
-                },
-            )
-
-            SettingsActionRow(
-                title = stringResource(R.string.set_default_launcher),
-                description = stringResource(R.string.set_default_launcher_desc),
-                onClick = {
-                    context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
-                },
-            )
-
+            layout(constraints.maxWidth, constraints.maxHeight) {
+                var y = 0
+                for (i in visible) {
+                    for (p in rowPlaceables[i]) {
+                        p.place(0, y)
+                        y += p.height
+                    }
+                }
+            }
         }
     }
-
 }
 
 @Composable

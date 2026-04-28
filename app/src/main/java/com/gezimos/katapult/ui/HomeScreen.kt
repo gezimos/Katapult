@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Battery0Bar
 import androidx.compose.material.icons.rounded.Battery1Bar
 import androidx.compose.material.icons.rounded.Battery2Bar
@@ -84,6 +85,22 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
     var showMenu by remember { mutableStateOf(false) }
     var pickerSlot by remember { mutableStateOf<String?>(null) }
     var showHiddenApps by remember { mutableStateOf(false) }
+
+    val handleSlotLongPress: (String) -> Unit = { slot ->
+        if (viewModel.prefs.disableHomeEditing) {
+            val pkg = viewModel.getShortcutPackage(slot)
+            if (pkg != null) {
+                viewModel.launchIntent(
+                    context,
+                    Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:$pkg")
+                    },
+                )
+            }
+        } else {
+            pickerSlot = slot
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -161,19 +178,37 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                                 else -> Icons.Rounded.Battery0Bar
                             }
                         }
-                        Icon(
-                            imageVector = batteryIcon,
-                            contentDescription = stringResource(R.string.cd_battery),
-                            tint = Color.Black,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(2.dp))
-                        Text(
-                            text = stringResource(R.string.battery_percent, viewModel.batteryPercent),
-                            fontSize = 18.sp,
-                            fontFamily = LatoFamily,
-                            color = Color.Black,
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                val intent = Intent(Intent.ACTION_POWER_USAGE_SUMMARY)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                try {
+                                    context.startActivity(intent)
+                                } catch (_: Exception) {
+                                    try {
+                                        context.startActivity(
+                                            Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS)
+                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        )
+                                    } catch (_: Exception) { }
+                                }
+                            },
+                        ) {
+                            Icon(
+                                imageVector = batteryIcon,
+                                contentDescription = stringResource(R.string.cd_battery),
+                                tint = Color.Black,
+                                modifier = Modifier.size(18.dp),
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Text(
+                                text = stringResource(R.string.battery_percent, viewModel.batteryPercent),
+                                fontSize = 18.sp,
+                                fontFamily = LatoFamily,
+                                color = Color.Black,
+                            )
+                        }
                     }
                 }
 
@@ -184,11 +219,11 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             val saved = viewModel.prefs.loadShortcut("clock")
                             if (saved != null) {
                                 viewModel.launchPackage(context, saved.first, saved.second)
-                            } else {
+                            } else if (!viewModel.prefs.disableHomeEditing) {
                                 pickerSlot = "clock"
                             }
                         },
-                        onLongClick = { pickerSlot = "clock" },
+                        onLongClick = { handleSlotLongPress("clock") },
                     ),
                 ) {
                     Text(
@@ -221,11 +256,11 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             val saved = viewModel.prefs.loadShortcut("calendar")
                             if (saved != null) {
                                 viewModel.launchPackage(context, saved.first, saved.second)
-                            } else {
+                            } else if (!viewModel.prefs.disableHomeEditing) {
                                 pickerSlot = "calendar"
                             }
                         },
-                        onLongClick = { pickerSlot = "calendar" },
+                        onLongClick = { handleSlotLongPress("calendar") },
                     ),
                 )
 
@@ -261,7 +296,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             defaultLabel = stringResource(R.string.music),
                             refresh = viewModel.shortcutRefresh,
                             onClick = { viewModel.launchShortcut(context, "extra_left") },
-                            onLongClick = { pickerSlot = "extra_left" },
+                            onLongClick = { handleSlotLongPress("extra_left") },
                         )
                     }
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -271,7 +306,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             defaultLabel = stringResource(R.string.calendar),
                             refresh = viewModel.shortcutRefresh,
                             onClick = { viewModel.launchShortcut(context, "extra_center") },
-                            onLongClick = { pickerSlot = "extra_center" },
+                            onLongClick = { handleSlotLongPress("extra_center") },
                         )
                     }
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -281,7 +316,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             defaultLabel = stringResource(R.string.camera),
                             refresh = viewModel.shortcutRefresh,
                             onClick = { viewModel.launchShortcut(context, "extra_right") },
-                            onLongClick = { pickerSlot = "extra_right" },
+                            onLongClick = { handleSlotLongPress("extra_right") },
                         )
                     }
                 }
@@ -300,35 +335,46 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         defaultLabel = stringResource(R.string.phone),
                         refresh = viewModel.shortcutRefresh,
                         onClick = { viewModel.launchShortcut(context, "phone") },
-                        onLongClick = { pickerSlot = "phone" },
+                        onLongClick = { handleSlotLongPress("phone") },
                     )
                 }
 
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable { viewModel.navigateTo(Screen.ALL_APPS) },
-                    ) {
-                        // Dashed outline with grid dots
-                        val strokeWidth = 2.5.dp
-                        val isRounded = viewModel.roundedIcons
-                        Box(
-                            modifier = Modifier
-                                .size(IconSize)
-                                .dashedDotBorder(strokeWidth = strokeWidth, isRounded = isRounded),
-                            contentAlignment = Alignment.Center,
+                    if (viewModel.prefs.hideAllAppsButton) {
+                        ShortcutItem(
+                            viewModel = viewModel,
+                            slot = "center",
+                            defaultLabel = stringResource(R.string.contacts),
+                            refresh = viewModel.shortcutRefresh,
+                            onClick = { viewModel.launchShortcut(context, "center") },
+                            onLongClick = { handleSlotLongPress("center") },
+                        )
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.clickable { viewModel.navigateTo(Screen.ALL_APPS) },
                         ) {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(6.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            // Dashed outline with grid dots
+                            val strokeWidth = 2.5.dp
+                            val isRounded = viewModel.roundedIcons
+                            Box(
+                                modifier = Modifier
+                                    .size(IconSize)
+                                    .dashedDotBorder(strokeWidth = strokeWidth, isRounded = isRounded),
+                                contentAlignment = Alignment.Center,
                             ) {
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    CircleDot(12.dp, borderWidth = strokeWidth)
-                                    CircleDot(12.dp, borderWidth = strokeWidth)
-                                }
-                                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    CircleDot(12.dp, borderWidth = strokeWidth)
-                                    CircleDot(12.dp, borderWidth = strokeWidth)
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        CircleDot(12.dp, borderWidth = strokeWidth)
+                                        CircleDot(12.dp, borderWidth = strokeWidth)
+                                    }
+                                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        CircleDot(12.dp, borderWidth = strokeWidth)
+                                        CircleDot(12.dp, borderWidth = strokeWidth)
+                                    }
                                 }
                             }
                         }
@@ -342,7 +388,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         defaultLabel = stringResource(R.string.sms),
                         refresh = viewModel.shortcutRefresh,
                         onClick = { viewModel.launchShortcut(context, "sms") },
-                        onLongClick = { pickerSlot = "sms" },
+                        onLongClick = { handleSlotLongPress("sms") },
                     )
                 }
             }
@@ -355,6 +401,12 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             BottomSheetOption(stringResource(R.string.settings), icon = Icons.Rounded.Settings) {
                 showMenu = false
                 viewModel.navigateTo(Screen.SETTINGS)
+            }
+            if (viewModel.prefs.hideAllAppsButton) {
+                BottomSheetOption(stringResource(R.string.all_apps), icon = Icons.Rounded.Apps) {
+                    showMenu = false
+                    viewModel.navigateTo(Screen.ALL_APPS)
+                }
             }
             BottomSheetOption(stringResource(R.string.hidden_apps), icon = Icons.Rounded.VisibilityOff) {
                 showMenu = false
@@ -384,6 +436,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
         val title = when (slot) {
             "phone" -> stringResource(R.string.set_left_app)
             "sms" -> stringResource(R.string.set_right_app)
+            "center" -> stringResource(R.string.set_center_app)
             "clock" -> stringResource(R.string.set_clock_app)
             "calendar" -> stringResource(R.string.set_date_app)
             "extra_left" -> stringResource(R.string.set_extra_left_app)

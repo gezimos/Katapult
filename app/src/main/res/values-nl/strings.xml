@@ -50,6 +50,7 @@
     <string name="hide">Verbergen</string>
     <string name="app_info">App-info</string>
     <string name="notifications">Meldingen</string>
+    <string name="clear_notifications">Meldingen wissen</string>
     <string name="uninstall">Verwijderen</string>
     <string name="reset_order_confirm">Volgorde alfabetisch herstellen?</string>
 
@@ -63,12 +64,18 @@
     <string name="icon_shape">Pictogramvorm</string>
     <string name="icon_shape_rounded">Afgerond</string>
     <string name="icon_shape_circle">Cirkel</string>
+    <string name="change_icon">Pictogram wijzigen</string>
+    <string name="import_icon">Pictogram importeren</string>
+    <string name="katapult_icons">Katapult-pictogrammen</string>
+    <string name="choose_png">Pictogram importeren (png, svg)</string>
+    <string name="reset_icon">Standaard herstellen</string>
     <string name="notification_indicators">Meldingsindicatoren</string>
     <string name="notification_indicators_desc">Toon meldingsbadges op app-pictogrammen</string>
     <string name="hide_status_bar">Statusbalk verbergen</string>
     <string name="hide_status_bar_desc">Verberg de systeemstatusbalk</string>
     <string name="eink_refresh">E-Ink vernieuwen op Home</string>
     <string name="eink_refresh_desc">Ghosting verwijderen bij thuisknop</string>
+    <string name="eink_auto_mode">E-Ink-modus</string>
     <string name="extra_dock_row">Extra dock-rij</string>
     <string name="extra_dock_row_desc">Toon 3 extra apps boven het dock</string>
     <string name="infinite_scroll">Oneindig scrollen</string>
@@ -83,6 +90,14 @@
     <string name="show_katapult_icon_desc">Toon Katapult in de app-lijst</string>
     <string name="hide_app_names">App-namen verbergen</string>
     <string name="hide_app_names_desc">Verberg labels onder app-pictogrammen</string>
+    <string name="hide_arrow_buttons">Pijltoetsen verbergen</string>
+    <string name="hide_arrow_buttons_desc">Verberg paginapijlen en puntjes in Alle apps</string>
+    <string name="disable_home_editing">Bewerken startscherm uitschakelen</string>
+    <string name="disable_home_editing_desc">Lang indrukken van snelkoppelingen opent app-info</string>
+    <string name="hide_all_apps_button">Knop Alle apps verbergen</string>
+    <string name="hide_all_apps_button_desc">Vervang de knop Alle apps door een snelkoppeling</string>
+    <string name="contacts">Contacten</string>
+    <string name="set_center_app">Middelste app instellen</string>
     <string name="app_notifications">App-meldingen</string>
     <string name="app_notifications_desc">Beheer app-meldingsinstellingen</string>
     <string name="notification_log">Meldingenlogboek</string>
