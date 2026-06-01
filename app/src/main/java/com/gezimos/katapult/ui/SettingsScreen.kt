@@ -73,6 +73,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var einkHelperMode by remember { mutableIntStateOf(prefs.einkHelperMode) }
     var doubleTapBrightness by remember { mutableStateOf(prefs.doubleTapBrightness) }
     var homeExtraRow by remember { mutableStateOf(prefs.homeExtraRow) }
+    var disableMusicWidget by remember { mutableStateOf(prefs.disableMusicWidget) }
     var infiniteScroll by remember { mutableStateOf(prefs.infiniteScroll) }
     var showKatapultIcon by remember { mutableStateOf(prefs.showKatapultIcon) }
     var hideAppNames by remember { mutableStateOf(prefs.hideAppNames) }
@@ -226,6 +227,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     onCheckedChange = {
                         homeExtraRow = it
                         prefs.homeExtraRow = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.disable_music_widget),
+                    description = stringResource(R.string.disable_music_widget_desc),
+                    checked = disableMusicWidget,
+                    onCheckedChange = {
+                        disableMusicWidget = it
+                        prefs.disableMusicWidget = it
                     },
                 )
             }

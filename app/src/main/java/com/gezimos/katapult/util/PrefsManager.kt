@@ -134,6 +134,10 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_HOME_EXTRA_ROW, false)
         set(value) = prefs.edit().putBoolean(KEY_HOME_EXTRA_ROW, value).apply()
 
+    var disableMusicWidget: Boolean
+        get() = prefs.getBoolean(KEY_DISABLE_MUSIC_WIDGET, false)
+        set(value) = prefs.edit().putBoolean(KEY_DISABLE_MUSIC_WIDGET, value).apply()
+
     var showKatapultIcon: Boolean
         get() = prefs.getBoolean(KEY_SHOW_KATAPULT_ICON, false)
         set(value) = prefs.edit().putBoolean(KEY_SHOW_KATAPULT_ICON, value).apply()
@@ -218,6 +222,7 @@ class PrefsManager(context: Context) {
         private const val KEY_LAST_BRIGHTNESS = "last_brightness"
         private const val KEY_INFINITE_SCROLL = "infinite_scroll"
         private const val KEY_HOME_EXTRA_ROW = "home_extra_row"
+        private const val KEY_DISABLE_MUSIC_WIDGET = "disable_music_widget"
         private const val KEY_WALLPAPER_PATH = "wallpaper_path"
         private const val KEY_HIDDEN_APPS = "hidden_apps"
         private const val KEY_RENAME_PREFIX = "rename_"

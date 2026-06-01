@@ -267,7 +267,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             }
 
             // Music widget - aligned with app icon edges
-            if (viewModel.mediaInfo != null) {
+            if (viewModel.mediaInfo != null && !viewModel.prefs.disableMusicWidget) {
                 @Suppress("UnusedBoxWithConstraintsScope")
                 androidx.compose.foundation.layout.BoxWithConstraints(
                     modifier = Modifier

@@ -78,6 +78,8 @@
     <string name="eink_auto_mode">E-Ink Mode</string>
     <string name="extra_dock_row">Extra Dock Row</string>
     <string name="extra_dock_row_desc">Show 3 extra apps above the dock</string>
+    <string name="disable_music_widget">Disable Music Widget</string>
+    <string name="disable_music_widget_desc">Hide the media controls widget</string>
     <string name="infinite_scroll">Infinite Scroll</string>
     <string name="infinite_scroll_desc">Swipe pages from both sides</string>
     <string name="double_tap_brightness">Double-Tap Brightness</string>
