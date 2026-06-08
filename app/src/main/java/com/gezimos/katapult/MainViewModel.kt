@@ -53,6 +53,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var reorderMode by mutableStateOf(false)
     var reorderHighlightIndex by mutableIntStateOf(-1)
     var iconOverrideTarget by mutableStateOf<String?>(null)
+    var sheetDismissSignal by mutableIntStateOf(0)
+        private set
     var orderedApps by mutableStateOf(listOf<AppModel>())
         private set
     var currentPage by mutableIntStateOf(0)
@@ -204,6 +206,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (reorderMode) finishReorder()
         if (target == Screen.ALL_APPS) currentPage = 0
         screen = target
+    }
+
+    /** Bumps a signal observed by every open BottomSheet so they dismiss themselves. */
+    fun dismissAllSheets() {
+        sheetDismissSignal++
     }
 
 

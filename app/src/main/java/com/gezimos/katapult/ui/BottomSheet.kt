@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionContext
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -124,6 +125,15 @@ fun BottomSheet(
 
     SideEffect {
         sheetDialog.updateOnDismiss(onDismiss)
+    }
+
+    // Dismiss when the shared signal bumps (e.g. Home button press). Skip the initial
+    // value so a sheet opened after a prior signal bump isn't instantly closed.
+    val dismissSignal = LocalSheetDismissSignal.current
+    val initialSignal = remember { dismissSignal }
+    val latestOnDismiss by rememberUpdatedState(onDismiss)
+    LaunchedEffect(dismissSignal) {
+        if (dismissSignal != initialSignal) latestOnDismiss()
     }
 }
 

@@ -86,6 +86,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         overridePendingTransition(0, 0)
+        viewModel.dismissAllSheets()
         viewModel.navigateTo(Screen.HOME)
 
         val savedMode = viewModel.prefs.einkHelperMode

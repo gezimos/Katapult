@@ -135,6 +135,8 @@ fun Modifier.dashedDotBorder(strokeWidth: Dp = 2.dp, isRounded: Boolean, outset:
 }
 val LocalIconShape = compositionLocalOf<Shape> { CircleShape }
 val LocalSmallIconShape = compositionLocalOf<Shape> { CircleShape }
+/** Incremented to signal all open bottom sheets to dismiss (e.g. on Home press). */
+val LocalSheetDismissSignal = compositionLocalOf { 0 }
 
 @Composable
 fun AppIconCircle(bitmap: Bitmap?, size: Dp, borderWidth: Dp = 2.5.dp, shape: Shape = LocalIconShape.current) {
