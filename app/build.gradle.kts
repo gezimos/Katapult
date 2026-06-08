@@ -4,7 +4,7 @@ plugins {
 }
 
 base {
-    archivesName.set("katapult-v1.1")
+    archivesName.set("katapult-v1.2")
 }
 
 android {

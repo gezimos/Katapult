@@ -82,8 +82,8 @@
     <string name="infinite_scroll_desc">Seiten von beiden Seiten wischen</string>
     <string name="double_tap_brightness">Doppeltippen Helligkeit</string>
     <string name="double_tap_brightness_desc">Doppeltippen auf der Startseite schaltet Helligkeit aus.</string>
-    <string name="show_ampm">AM/PM anzeigen</string>
-    <string name="show_ampm_desc">AM/PM neben der Uhr anzeigen</string>
+    <string name="clock_format">Uhrzeitformat</string>
+    <string name="date_format">Datumsformat</string>
     <string name="show_battery">Akku %% anzeigen</string>
     <string name="show_battery_desc">Akku %% über der Uhr anzeigen</string>
     <string name="show_katapult_icon">Katapult-Symbol anzeigen</string>

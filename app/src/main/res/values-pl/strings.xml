@@ -82,8 +82,8 @@
     <string name="infinite_scroll_desc">Przewijaj strony z obu stron</string>
     <string name="double_tap_brightness">Podwójne dotknięcie jasność</string>
     <string name="double_tap_brightness_desc">Podwójne dotknięcie na ekranie głównym wyłącza jasność.</string>
-    <string name="show_ampm">Pokaż AM/PM</string>
-    <string name="show_ampm_desc">Wyświetlaj AM/PM obok zegara</string>
+    <string name="clock_format">Format zegara</string>
+    <string name="date_format">Format daty</string>
     <string name="show_battery">Pokaż baterię %%</string>
     <string name="show_battery_desc">Wyświetlaj baterię %% nad zegarem</string>
     <string name="show_katapult_icon">Pokaż ikonę Katapult</string>
