@@ -2,6 +2,17 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.2]
+
+### Added
+- **Clock Format** setting — cycle the home clock between System, `20:24` (24-hour), `08:24 PM`, `8:24 PM`, and `8:24`. Replaces the old Show AM/PM toggle; the AM/PM suffix now appears automatically for the 12-hour formats that include it.
+- **Date Format** setting — cycle the home date between System (locale long date), `Mon, Jun 8`, `Monday, June 8`, `June 8, 2026`, `6/8/2026`, and `2026-06-08`.
+- **Disable Music Widget** setting — hides the home-screen music widget.
+- Bundled icons for Discord and Libro.fm.
+
+### Fixed
+- The Home button now dismisses any open bottom sheet (menu, app picker, hidden apps, app context menu, rename, change icon, reset confirm) — previously only Back closed them.
+
 ## [1.1]
 
 ### Added

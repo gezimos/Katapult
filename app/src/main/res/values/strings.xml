@@ -84,8 +84,8 @@
     <string name="infinite_scroll_desc">Swipe pages from both sides</string>
     <string name="double_tap_brightness">Double-Tap Brightness</string>
     <string name="double_tap_brightness_desc">Double-tap in home to turn off brightness.</string>
-    <string name="show_ampm">Show AM/PM</string>
-    <string name="show_ampm_desc">Display AM/PM next to the clock</string>
+    <string name="clock_format">Clock Format</string>
+    <string name="date_format">Date Format</string>
     <string name="show_battery">Show Battery %%</string>
     <string name="show_battery_desc">Display battery %% above the clock</string>
     <string name="show_katapult_icon">Show Katapult Icon</string>
