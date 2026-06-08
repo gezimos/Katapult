@@ -82,8 +82,8 @@
     <string name="infinite_scroll_desc">Deslizar páginas de ambos os lados</string>
     <string name="double_tap_brightness">Duplo toque brilho</string>
     <string name="double_tap_brightness_desc">Duplo toque no ecrã inicial para desligar o brilho.</string>
-    <string name="show_ampm">Mostrar AM/PM</string>
-    <string name="show_ampm_desc">Mostrar AM/PM junto ao relógio</string>
+    <string name="clock_format">Formato da Hora</string>
+    <string name="date_format">Formato da Data</string>
     <string name="show_battery">Mostrar bateria %%</string>
     <string name="show_battery_desc">Mostrar bateria %% acima do relógio</string>
     <string name="show_katapult_icon">Mostrar ícone Katapult</string>

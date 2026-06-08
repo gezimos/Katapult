@@ -82,8 +82,8 @@
     <string name="infinite_scroll_desc">Veeg pagina\'s van beide kanten</string>
     <string name="double_tap_brightness">Dubbeltik helderheid</string>
     <string name="double_tap_brightness_desc">Dubbeltik op Home om helderheid uit te schakelen.</string>
-    <string name="show_ampm">AM/PM tonen</string>
-    <string name="show_ampm_desc">Toon AM/PM naast de klok</string>
+    <string name="clock_format">Klokformaat</string>
+    <string name="date_format">Datumformaat</string>
     <string name="show_battery">Batterij %% tonen</string>
     <string name="show_battery_desc">Toon batterij %% boven de klok</string>
     <string name="show_katapult_icon">Katapult-pictogram tonen</string>

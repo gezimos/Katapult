@@ -234,7 +234,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         color = Color.Black,
                         modifier = Modifier,
                     )
-                    if (viewModel.clockAmPm != null && viewModel.prefs.showAmPm) {
+                    if (viewModel.clockAmPm != null) {
                         Spacer(Modifier.width(4.dp))
                         Text(
                             text = viewModel.clockAmPm!!,
@@ -267,7 +267,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             }
 
             // Music widget - aligned with app icon edges
-            if (viewModel.mediaInfo != null) {
+            if (viewModel.mediaInfo != null && !viewModel.prefs.disableMusicWidget) {
                 @Suppress("UnusedBoxWithConstraintsScope")
                 androidx.compose.foundation.layout.BoxWithConstraints(
                     modifier = Modifier

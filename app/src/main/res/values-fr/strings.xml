@@ -82,8 +82,8 @@
     <string name="infinite_scroll_desc">Faire défiler les pages des deux côtés</string>
     <string name="double_tap_brightness">Double appui luminosité</string>
     <string name="double_tap_brightness_desc">Double appui sur l\'accueil pour éteindre la luminosité.</string>
-    <string name="show_ampm">Afficher AM/PM</string>
-    <string name="show_ampm_desc">Afficher AM/PM à côté de l\'horloge</string>
+    <string name="clock_format">Format de l\'heure</string>
+    <string name="date_format">Format de date</string>
     <string name="show_battery">Afficher batterie %%</string>
     <string name="show_battery_desc">Afficher batterie %% au-dessus de l\'horloge</string>
     <string name="show_katapult_icon">Afficher l\'icône Katapult</string>

@@ -53,6 +53,19 @@ import com.gezimos.katapult.util.EinkHelper
 import com.gezimos.katapult.util.IconUtility
 import kotlin.math.abs
 
+// "system" follows the device setting/locale; everything else is a SimpleDateFormat pattern.
+private val ClockFormats = listOf("system", "HH:mm", "hh:mm a", "h:mm a", "h:mm")
+private val DateFormats = listOf("system", "EEE, MMM d", "EEEE, MMMM d", "MMMM d, yyyy", "M/d/yyyy", "yyyy-MM-dd")
+
+private fun nextOf(options: List<String>, current: String): String {
+    val i = options.indexOf(current)
+    return options[(i + 1) % options.size]
+}
+
+private fun formatLabel(pattern: String): String =
+    if (pattern == "system") "System"
+    else java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault()).format(java.util.Date())
+
 @Composable
 fun SettingsScreen(viewModel: MainViewModel) {
     val context = LocalContext.current
@@ -65,7 +78,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
     }
 
     var notificationIndicators by remember { mutableStateOf(prefs.notificationIndicators) }
-    var showAmPm by remember { mutableStateOf(prefs.showAmPm) }
+    var clockFormat by remember { mutableStateOf(prefs.clockFormat) }
+    var dateFormat by remember { mutableStateOf(prefs.dateFormat) }
     var showBattery by remember { mutableStateOf(prefs.showBattery) }
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
     var hideStatusBar by remember { mutableStateOf(prefs.hideStatusBar) }
@@ -73,6 +87,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var einkHelperMode by remember { mutableIntStateOf(prefs.einkHelperMode) }
     var doubleTapBrightness by remember { mutableStateOf(prefs.doubleTapBrightness) }
     var homeExtraRow by remember { mutableStateOf(prefs.homeExtraRow) }
+    var disableMusicWidget by remember { mutableStateOf(prefs.disableMusicWidget) }
     var infiniteScroll by remember { mutableStateOf(prefs.infiniteScroll) }
     var showKatapultIcon by remember { mutableStateOf(prefs.showKatapultIcon) }
     var hideAppNames by remember { mutableStateOf(prefs.hideAppNames) }
@@ -231,6 +246,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             add {
                 SettingsToggleRow(
+                    title = stringResource(R.string.disable_music_widget),
+                    description = stringResource(R.string.disable_music_widget_desc),
+                    checked = disableMusicWidget,
+                    onCheckedChange = {
+                        disableMusicWidget = it
+                        prefs.disableMusicWidget = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
                     title = stringResource(R.string.infinite_scroll),
                     description = stringResource(R.string.infinite_scroll_desc),
                     checked = infiniteScroll,
@@ -252,13 +278,24 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.show_ampm),
-                    description = stringResource(R.string.show_ampm_desc),
-                    checked = showAmPm,
-                    onCheckedChange = {
-                        showAmPm = it
-                        prefs.showAmPm = it
+                SettingsCycleRow(
+                    title = stringResource(R.string.clock_format),
+                    description = formatLabel(clockFormat),
+                    onClick = {
+                        clockFormat = nextOf(ClockFormats, clockFormat)
+                        prefs.clockFormat = clockFormat
+                        viewModel.updateClock()
+                    },
+                )
+            }
+            add {
+                SettingsCycleRow(
+                    title = stringResource(R.string.date_format),
+                    description = formatLabel(dateFormat),
+                    onClick = {
+                        dateFormat = nextOf(DateFormats, dateFormat)
+                        prefs.dateFormat = dateFormat
+                        viewModel.updateClock()
                     },
                 )
             }

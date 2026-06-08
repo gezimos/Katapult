@@ -78,12 +78,14 @@
     <string name="eink_auto_mode">E-Ink Mode</string>
     <string name="extra_dock_row">Extra Dock Row</string>
     <string name="extra_dock_row_desc">Show 3 extra apps above the dock</string>
+    <string name="disable_music_widget">Disable Music Widget</string>
+    <string name="disable_music_widget_desc">Hide the media controls widget</string>
     <string name="infinite_scroll">Infinite Scroll</string>
     <string name="infinite_scroll_desc">Swipe pages from both sides</string>
     <string name="double_tap_brightness">Double-Tap Brightness</string>
     <string name="double_tap_brightness_desc">Double-tap in home to turn off brightness.</string>
-    <string name="show_ampm">Show AM/PM</string>
-    <string name="show_ampm_desc">Display AM/PM next to the clock</string>
+    <string name="clock_format">Clock Format</string>
+    <string name="date_format">Date Format</string>
     <string name="show_battery">Show Battery %%</string>
     <string name="show_battery_desc">Display battery %% above the clock</string>
     <string name="show_katapult_icon">Show Katapult Icon</string>

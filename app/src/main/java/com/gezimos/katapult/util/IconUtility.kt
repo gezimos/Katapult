@@ -52,6 +52,9 @@ object IconUtility {
         "com.android.documentsui" to R.drawable.files,
         "de.danoeh.antennapod" to R.drawable.ap,
         "dev.octoshrimpy.quik" to R.drawable.sms,
+        "com.message.ink" to R.drawable.sms,
+        "com.discord" to R.drawable.discord,
+        "fm.libro.librofm" to R.drawable.librofm,
         "org.schabi.newpipe" to R.drawable.newpipe,
         "org.fossify.musicplayer" to R.drawable.music,
         "org.oxycblt.auxio" to R.drawable.music,
@@ -113,6 +116,8 @@ object IconUtility {
         BundledIcon(R.drawable.sudoku, "sudoku", "Sudoku"),
         BundledIcon(R.drawable.video, "video", "Video"),
         BundledIcon(R.drawable.einkbro, "einkbro", "Einkbro"),
+        BundledIcon(R.drawable.discord, "discord", "Discord"),
+        BundledIcon(R.drawable.librofm, "librofm", "Libro.fm"),
     )
 
     private fun resolveBundled(resName: String): Int? =

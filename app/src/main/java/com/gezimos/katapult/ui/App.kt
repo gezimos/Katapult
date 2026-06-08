@@ -28,6 +28,7 @@ fun App(
         LocalIconShape provides iconShape,
         LocalSmallIconShape provides smallShape,
         LocalBadgeShape provides badgeShape,
+        LocalSheetDismissSignal provides viewModel.sheetDismissSignal,
     ) {
         when (viewModel.screen) {
             Screen.ONBOARDING -> OnboardingScreen(viewModel)

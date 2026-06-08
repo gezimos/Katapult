@@ -94,9 +94,15 @@ class PrefsManager(context: Context) {
         get() = prefs.getBoolean(KEY_NOTIFICATION_INDICATORS, true)
         set(value) = prefs.edit().putBoolean(KEY_NOTIFICATION_INDICATORS, value).apply()
 
-    var showAmPm: Boolean
-        get() = prefs.getBoolean(KEY_SHOW_AMPM, true)
-        set(value) = prefs.edit().putBoolean(KEY_SHOW_AMPM, value).apply()
+    // SimpleDateFormat pattern, or "system" to follow the device's 12/24h setting.
+    var clockFormat: String
+        get() = prefs.getString(KEY_CLOCK_FORMAT, "system") ?: "system"
+        set(value) = prefs.edit().putString(KEY_CLOCK_FORMAT, value).apply()
+
+    // SimpleDateFormat pattern, or "system" for the locale long date.
+    var dateFormat: String
+        get() = prefs.getString(KEY_DATE_FORMAT, "system") ?: "system"
+        set(value) = prefs.edit().putString(KEY_DATE_FORMAT, value).apply()
 
     var showBattery: Boolean
         get() = prefs.getBoolean(KEY_SHOW_BATTERY, false)
@@ -133,6 +139,10 @@ class PrefsManager(context: Context) {
     var homeExtraRow: Boolean
         get() = prefs.getBoolean(KEY_HOME_EXTRA_ROW, false)
         set(value) = prefs.edit().putBoolean(KEY_HOME_EXTRA_ROW, value).apply()
+
+    var disableMusicWidget: Boolean
+        get() = prefs.getBoolean(KEY_DISABLE_MUSIC_WIDGET, false)
+        set(value) = prefs.edit().putBoolean(KEY_DISABLE_MUSIC_WIDGET, value).apply()
 
     var showKatapultIcon: Boolean
         get() = prefs.getBoolean(KEY_SHOW_KATAPULT_ICON, false)
@@ -208,7 +218,8 @@ class PrefsManager(context: Context) {
     companion object {
         private const val KEY_APP_ORDER = "app_order"
         private const val KEY_NOTIFICATION_INDICATORS = "notification_indicators"
-        private const val KEY_SHOW_AMPM = "show_ampm"
+        private const val KEY_CLOCK_FORMAT = "clock_format"
+        private const val KEY_DATE_FORMAT = "date_format"
         private const val KEY_SHOW_BATTERY = "show_battery"
         private const val KEY_ROUNDED_ICONS = "rounded_icons"
         private const val KEY_HIDE_STATUS_BAR = "hide_status_bar"
@@ -218,6 +229,7 @@ class PrefsManager(context: Context) {
         private const val KEY_LAST_BRIGHTNESS = "last_brightness"
         private const val KEY_INFINITE_SCROLL = "infinite_scroll"
         private const val KEY_HOME_EXTRA_ROW = "home_extra_row"
+        private const val KEY_DISABLE_MUSIC_WIDGET = "disable_music_widget"
         private const val KEY_WALLPAPER_PATH = "wallpaper_path"
         private const val KEY_HIDDEN_APPS = "hidden_apps"
         private const val KEY_RENAME_PREFIX = "rename_"

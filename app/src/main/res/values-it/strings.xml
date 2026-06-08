@@ -82,8 +82,8 @@
     <string name="infinite_scroll_desc">Scorri le pagine da entrambi i lati</string>
     <string name="double_tap_brightness">Doppio tocco luminosità</string>
     <string name="double_tap_brightness_desc">Doppio tocco sulla Home per spegnere la luminosità.</string>
-    <string name="show_ampm">Mostra AM/PM</string>
-    <string name="show_ampm_desc">Mostra AM/PM accanto all\'orologio</string>
+    <string name="clock_format">Formato Orologio</string>
+    <string name="date_format">Formato Data</string>
     <string name="show_battery">Mostra batteria %%</string>
     <string name="show_battery_desc">Mostra batteria %% sopra l\'orologio</string>
     <string name="show_katapult_icon">Mostra icona Katapult</string>
