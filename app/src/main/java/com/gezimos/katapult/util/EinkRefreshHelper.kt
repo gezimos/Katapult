@@ -9,10 +9,11 @@ import android.view.ViewGroup
 
 object EinkRefreshHelper {
 
-    fun refresh(activity: Activity, delayMs: Long = 80) {
+    fun refresh(activity: Activity, delayMs: Long = 80, darkMode: Boolean = false) {
         Handler(Looper.getMainLooper()).post {
             val overlay = View(activity)
-            overlay.setBackgroundColor(Color.BLACK)
+            // Flash the opposite of the UI background so the panel pixels actually flip.
+            overlay.setBackgroundColor(if (darkMode) Color.WHITE else Color.BLACK)
             overlay.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT

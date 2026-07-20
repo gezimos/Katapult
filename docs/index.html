@@ -3,60 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Katapult — A simple launcher for Mudita Kompakt</title>
-    <meta name="description" content="A simple grid launcher for the Mudita Kompakt. Notification indicators, app re-ordering, and customizable home screen shortcuts.">
+    <title>Katapult, a minimal launcher for the Mudita Kompakt</title>
+    <meta name="description" content="Katapult is a minimal launcher for the Mudita Kompakt, with notification badges, reorderable apps, and customizable home shortcuts.">
     <meta name="author" content="Gezim">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="keywords" content="Katapult, Mudita Kompakt, launcher, E-Ink launcher, minimal launcher, Android launcher, notification badges">
+    <meta name="theme-color" content="#f0f0f0">
+    <link rel="canonical" href="https://katapult.gez.im/">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Katapult — A simple launcher for Mudita Kompakt">
-    <meta property="og:description" content="A simple grid launcher for the Mudita Kompakt. Notification indicators, app re-ordering, and customizable home screen shortcuts.">
-    <meta property="og:image" content="img/screenshots/home-rounded.png">
-    <meta property="og:url" content="https://gezimos.github.io/Katapult/">
+    <meta property="og:site_name" content="Katapult">
+    <meta property="og:title" content="Katapult, a minimal launcher for the Mudita Kompakt">
+    <meta property="og:description" content="Katapult is a minimal launcher for the Mudita Kompakt, with notification badges, reorderable apps, and customizable home shortcuts.">
+    <meta property="og:image" content="https://katapult.gez.im/img/screenshots/home-rounded.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="480">
+    <meta property="og:image:height" content="800">
+    <meta property="og:image:alt" content="Katapult home screen on the Mudita Kompakt">
+    <meta property="og:url" content="https://katapult.gez.im/">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Katapult, a minimal launcher for the Mudita Kompakt">
+    <meta name="twitter:description" content="Katapult is a minimal launcher for the Mudita Kompakt, with notification badges, reorderable apps, and customizable home shortcuts.">
+    <meta name="twitter:image" content="https://katapult.gez.im/img/screenshots/home-rounded.png">
+    <meta name="twitter:image:alt" content="Katapult home screen on the Mudita Kompakt">
 
     <link rel="icon" href="img/K.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="img/katapult.png">
     <link rel="stylesheet" href="style.css">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Katapult",
+        "description": "Katapult is a minimal launcher for the Mudita Kompakt, with notification badges, reorderable apps, and customizable home shortcuts.",
+        "url": "https://katapult.gez.im/",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Android",
+        "downloadUrl": "https://github.com/gezimos/Katapult/releases",
+        "softwareVersion": "1.3",
+        "image": "https://katapult.gez.im/img/screenshots/home-rounded.png",
+        "license": "https://github.com/gezimos/Katapult/blob/main/LICENSE",
+        "isAccessibleForFree": true,
+        "author": {
+            "@type": "Person",
+            "name": "Gezim"
+        },
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        }
+    }
+    </script>
 </head>
 <body>
-<div class="page">
-    <header>
-        <div class="wrap">
-            <a href="index.html" class="wordmark"><img src="img/katapult.svg" alt="Katapult" class="logo-img"></a>
-            <nav>
-                <a href="#features">Features</a>
-                <a href="#faq">FAQ</a>
-                <a href="https://github.com/gezimos/Katapult" target="_blank" rel="noopener">GitHub</a>
-            </nav>
-            <a href="https://www.buymeacoffee.com/gezimos" target="_blank" rel="noopener" class="bmc-btn"><img src="img/bmc.svg" alt="Buy me a coffee"></a>
-        </div>
-    </header>
+
+<header class="site-header">
+    <div class="container header-inner">
+        <a href="index.html" class="wordmark"><img src="img/katapult.svg" alt="Katapult"></a>
+        <nav class="site-nav">
+            <a href="#features">Features</a>
+            <a href="#gallery">Screenshots</a>
+            <a href="#faq">FAQ</a>
+            <a href="https://github.com/gezimos/Katapult" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+        <a href="https://www.buymeacoffee.com/gezimos" target="_blank" rel="noopener" class="bmc-btn"><img src="img/bmc.svg" alt="Buy me a coffee"></a>
+    </div>
+</header>
+
+<main class="container">
 
     <section class="hero">
-        <div class="wrap">
-            <h1>A simple launcher for the <strong>Mudita Kompakt</strong></h1>
-            <p class="subtitle">Similar to the default launcher, but with notification indicators, app re-ordering, and customizable home screen shortcuts.</p>
-            <div class="hero-actions">
-                <a href="https://github.com/gezimos/Katapult/releases/download/v1.2/katapult-v1.2-release.apk" class="btn">Download APK</a>
-                <a href="https://github.com/gezimos/Katapult/releases" class="btn">All Releases</a>
+        <div class="hero-copy">
+            <h1 class="hero-title">A minimal launcher for the Mudita Kompakt.</h1>
+            <p class="hero-lead">Katapult keeps the familiar grid of the stock launcher and adds what it leaves out: notification badges, reorderable apps, and customizable home shortcuts.</p>
+            <div class="actions">
+                <a href="https://github.com/gezimos/Katapult/releases/download/v1.3/katapult-v1.3-release.apk" class="btn btn-solid">Download APK</a>
                 <a href="https://github.com/gezimos/Katapult" class="btn">Source Code</a>
             </div>
         </div>
-    </section>
-
-    <section class="hero-mockups">
-        <div class="wrap">
-            <div class="hero-screenshots">
-                <div class="device center"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/home-rounded.png" alt="Home screen"></div>
-                                <div class="device side"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/grid.png" alt="App grid"></div>
-                <div class="device side"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/widget.png" alt="Widget"></div>
+        <div class="hero-art">
+            <div class="browser">
+                <div class="browser-bar">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                <div class="video">
+                    <iframe src="https://www.youtube.com/embed/m7vobm0FJdE" title="Katapult demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </div>
+                <div class="browser-foot">
+                    <a href="https://youtube.com/@gezimos" target="_blank" rel="noopener">youtube.com/@gezimos</a>
+                </div>
             </div>
         </div>
     </section>
 
-    <section id="setup">
-        <div class="wrap">
+    <section class="mockups">
+        <div class="device-row">
+            <div class="device"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/grid.png" alt="App grid"></div>
+            <div class="device"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/widget.png" alt="Music widget"></div>
+            <div class="device"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/notifications_lockscreen.png" alt="Lockscreen notifications"></div>
+            <div class="device"><img class="frame" src="img/mockup2.svg" alt=""><img class="shot" src="img/screenshots/no_all_apps_button.png" alt="Home without the All Apps button"></div>
+        </div>
+    </section>
+
+    <section class="block" id="setup">
+        <div class="block-head">
+            <h2>Setup</h2>
+        </div>
+        <div class="block-body">
             <div class="faq-list">
+                <details>
+                    <summary>How to install</summary>
+                    <p>Download the APK, then install it on your Mudita Kompakt using the Mudita Center desktop software.</p>
+                </details>
                 <details>
                     <summary>How to access Settings</summary>
                     <p>Long-press on any empty area of the home screen.</p>
@@ -73,63 +137,36 @@
         </div>
     </section>
 
-    <section id="features">
-        <div class="wrap">
-            <div class="features-grid">
-                <div class="card">
-                    <h3>3x4 App Grid</h3>
-                    <p>Horizontal swipe navigation with dot indicators. Infinite scroll wraps around pages.</p>
-                </div>
-                <div class="card">
-                    <h3>Music Widget</h3>
-                    <p>Playback controls with song info. Works with Auxio, Spotify, Fossify Music, Foobar, and more.</p>
-                </div>
-                <div class="card">
-                    <h3>Icon Tinting &amp; Shaping</h3>
-                    <p>Circle or rounded shapes. Uniform black &amp; white across ~95% of apps.</p>
-                </div>
-                <div class="card">
-                    <h3>Notification Badges</h3>
-                    <p>Badge counts on app icons. Works with any app that sends notifications.</p>
-                </div>
-                <div class="card">
-                    <h3>E-Ink Optimized</h3>
-                    <p>Zero animations, instant swaps, screen refresh on home press to clear ghosting.</p>
-                </div>
-                <div class="card">
-                    <h3>Extra Dock Row</h3>
-                    <p>Optional 3 additional shortcuts above the Phone/SMS bar.</p>
-                </div>
-                <div class="card">
-                    <h3>Battery &amp; Clock</h3>
-                    <p>Battery percentage with level icon, alarm indicator, selectable clock &amp; date formats.</p>
-                </div>
-                <div class="card">
-                    <h3>Simple Wallpaper</h3>
-                    <p>Set a background image directly. Not managed by Android.</p>
-                </div>
-                <div class="card">
-                    <h3>Hide &amp; Rename Apps</h3>
-                    <p>Hide from the context menu or bulk-hide. Rename any app.</p>
-                </div>
-                <div class="card">
-                    <h3>Reorder Apps</h3>
-                    <p>Swap-based reordering with reset to alphabetical.</p>
-                </div>
-                <div class="card">
-                    <h3>Double-Tap Brightness</h3>
-                    <p>Toggle display brightness by double-tapping the background.</p>
-                </div>
-                <div class="card">
-                    <h3>Hide Status Bar</h3>
-                    <p>Remove the Android status bar for a cleaner look.</p>
-                </div>
+    <section class="block" id="features">
+        <div class="block-head">
+            <h2>Features</h2>
+        </div>
+        <div class="block-body">
+            <div class="feature-grid">
+                <div class="feat"><h3>Adaptive App Grid</h3><p>Horizontal or vertical swipe navigation with dot indicators and infinite scroll.</p></div>
+                <div class="feat"><h3>Dark Mode</h3><p>White-on-black across the whole launcher, monochrome icons included.</p></div>
+                <div class="feat"><h3>Text Backgrounds</h3><p>White islands behind clock, date, and app names keep text legible over any wallpaper.</p></div>
+                <div class="feat"><h3>Lockscreen Notifications</h3><p>Experimental: per-app notification counts on the lock screen. Movable and resizable.</p></div>
+                <div class="feat"><h3>Music Widget</h3><p>Playback controls with song info. Works with Auxio, Spotify, Fossify Music, Foobar, and more.</p></div>
+                <div class="feat"><h3>Icon Tinting &amp; Shaping</h3><p>Circle or rounded shapes. Uniform black &amp; white across ~95% of apps.</p></div>
+                <div class="feat"><h3>Notification Badges</h3><p>Badge counts on app icons. Works with any app that sends notifications.</p></div>
+                <div class="feat"><h3>E-Ink Optimized</h3><p>Zero animations, instant swaps, screen refresh on home press to clear ghosting.</p></div>
+                <div class="feat"><h3>Extra Dock Row</h3><p>Optional 3 additional shortcuts above the Phone/SMS bar.</p></div>
+                <div class="feat"><h3>Battery &amp; Clock</h3><p>Battery percentage with level icon, alarm indicator, selectable clock &amp; date formats.</p></div>
+                <div class="feat"><h3>Simple Wallpaper</h3><p>Set a background image directly. Not managed by Android.</p></div>
+                <div class="feat"><h3>Hide &amp; Rename Apps</h3><p>Hide from the context menu or bulk-hide. Rename any app.</p></div>
+                <div class="feat"><h3>Reorder Apps</h3><p>Swap-based reordering with reset to alphabetical.</p></div>
+                <div class="feat"><h3>Double-Tap Brightness</h3><p>Toggle display brightness by double-tapping the background.</p></div>
+                <div class="feat"><h3>Hide Status Bar</h3><p>Remove the Android status bar for a cleaner look.</p></div>
             </div>
         </div>
     </section>
 
-    <section class="permissions">
-        <div class="wrap">
+    <section class="block" id="permissions">
+        <div class="block-head">
+            <h2>Permissions</h2>
+        </div>
+        <div class="block-body">
             <div class="faq-list">
                 <details>
                     <summary>Notification Listener</summary>
@@ -147,51 +184,44 @@
                     <summary>Call Log &amp; SMS (Mudita Kompakt only)</summary>
                     <p>The Mudita Phone and Messages apps don't post Android notifications, so badges won't appear via the notification listener. To show missed call and unread SMS counts on these apps, Katapult reads the call log and SMS databases directly. These permissions are only requested on Mudita Kompakt devices.</p>
                 </details>
+                <details>
+                    <summary>Accessibility Service (only for Lockscreen Notifications)</summary>
+                    <p>An accessibility overlay is the only way an app can draw over the lock screen, so the experimental Lockscreen Notifications widget needs this. The permission sounds scary, but Katapult reads only the lock screen itself, never your apps, so the widget can hide when the PIN screen appears. It records and shares nothing; the open source code is the proof. Not requested unless you turn the widget on.</p>
+                </details>
             </div>
         </div>
     </section>
 
-    <div class="screenshot-grid">
-        <div class="screenshot-card">
-            <img src="img/screenshots/home-minimal.png" alt="Minimal home screen">
-            <span>Minimal</span>
+    <section class="block" id="gallery">
+        <div class="block-head">
+            <h2>Screenshots</h2>
         </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/home-circle.png" alt="Circle icons home">
-            <span>Circle Icons</span>
+        <div class="block-body">
+            <div class="shot-grid">
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/home-minimal.png" alt="Minimal home screen"><figcaption>Minimal</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/home-circle.png" alt="Circle icons home"><figcaption>Circle Icons</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/home-rounded.png" alt="Rounded icons home"><figcaption>Rounded Icons</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/notifications_lockscreen.png" alt="Notification counts on the lock screen"><figcaption>Lockscreen Notifications</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/notification_lockscreen_2.png" alt="Lockscreen notification widget repositioned"><figcaption>Move &amp; Resize</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/no_all_apps_button.png" alt="Home without the All Apps button"><figcaption>No All Apps Button</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/grid-rounded.png" alt="App grid"><figcaption>App Grid</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/reorder.png" alt="Reorder mode"><figcaption>Reorder</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/settings.png" alt="Settings"><figcaption>Settings</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/no_names.png" alt="Icon-only app grid"><figcaption>Hide Names</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/text_islands.png" alt="Wallpaper with text backgrounds"><figcaption>Wallpaper</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/no_arrows.png" alt="App grid without arrows"><figcaption>No Arrows</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/dark_home.png" alt="Dark mode home screen"><figcaption>Dark Mode</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/dark_apps.png" alt="Dark mode app grid"><figcaption>Dark Apps</figcaption></figure>
+                <figure><img loading="lazy" decoding="async" src="img/screenshots/dark_wallpaper_islands.png" alt="Dark mode with wallpaper"><figcaption>Dark Wallpaper</figcaption></figure>
+            </div>
         </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/home-rounded.png" alt="Rounded icons home">
-            <span>Rounded Icons</span>
-        </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/grid-rounded.png" alt="App grid">
-            <span>App Grid</span>
-        </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/reorder.png" alt="Reorder mode">
-            <span>Reorder</span>
-        </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/settings.png" alt="Settings">
-            <span>Settings</span>
-        </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/hide_names.png" alt="Hide app names">
-            <span>Hide Names</span>
-        </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/wallpapers.png" alt="Wallpaper">
-            <span>Wallpaper</span>
-        </div>
-        <div class="screenshot-card">
-            <img src="img/screenshots/no-arrows.png" alt="App grid without arrows">
-            <span>No Arrows</span>
-        </div>
-    </div>
+    </section>
 
-    <section id="faq">
-        <div class="wrap">
+    <section class="block" id="faq">
+        <div class="block-head">
+            <h2>FAQ</h2>
+        </div>
+        <div class="block-body">
             <div class="faq-list">
                 <details>
                     <summary>Will it have customizable fonts?</summary>
@@ -218,27 +248,33 @@
                     <p>No. No notification tray, no letters screen.</p>
                 </details>
                 <details>
+                    <summary>Can it show notifications on the lock screen?</summary>
+                    <p>Yes. Enable the experimental <strong>Lockscreen Notifications</strong> widget under Settings &gt; Lockscreen, then long-press it to move and resize. <a href="https://github.com/gezimos/Katapult/blob/main/docs/lockscreen-notifications.md" target="_blank" rel="noopener">Full details here</a>.</p>
+                </details>
+                <details>
                     <summary>Notification indicators not showing?</summary>
-                    <p>Go to Settings &gt; Notification Log and check if the notification exists in Android. Many apps require Google Play Services for push notifications.</p>
+                    <p>Go to Settings &gt; Notifications &gt; Notification Log and check if the notification exists in Android. Many apps require Google Play Services for push notifications.</p>
+                </details>
+                <details>
+                    <summary>Found a bug, or have a question?</summary>
+                    <p>Open an issue on <a href="https://github.com/gezimos/Katapult/issues" target="_blank" rel="noopener">GitHub Issues</a>. </p>
                 </details>
             </div>
         </div>
     </section>
 
-    <footer>
-        <div class="wrap">
-            <div class="footer-row">
-                <span class="wordmark"><img src="img/katapult.svg" alt="Katapult" class="logo-img"></span>
-                <nav>
-                    <a href="https://github.com/gezimos/Katapult">GitHub</a>
-                    <a href="https://github.com/gezimos/Katapult/releases">Releases</a>
-                    <a href="https://github.com/gezimos/inkOS">inkOS</a>
-                    <a href="https://youtube.com/@gezimos" target="_blank" rel="noopener">YouTube</a>
-                </nav>
-                <a href="https://www.buymeacoffee.com/gezimos" target="_blank" rel="noopener" class="bmc-btn"><img src="img/bmc.svg" alt="Buy me a coffee"></a>
-            </div>
+    <section class="block" id="disclaimer">
+        <div class="block-head">
+            <h2>Disclaimer</h2>
         </div>
-    </footer>
-</div>
+        <div class="block-body disclaimer">
+            <p>Katapult is an independent, open source project. It is not affiliated with or endorsed by Mudita. Mudita and Mudita Kompakt are trademarks of their respective owner.</p>
+            <p>The app is free. If you find it useful, you can support the work below.</p>
+            <a href="https://www.buymeacoffee.com/gezimos" target="_blank" rel="noopener" class="bmc-btn"><img src="img/bmc.svg" alt="Buy me a coffee"></a>
+        </div>
+    </section>
+
+</main>
+
 </body>
 </html>

@@ -1,0 +1,217 @@
+<resources>
+    <string name="app_name">Katapult</string>
+
+    <!-- Common -->
+    <string name="save">Uložit</string>
+    <string name="save_uppercase">ULOŽIT</string>
+    <string name="cancel">Zrušit</string>
+    <string name="reset">Obnovit</string>
+    <string name="finish">Dokončit</string>
+    <string name="rename">Přejmenovat</string>
+
+    <!-- Home screen -->
+    <string name="phone">Telefon</string>
+    <string name="sms">SMS</string>
+    <string name="music">Hudba</string>
+    <string name="calendar">Kalendář</string>
+    <string name="camera">Fotoaparát</string>
+    <string name="settings">Nastavení</string>
+    <string name="hidden_apps">Skryté aplikace</string>
+    <string name="hidden_apps_count">Skryté aplikace (%1$d)</string>
+    <string name="clear_wallpaper">Odebrat tapetu</string>
+    <string name="set_wallpaper">Nastavit tapetu</string>
+    <string name="donate_label">buymeacoffee.com/gezimos</string>
+    <string name="no_media">Žádné médium</string>
+    <string name="battery_percent">%1$d%%</string>
+
+    <!-- Content descriptions -->
+    <string name="cd_alarm">Budík</string>
+    <string name="cd_battery">Baterie</string>
+    <string name="cd_album_art">Obal alba</string>
+    <string name="cd_music">Hudba</string>
+    <string name="cd_previous">Předchozí</string>
+    <string name="cd_play_pause">Přehrát/Pozastavit</string>
+    <string name="cd_next">Další</string>
+    <string name="cd_stop">Zastavit</string>
+    <string name="cd_reset_order">Obnovit pořadí</string>
+
+    <!-- App picker -->
+    <string name="set_left_app">Nastavit levou aplikaci</string>
+    <string name="set_right_app">Nastavit pravou aplikaci</string>
+    <string name="set_clock_app">Nastavit aplikaci hodin</string>
+    <string name="set_date_app">Nastavit aplikaci data</string>
+    <string name="set_extra_left_app">Nastavit extra levou aplikaci</string>
+    <string name="set_extra_center_app">Nastavit extra prostřední aplikaci</string>
+    <string name="set_extra_right_app">Nastavit extra pravou aplikaci</string>
+    <string name="choose_app">Vybrat aplikaci</string>
+
+    <!-- Context menu -->
+    <string name="reorder">Změnit pořadí</string>
+    <string name="hide">Skrýt</string>
+    <string name="app_info">Informace o aplikaci</string>
+    <string name="notifications">Oznámení</string>
+    <string name="clear_notifications">Vymazat oznámení</string>
+    <string name="uninstall">Odinstalovat</string>
+    <string name="reset_order_confirm">Obnovit pořadí aplikací na abecední?</string>
+
+    <!-- All apps -->
+    <string name="all_apps">Aplikace</string>
+
+    <!-- Notification badge -->
+    <string name="badge_overflow">99+</string>
+
+    <!-- Settings -->
+    <string name="icon_shape">Tvar ikon</string>
+    <string name="icon_shape_rounded">Zaoblený</string>
+    <string name="icon_shape_circle">Kruh</string>
+    <string name="change_icon">Změnit ikonu</string>
+    <string name="import_icon">Importovat ikonu</string>
+    <string name="katapult_icons">Ikony Katapult</string>
+    <string name="choose_png">Importovat ikonu (png, svg)</string>
+    <string name="reset_icon">Obnovit výchozí</string>
+    <string name="notification_indicators">Indikátory oznámení</string>
+    <string name="notification_indicators_desc">Zobrazit odznaky oznámení na ikonách aplikací</string>
+    <string name="hide_status_bar">Skrýt stavový řádek</string>
+    <string name="hide_status_bar_desc">Skrýt systémový stavový řádek</string>
+    <string name="eink_refresh">Obnovení E-ink na domovské</string>
+    <string name="eink_refresh_desc">Vyčistí zbytkový obraz při stisknutí tlačítka domů</string>
+    <string name="eink_auto_mode">Režim E-ink</string>
+    <string name="extra_dock_row">Extra řada docku</string>
+    <string name="extra_dock_row_desc">Zobrazit 3 aplikace navíc na domovské obrazovce</string>
+    <string name="disable_music_widget">Zakázat hudební widget</string>
+    <string name="disable_music_widget_desc">Skrýt widget ovládání médií</string>
+    <string name="infinite_scroll">Nekonečné posouvání</string>
+    <string name="infinite_scroll_desc">Posouvání stránek z obou stran</string>
+    <string name="double_tap_brightness">Jas dvojitým klepnutím</string>
+    <string name="double_tap_brightness_desc">Dvojitým klepnutím na domovské vypnete jas.</string>
+    <string name="clock_format">Formát hodin</string>
+    <string name="date_format">Formát data</string>
+    <string name="show_battery">Zobrazit baterii %%</string>
+    <string name="show_battery_desc">Zobrazit %% baterie nad hodinami</string>
+    <string name="show_katapult_icon">Zobrazit ikonu Katapult</string>
+    <string name="show_katapult_icon_desc">Zobrazit Katapult v seznamu aplikací</string>
+    <string name="hide_app_names">Skrýt názvy aplikací</string>
+    <string name="hide_app_names_desc">Skrýt popisky pod ikonami aplikací</string>
+    <string name="hide_arrow_buttons">Skrýt tlačítka šipek</string>
+    <string name="hide_arrow_buttons_desc">Skrýt šipky stránek a tečky v Aplikacích</string>
+    <string name="disable_home_editing">Zakázat úpravy domovské</string>
+    <string name="disable_home_editing_desc">Dlouhé stisknutí zkratky otevře informace o aplikaci</string>
+    <string name="hide_all_apps_button">Skrýt tlačítko Všechny aplikace</string>
+    <string name="hide_all_apps_button_desc">Nahradit tlačítko Všechny aplikace zkratkou</string>
+    <string name="swipe_up_all_apps">Přejetí pro aplikace</string>
+    <string name="swipe_up_all_apps_desc">Přejetím nahoru nebo doleva otevřete Aplikace</string>
+    <string name="home_islands">Pozadí textu</string>
+    <string name="home_islands_desc">Pozadí za hodinami, datem a aplikacemi</string>
+    <string name="app_gesture_direction">Směr gest aplikací</string>
+    <string name="gesture_horizontal">Vodorovně</string>
+    <string name="gesture_vertical">Svisle</string>
+    <string name="contacts">Kontakty</string>
+    <string name="set_center_app">Nastavit prostřední aplikaci</string>
+    <string name="app_notifications">Oznámení aplikací</string>
+    <string name="app_notifications_desc">Spravovat nastavení oznámení aplikací</string>
+    <string name="notification_log">Protokol oznámení</string>
+    <string name="notification_log_desc">Zobrazit historii oznámení</string>
+    <string name="set_default_launcher">Nastavit jako výchozí launcher</string>
+    <string name="set_default_launcher_desc">Zvolte Katapult jako domovskou obrazovku</string>
+
+    <!-- Notifications -->
+    <string name="notification_access_title">Povolit přístup k oznámením</string>
+    <string name="notification_access_message">Katapult potřebuje přístup k oznámením pro zobrazení odznaků oznámení. Udělit přístup v Nastavení?</string>
+    <string name="no_alarm">Není nastaven budík</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_icon">K</string>
+    <string name="welcome_title">Vítejte v Katapult</string>
+    <string name="onboarding_notification_desc">Umožňuje odznaky oznámení pro aplikace třetích stran jako WhatsApp, Signal atd.</string>
+    <string name="onboarding_launcher_desc">Nastavte Katapult jako domovskou obrazovku, aby vás tlačítko domů přeneslo sem</string>
+    <string name="required_hint">* povinné</string>
+    <string name="call_sms_badges">Odznaky hovorů a SMS</string>
+    <string name="call_sms_badges_desc">Čte protokol hovorů a SMS přímo pro Mudita Phone a SMS, které nefungují s posluchačem oznámení</string>
+    <string name="dark_mode">Tmavý režim</string>
+    <string name="dark_mode_desc">Bílé na černém motivu</string>
+    <string name="section_appearance">Vzhled</string>
+    <string name="section_home">Domovská obrazovka</string>
+    <string name="section_all_apps">Všechny aplikace</string>
+    <string name="section_gestures">Gesta</string>
+    <string name="section_notifications">Oznámení</string>
+    <string name="section_eink">E-Ink</string>
+    <string name="section_system">Systém</string>
+    <string name="reorder_hint">Klepnutím na aplikaci ji prohodíte se zvýrazněnou</string>
+    <string name="section_experimental">Oznámení na zamykací obrazovce (Experimentální)</string>
+    <string name="lockscreen_widget">Oznámení na zamykací obrazovce</string>
+    <string name="lockscreen_widget_desc">Zobrazit počty oznámení na zamykací obrazovce.</string>
+    <string name="lockscreen_widget_a11y_desc">Kreslí widget oznámení přes zamykací obrazovku a skryje jej, když se objeví obrazovka PIN.</string>
+    <string name="lockscreen_widget_apps">Aplikace oznámení na zamykací obrazovce</string>
+    <string name="lockscreen_widget_apps_desc">Vyberte, které aplikace se zobrazí ve widgetu zamykací obrazovky</string>
+    <string name="lockscreen_sort">Řazení na zamykací obrazovce</string>
+    <string name="sort_latest_top">Nejnovější nahoře</string>
+    <string name="sort_oldest_top">Nejstarší nahoře</string>
+    <string name="lockscreen_reenable_message">Přístup k usnadnění přístupu se při aktualizaci aplikace vypne. Znovu jej povolte, aby oznámení na zamykací obrazovce zůstala.</string>
+    <string name="lockscreen_reenable_enable">Povolit v nastavení</string>
+    <string name="lockscreen_reenable_disable">Vypnout widget</string>
+    <string name="lockscreen_readme">Přečtěte si</string>
+    <string name="lockscreen_readme_desc">O oprávnění usnadnění přístupu a ovládání widgetu</string>
+    <string name="lockscreen_readme_privacy">Tato funkce kreslí přes zamykací obrazovku pomocí překryvné vrstvy usnadnění přístupu. Oprávnění zní děsivě, ale Katapult jej používá pouze k zobrazení widgetu a ke čtení samotné zamykací obrazovky, nikdy vašich aplikací, aby se widget mohl skrýt, když se objeví obrazovka PIN. Nic se nenahrává ani nesdílí; důkazem je otevřený zdrojový kód.</string>
+    <string name="lockscreen_readme_usage">Podržte widget pro úpravu: tažením jej přesunete, tažením úchytu pod ním změníte velikost. Jedním klepnutím uložíte.</string>
+    <string name="screensaver">Spořič obrazovky</string>
+    <string name="screensaver_setup_message">Katapult zatím není vybrán jako spořič obrazovky. Otevřete nastavení spořiče a vyberte Katapult, poté jej spusťte z domovské nabídky.</string>
+    <string name="screensaver_open_settings">Otevřít nastavení spořiče</string>
+    <string name="screensaver_settings_desc">Změňte aktuální spořič obrazovky na Katapult, aby to fungovalo</string>
+    <string name="screensaver_islands">Pozadí textu spořiče</string>
+    <string name="screensaver_wallpaper">Pozadí spořiče</string>
+    <string name="screensaver_wallpaper_desc">Zobrazit obrázek na pozadí za spořičem</string>
+    <string name="section_screensaver">Spořič obrazovky (Experimentální)</string>
+    <string name="screensaver_show_clock">Zobrazit hodiny</string>
+    <string name="screensaver_show_clock_desc">Zobrazit hodiny, datum, budík a baterii</string>
+    <string name="screensaver_show_notifications">Zobrazit oznámení</string>
+    <string name="screensaver_show_notifications_desc">Zobrazit počty oznámení na spořiči obrazovky</string>
+    <string name="screensaver_enable_desc">Zobrazit hodiny a oznámení sevřením na domovské obrazovce</string>
+    <string name="screensaver_system">Systémový spořič obrazovky</string>
+    <string name="donate_desc">Podpořte Katapult na Buy Me a Coffee</string>
+    <string name="lic_app_title">App License</string>
+    <string name="lic_app_desc">GNU General Public License v3.0</string>
+    <string name="lic_font_title">Font License</string>
+    <string name="lic_font_desc">Lato font, SIL Open Font License 1.1</string>
+    <string name="screensaver_double_tap_brightness">Jas dvojitým klepnutím</string>
+    <string name="screensaver_double_tap_brightness_desc">Ztlumit spořič a dvojitým klepnutím jej rozsvítit</string>
+    <string name="screensaver_update_mode">Režim aktualizace</string>
+    <string name="screensaver_mode_auto">Automaticky</string>
+    <string name="screensaver_mode_interval">Časované</string>
+    <string name="screensaver_mode_static">Statické</string>
+    <string name="screensaver_update_interval">Interval aktualizace</string>
+    <string name="screensaver_minutes">%1$d min</string>
+    <string name="screensaver_eink_refresh">Obnovení E-Ink</string>
+    <string name="screensaver_eink_refresh_desc">Vyčistit zbytkový obraz před spuštěním spořiče</string>
+    <string name="section_about">O aplikaci</string>
+    <string name="cat_appearance_sub">Ikony, motiv, odznaky</string>
+    <string name="cat_home_sub">Hodiny, dok, rozvržení</string>
+    <string name="cat_all_apps_sub">Možnosti seznamu aplikací</string>
+    <string name="cat_gestures_sub">Přejetí a klepnutí</string>
+    <string name="cat_notifications_sub">Odznaky a přístup</string>
+    <string name="cat_eink_sub">Obnovení a režim</string>
+    <string name="cat_lockscreen_sub">Experimentální</string>
+    <string name="cat_screensaver_sub">Experimentální</string>
+    <string name="cat_system_sub">Launcher a výchozí</string>
+    <string name="cat_about_sub">Verze a podpora</string>
+    <string name="cat_lockscreen">Zamykací obrazovka</string>
+    <string name="cat_home">Domů</string>
+    <string name="screensaver_on_power">Otevřít tlačítkem napájení</string>
+    <string name="screensaver_on_power_desc">Zobrazit spořič, když se obrazovka vypne, vyžaduje službu usnadnění přístupu</string>
+    <string name="screensaver_wallpaper_custom">Vlastní obrázek</string>
+    <string name="screensaver_wallpaper_home">Používá se tapeta plochy</string>
+    <string name="screensaver_image">Obrázek spořiče</string>
+    <string name="clear_image">Odebrat obrázek</string>
+    <string name="notifications_readme_desc">O ovládání a ladění oznámení</string>
+    <string name="notifications_readme_control">Katapult pouze zobrazuje odznaky oznámení, samotná oznámení nespravuje. Pomocí Oznámení aplikací, obrazovky nastavení Androidu, vyberte, které aplikace vás mohou upozorňovat, a kterékoli z nich vypněte.</string>
+    <string name="notifications_readme_debug">Pokud slyšíte oznámení, ale nemůžete je najít, otevřete Protokol oznámení, kde uvidíte každé oznámení, které systém Android odeslal, a zjistíte jeho zdroj.</string>
+    <string name="screensaver_readme_desc">O spořiči obrazovky a jak jej otevřít</string>
+    <string name="screensaver_readme_about">Toto využívá režim spořiče obrazovky k napodobení Always On Display. Zobrazuje hodiny, datum, baterii, počty oznámení a tapetu, podobně jako domovská obrazovka.</string>
+    <string name="screensaver_readme_use">Otevřete jej sevřením prstů (oddálením) na domovské obrazovce, z nabídky po dlouhém stisknutí, nebo zapněte Otevřít tlačítkem napájení, aby se zobrazil po uzamčení telefonu. Pokud je zapnutý Jas dvojitým klepnutím, obrazovka zůstane tmavá a dvojité klepnutí ji rozsvítí. Pro ukončení stiskněte Zpět nebo Domů. Když je zobrazený, stisknutím napájení znovu vypnete displej.</string>
+    <string name="screensaver_readme_modes">Režim aktualizace určuje, jak často se obnovuje: Statické se nikdy neaktualizuje (nejlepší pro tapety), Automaticky se aktualizuje v reálném čase a Časované každých několik minut. Toto není skutečné AOD, telefon ve skutečnosti nepřejde do klidu, proto jej nenechávejte zapnutý pořád, může spotřebovat více energie než zcela vypnutý displej.</string>
+    <string name="eink_readme_desc">O režimech obnovování E-Ink</string>
+    <string name="eink_readme_intro">Režim E-Ink mění, jak se obrazovka obnovuje. E-Ink panely udrží poslední obraz bez napájení a překreslují jen v případě potřeby, takže tyto režimy ladí kompromis mezi ostrostí textu a četností aktualizací.</string>
+    <string name="eink_readme_modes">Vypnuto je výchozí pro aplikace třetích stran a obnovování nechává na systému. Kontrast je režim, který Mudita používá pro vlastní aplikace. Vyčistit a Čtení obnovují agresivněji pro ostřejší text, takže můžete vidět blikání nebo častější aktualizace obrazovky.</string>
+    <string name="gestures_readme_desc">O navigaci mezi stránkami a gestech přejetí</string>
+    <string name="gestures_readme_nav">Ve výchozím nastavení se mezi stránkami pohybujete vodorovně nebo pomocí tlačítek se šipkami. Pokud chcete, můžete směr gest změnit na svislý a šipky skrýt.</string>
+    <string name="gestures_readme_apps">Přejetí pro aplikace umožňuje přejetím nahoru nebo doleva otevřít stránku se všemi aplikacemi, podle směru gest.</string>
+</resources>

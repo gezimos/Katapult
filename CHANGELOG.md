@@ -2,6 +2,28 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.3]
+
+### Added
+- **Dark Mode** setting — inverts the whole launcher to white-on-black, including app icons (the same monochrome silhouettes, filled white instead of black). Manual toggle; off by default.
+- **Text Backgrounds** setting — draws white rounded "islands" (matching the icon corner radius and border) behind the clock, date, status row, and app names so text stays legible over a wallpaper. Off by default.
+- **Swipe for All Apps** setting — open All Apps with a swipe on the home screen. Direction follows the gesture setting: swipe up (vertical) or swipe left (horizontal). Off by default.
+- **App Gesture Direction** setting — switch All Apps page navigation between Horizontal and Vertical swipes.
+- Adaptive All Apps grid — the number of rows now scales to the screen height, so taller devices show more apps per page and shorter devices fewer (instead of a fixed 3×4). With app names hidden, an extra row fits.
+- Swipe back to Home from the first All Apps page (when infinite scroll is off) — swipe right (horizontal) or down (vertical).
+- Reorder hint tooltip — entering reorder mode shows a floating hint ("Tap an app to swap it with the highlighted one") that dismisses on the first tap or after a few seconds.
+- **Experimental: Lockscreen Notifications** — shows per-app notification counts on the lock screen as an island-style widget, via an accessibility overlay (must be enabled in system Accessibility settings). Includes an app allowlist and latest/oldest sort; long-press the widget to move and resize it, tap to save. Off by default. Note: the accessibility permission sounds scary, but Katapult uses it only to draw the widget and to read the lock screen itself — never your apps — so the widget hides when the PIN screen appears; it records and shares nothing, as its open source code proves.
+- **Experimental: Screensaver** — a Katapult screen saver (dream) showing the home clock, date, alarm, battery, and up to 4 notification rows pinned to the bottom. Start it with a two-finger long-press on the home screen (or the home long-press menu); the power button exits it. Select Katapult once as the system screen saver — Settings → Experimental → Screensaver opens the system picker. Android also auto-starts it while charging.
+- Czech translation, and completed Dutch; all new strings translated across all 9 languages.
+
+### Changed
+- Settings reorganized into titled sections: Appearance, Home Screen, All Apps, Gestures, Notifications, E-Ink (Mudita only), and System.
+- Renamed the Extra Dock Row description to "Show 3 extra apps in home".
+
+### Fixed
+- With the Rounded icon shape, the small icons in the shortcut app picker and Hidden Apps list rendered as circles — the corner radius now scales with icon size.
+- With app names hidden, home shortcuts and All Apps icons now render icon-only (no reserved label space), so icon spacing matches between the two screens.
+
 ## [1.2]
 
 ### Added

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -48,6 +49,8 @@ val LatoFamily = FontFamily(
 val IconSize = 72.dp
 val PagePadding = 8.dp
 val ArrowSize = 40.dp
+val AllAppsRowHeight = 120.dp
+val AllAppsRowHeightNoLabels = 112.dp
 
 val EinkTintMatrix = ColorMatrix(floatArrayOf(
     0f, 0f, 0f, 0f, 0f,
@@ -58,11 +61,26 @@ val EinkTintMatrix = ColorMatrix(floatArrayOf(
 ))
 val EinkColorFilter = ColorFilter.colorMatrix(EinkTintMatrix)
 
+// Same silhouette mask as EinkTintMatrix, but fills the glyph white instead of black (dark mode).
+val EinkTintMatrixDark = ColorMatrix(floatArrayOf(
+    0f, 0f, 0f, 0f, 255f,
+    0f, 0f, 0f, 0f, 255f,
+    0f, 0f, 0f, 0f, 255f,
+    -0.2126f * 1.5f, -0.7152f * 1.5f, -0.0722f * 1.5f,
+    2f, 255f * 1.5f - 2f * 255f
+))
+val EinkColorFilterDark = ColorFilter.colorMatrix(EinkTintMatrixDark)
+
+// Theme: Ink = foreground, Surface = background. Inverted in dark mode. Provided in App.kt.
+val LocalInk = staticCompositionLocalOf { Color.Black }
+val LocalSurface = staticCompositionLocalOf { Color.White }
+val LocalIconFilter = staticCompositionLocalOf { EinkColorFilter }
+
 val RoundedIconShape = RoundedCornerShape(19.dp)
 val RoundedSmallShape = RoundedCornerShape(10.dp)
 val RoundedBadgeShape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomEnd = 0.dp, bottomStart = 8.dp)
 
-fun Modifier.dashedDotBorder(strokeWidth: Dp = 2.dp, isRounded: Boolean, outset: Dp = 0.dp, cornerRadius: Dp = 19.dp): Modifier = this.drawBehind {
+fun Modifier.dashedDotBorder(strokeWidth: Dp = 2.dp, isRounded: Boolean, outset: Dp = 0.dp, cornerRadius: Dp = 19.dp, color: Color = Color.Black): Modifier = this.drawBehind {
     val sw = strokeWidth.toPx()
     val out = outset.toPx()
     val dotRadius = sw * 0.7f
@@ -113,7 +131,7 @@ fun Modifier.dashedDotBorder(strokeWidth: Dp = 2.dp, isRounded: Boolean, outset:
             var dist = i * spacing
             for (seg in segments) {
                 if (dist <= seg.length) {
-                    drawCircle(Color.Black, dotRadius, seg.point(dist))
+                    drawCircle(color, dotRadius, seg.point(dist))
                     break
                 }
                 dist -= seg.length
@@ -129,13 +147,12 @@ fun Modifier.dashedDotBorder(strokeWidth: Dp = 2.dp, isRounded: Boolean, outset:
             val angle = (2.0 * Math.PI * i / dotCount).toFloat()
             val x = cx + radius * kotlin.math.cos(angle)
             val y = cy + radius * kotlin.math.sin(angle)
-            drawCircle(Color.Black, dotRadius, Offset(x, y))
+            drawCircle(color, dotRadius, Offset(x, y))
         }
     }
 }
 val LocalIconShape = compositionLocalOf<Shape> { CircleShape }
 val LocalSmallIconShape = compositionLocalOf<Shape> { CircleShape }
-/** Incremented to signal all open bottom sheets to dismiss (e.g. on Home press). */
 val LocalSheetDismissSignal = compositionLocalOf { 0 }
 
 @Composable
@@ -144,7 +161,7 @@ fun AppIconCircle(bitmap: Bitmap?, size: Dp, borderWidth: Dp = 2.5.dp, shape: Sh
         modifier = Modifier
             .size(size)
             .clip(shape)
-            .background(Color.White),
+            .background(LocalSurface.current),
     ) {
         if (bitmap != null) {
             Image(
@@ -152,13 +169,13 @@ fun AppIconCircle(bitmap: Bitmap?, size: Dp, borderWidth: Dp = 2.5.dp, shape: Sh
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
-                colorFilter = EinkColorFilter,
+                colorFilter = LocalIconFilter.current,
             )
         }
         Box(
             Modifier
                 .fillMaxSize()
-                .border(borderWidth, Color.Black, shape)
+                .border(borderWidth, LocalInk.current, shape)
         )
     }
 }
@@ -166,10 +183,11 @@ fun AppIconCircle(bitmap: Bitmap?, size: Dp, borderWidth: Dp = 2.5.dp, shape: Sh
 @Composable
 fun ArrowButton(iconRes: Int, onClick: () -> Unit) {
     val shape = LocalSmallIconShape.current
+    val ink = LocalInk.current
     Box(
         modifier = Modifier
             .size(ArrowSize)
-            .border(2.5.dp, Color.Black, shape)
+            .border(2.5.dp, ink, shape)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
@@ -188,6 +206,7 @@ fun ArrowButton(iconRes: Int, onClick: () -> Unit) {
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
                 contentScale = ContentScale.Fit,
+                colorFilter = ColorFilter.tint(ink),
             )
         }
     }
@@ -199,7 +218,7 @@ fun CircleDot(size: Dp, borderWidth: Dp = 1.5.dp) {
     Box(
         Modifier
             .size(size)
-            .border(borderWidth, Color.Black, shape)
+            .border(borderWidth, LocalInk.current, shape)
     )
 }
 
@@ -211,13 +230,13 @@ fun NotificationBadge(count: Int, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(26.dp)
-            .background(Color.White, shape)
-            .border(2.5.dp, Color.Black, shape),
+            .background(LocalSurface.current, shape)
+            .border(2.5.dp, LocalInk.current, shape),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = if (count > 99) stringResource(R.string.badge_overflow) else count.toString(),
-            color = Color.Black,
+            color = LocalInk.current,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = LatoFamily,
@@ -242,7 +261,7 @@ fun BottomSheetOption(
             androidx.compose.material3.Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = Color.Black,
+                tint = LocalInk.current,
                 modifier = Modifier.size(22.dp),
             )
             Spacer(Modifier.width(12.dp))
@@ -251,7 +270,7 @@ fun BottomSheetOption(
             text = text,
             fontSize = 18.sp,
             fontFamily = LatoFamily,
-            color = Color.Black,
+            color = LocalInk.current,
         )
     }
 }

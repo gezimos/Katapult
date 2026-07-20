@@ -22,9 +22,11 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -42,6 +44,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -62,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
+import com.gezimos.katapult.Screen
 import com.gezimos.katapult.model.AppModel
 import com.gezimos.katapult.service.DirectBadgeHelper
 import com.gezimos.katapult.util.DeviceHelper
@@ -74,14 +78,16 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
     val context = LocalContext.current
     var showResetConfirm by remember { mutableStateOf(false) }
     var changeIconApp by remember { mutableStateOf<AppModel?>(null) }
-    val pageApps = remember(viewModel.currentPage, viewModel.orderedApps) {
-        viewModel.getPageApps(viewModel.currentPage)
-    }
 
-    val slots = remember(pageApps) {
-        val list = pageApps.toMutableList()
-        while (list.size < 12) list.add(AppModel("", "", ""))
-        list
+    var showReorderHint by remember { mutableStateOf(false) }
+    LaunchedEffect(viewModel.reorderMode) {
+        if (viewModel.reorderMode) {
+            showReorderHint = true
+            kotlinx.coroutines.delay(4000)
+            showReorderHint = false
+        } else {
+            showReorderHint = false
+        }
     }
 
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
@@ -89,58 +95,89 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(LocalSurface.current)
             .then(if (!viewModel.prefs.hideStatusBar) Modifier.statusBarsPadding() else Modifier)
             .navigationBarsPadding()
             .padding(PagePadding)
-            .pointerInput(viewModel.currentPage, viewModel.totalPages) {
-                detectHorizontalDragGestures(
-                    onDragStart = { dragAccumulator = 0f },
-                    onDragEnd = {
-                        val wrap = viewModel.prefs.infiniteScroll
-                        val threshold = 100f
-                        if (abs(dragAccumulator) > threshold) {
-                            if (dragAccumulator < 0) {
-                                val next = if (viewModel.currentPage < viewModel.totalPages - 1)
-                                    viewModel.currentPage + 1
-                                else if (wrap) 0 else viewModel.currentPage
-                                viewModel.showPage(next)
+            .pointerInput(viewModel.currentPage, viewModel.totalPages, viewModel.prefs.verticalAppGestures) {
+                val handleDragEnd = {
+                    val wrap = viewModel.prefs.infiniteScroll
+                    val threshold = 100f
+                    if (abs(dragAccumulator) > threshold) {
+                        if (dragAccumulator < 0) {
+                            val next = if (viewModel.currentPage < viewModel.totalPages - 1)
+                                viewModel.currentPage + 1
+                            else if (wrap) 0 else viewModel.currentPage
+                            viewModel.showPage(next)
+                        } else {
+                            if (!wrap && viewModel.currentPage == 0) {
+                                viewModel.navigateTo(Screen.HOME)
                             } else {
                                 val prev = if (viewModel.currentPage > 0)
                                     viewModel.currentPage - 1
-                                else if (wrap) viewModel.totalPages - 1 else viewModel.currentPage
+                                else viewModel.totalPages - 1
                                 viewModel.showPage(prev)
                             }
                         }
-                    },
-                    onHorizontalDrag = { _, dragAmount ->
-                        dragAccumulator += dragAmount
                     }
-                )
+                }
+                if (viewModel.prefs.verticalAppGestures) {
+                    detectVerticalDragGestures(
+                        onDragStart = { dragAccumulator = 0f },
+                        onDragEnd = handleDragEnd,
+                        onVerticalDrag = { _, dragAmount -> dragAccumulator += dragAmount },
+                    )
+                } else {
+                    detectHorizontalDragGestures(
+                        onDragStart = { dragAccumulator = 0f },
+                        onDragEnd = handleDragEnd,
+                        onHorizontalDrag = { _, dragAmount -> dragAccumulator += dragAmount },
+                    )
+                }
             },
     ) {
-        // App grid
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            verticalArrangement = Arrangement.SpaceEvenly,
         ) {
-            for (row in 0 until 4) {
+            val columns = viewModel.gridColumns
+            val rowHeight = if (viewModel.prefs.hideAppNames) AllAppsRowHeightNoLabels else AllAppsRowHeight
+            val measuredRows = (maxHeight / rowHeight).toInt().coerceAtLeast(1)
+            val perPage = if (viewModel.reorderMode) viewModel.appsPerPage else measuredRows * columns
+            val rows = perPage / columns
+            if (!viewModel.reorderMode && viewModel.appsPerPage != perPage) {
+                viewModel.updateAppsPerPage(perPage)
+            }
+            val pageApps = remember(viewModel.currentPage, viewModel.orderedApps, perPage) {
+                val start = viewModel.currentPage * perPage
+                val end = minOf(start + perPage, viewModel.orderedApps.size)
+                if (start < viewModel.orderedApps.size) viewModel.orderedApps.subList(start, end) else emptyList()
+            }
+            val slots = remember(pageApps, perPage) {
+                val list = pageApps.toMutableList()
+                while (list.size < perPage) list.add(AppModel("", "", ""))
+                list
+            }
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceEvenly,
+            ) {
+            for (row in 0 until rows) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    for (col in 0 until 3) {
+                    for (col in 0 until columns) {
                         Box(
                             modifier = Modifier.weight(1f),
                             contentAlignment = Alignment.Center,
                         ) {
-                            val idx = row * 3 + col
-                            val absoluteIndex = viewModel.currentPage * viewModel.appsPerPage + idx
-                            val app = slots[idx]
+                            val idx = row * columns + col
+                            val absoluteIndex = viewModel.currentPage * perPage + idx
+                            val app = slots.getOrElse(idx) { AppModel("", "", "") }
                             if (app.packageName.isNotEmpty()) {
                                 AppGridItem(
                                     app = app,
@@ -151,6 +188,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                                     refresh = viewModel.shortcutRefresh,
                                     onClick = {
                                         if (viewModel.reorderMode) {
+                                            showReorderHint = false
                                             viewModel.reorderTap(absoluteIndex)
                                         } else {
                                             viewModel.launchApp(context, app)
@@ -172,6 +210,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                         }
                     }
                 }
+            }
             }
         }
 
@@ -212,10 +251,10 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                         Icon(
                             imageVector = Icons.Rounded.RestartAlt,
                             contentDescription = stringResource(R.string.cd_reset_order),
-                            tint = Color.Black,
+                            tint = LocalInk.current,
                             modifier = Modifier
                                 .size(ArrowSize)
-                                .border(2.5.dp, Color.Black, buttonShape)
+                                .border(2.5.dp, LocalInk.current, buttonShape)
                                 .clickable { showResetConfirm = true }
                                 .padding(8.dp),
                         )
@@ -223,7 +262,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                         Box(
                             modifier = Modifier
                                 .height(ArrowSize)
-                                .border(2.5.dp, Color.Black, buttonShape)
+                                .border(2.5.dp, LocalInk.current, buttonShape)
                                 .clickable { viewModel.finishReorder() }
                                 .padding(horizontal = 12.dp),
                             contentAlignment = Alignment.Center,
@@ -233,7 +272,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = LatoFamily,
-                                color = Color.Black,
+                                color = LocalInk.current,
                                 maxLines = 1,
                             )
                         }
@@ -249,8 +288,8 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                                     .padding(horizontal = 4.dp)
                                     .size(8.dp)
                                     .then(
-                                        if (i == viewModel.currentPage) Modifier.background(Color.Black, CircleShape)
-                                        else Modifier.border(1.5.dp, Color.Black, CircleShape)
+                                        if (i == viewModel.currentPage) Modifier.background(LocalInk.current, CircleShape)
+                                        else Modifier.border(1.5.dp, LocalInk.current, CircleShape)
                                     )
                             )
                         }
@@ -279,6 +318,27 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
         }
     }
 
+    if (showReorderHint) {
+        androidx.compose.ui.window.Popup(alignment = Alignment.TopCenter) {
+            Box(Modifier.padding(top = 24.dp, start = 24.dp, end = 24.dp)) {
+                Box(
+                    modifier = Modifier
+                        .background(LocalSurface.current, RoundedCornerShape(12.dp))
+                        .border(2.5.dp, LocalInk.current, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.reorder_hint),
+                        fontSize = 14.sp,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+    }
+
     // Context menu bottom sheet (only when NOT renaming and NOT reordering)
     val menuApp = viewModel.contextMenuApp
     if (menuApp != null && !viewModel.showRenameDialog && !viewModel.reorderMode) {
@@ -288,7 +348,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 12.dp),
             )
             BottomSheetOption(stringResource(R.string.reorder), icon = Icons.Rounded.SwapVert) {
@@ -363,7 +423,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 text = stringResource(R.string.reset_order_confirm),
                 fontSize = 18.sp,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
             BottomSheetOption(stringResource(R.string.reset), icon = Icons.Rounded.RestartAlt) {
@@ -407,7 +467,7 @@ private fun RenameDialog(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = LatoFamily,
-            color = Color.Black,
+            color = LocalInk.current,
             modifier = Modifier.padding(bottom = 12.dp),
         )
         BasicTextField(
@@ -417,12 +477,12 @@ private fun RenameDialog(
             textStyle = TextStyle(
                 fontSize = 18.sp,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
             ),
             cursorBrush = SolidColor(Color.Transparent),
             modifier = Modifier
                 .fillMaxWidth()
-                .border(2.5.dp, Color.Black)
+                .border(2.5.dp, LocalInk.current)
                 .padding(12.dp)
                 .focusRequester(focusRequester),
         )
@@ -432,7 +492,7 @@ private fun RenameDialog(
                 text = stringResource(R.string.cancel),
                 fontSize = 18.sp,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
                 modifier = Modifier
                     .clickable { onDismiss() }
                     .padding(12.dp),
@@ -443,7 +503,7 @@ private fun RenameDialog(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
                 modifier = Modifier
                     .clickable { onConfirm(textFieldValue.text) }
                     .padding(12.dp),
@@ -484,7 +544,7 @@ private fun AppGridItem(
                 Box(
                     modifier = Modifier
                         .matchParentSize()
-                        .dashedDotBorder(isRounded = isRounded, outset = 5.dp),
+                        .dashedDotBorder(isRounded = isRounded, outset = 5.dp, color = LocalInk.current),
                 )
             }
 
@@ -495,34 +555,36 @@ private fun AppGridItem(
                 )
             }
         }
-        Spacer(Modifier.height(4.dp))
-        val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
-        val maxWidth = with(androidx.compose.ui.platform.LocalDensity.current) { 110.dp.toPx() }
-        val style = TextStyle(fontSize = 18.sp, fontFamily = LatoFamily)
-        val displayLabel = remember(app.label) {
-            val full = textMeasurer.measure(app.label, style, maxLines = 1)
-            if (full.size.width <= maxWidth.toInt()) {
-                app.label
-            } else {
-                var end = app.label.length
-                while (end > 1) {
-                    end--
-                    val truncated = app.label.take(end) + "."
-                    val measured = textMeasurer.measure(truncated, style, maxLines = 1)
-                    if (measured.size.width <= maxWidth.toInt()) return@remember truncated
+        if (!hideLabel) {
+            Spacer(Modifier.height(4.dp))
+            val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
+            val maxWidth = with(androidx.compose.ui.platform.LocalDensity.current) { 110.dp.toPx() }
+            val style = TextStyle(fontSize = 18.sp, fontFamily = LatoFamily)
+            val displayLabel = remember(app.label) {
+                val full = textMeasurer.measure(app.label, style, maxLines = 1)
+                if (full.size.width <= maxWidth.toInt()) {
+                    app.label
+                } else {
+                    var end = app.label.length
+                    while (end > 1) {
+                        end--
+                        val truncated = app.label.take(end) + "."
+                        val measured = textMeasurer.measure(truncated, style, maxLines = 1)
+                        if (measured.size.width <= maxWidth.toInt()) return@remember truncated
+                    }
+                    "."
                 }
-                "."
             }
+            Text(
+                text = displayLabel,
+                fontSize = 18.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                maxLines = 1,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(110.dp),
+            )
         }
-        Text(
-            text = if (hideLabel) "" else displayLabel,
-            fontSize = 18.sp,
-            fontFamily = LatoFamily,
-            color = Color.Black,
-            maxLines = 1,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.width(110.dp),
-        )
     }
 }
 
@@ -565,14 +627,14 @@ private fun ChangeIconDialog(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
                 modifier = Modifier.weight(1f),
             )
             if (hasOverride) {
                 Icon(
                     imageVector = Icons.Rounded.Restore,
                     contentDescription = stringResource(R.string.reset_icon),
-                    tint = Color.Black,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .size(24.dp)
                         .clickable {
@@ -588,7 +650,7 @@ private fun ChangeIconDialog(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = LatoFamily,
-            color = Color.Black,
+            color = LocalInk.current,
             modifier = Modifier.padding(bottom = 4.dp),
         )
         BottomSheetOption(stringResource(R.string.choose_png), icon = Icons.Rounded.Upload) {
@@ -601,7 +663,7 @@ private fun ChangeIconDialog(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = LatoFamily,
-            color = Color.Black,
+            color = LocalInk.current,
             modifier = Modifier.padding(bottom = 4.dp),
         )
 
@@ -678,8 +740,8 @@ private fun ChangeIconDialog(
                                     .padding(horizontal = 2.dp)
                                     .size(6.dp)
                                     .then(
-                                        if (i == page) Modifier.background(Color.Black, CircleShape)
-                                        else Modifier.border(1.5.dp, Color.Black, CircleShape)
+                                        if (i == page) Modifier.background(LocalInk.current, CircleShape)
+                                        else Modifier.border(1.5.dp, LocalInk.current, CircleShape)
                                     )
                             )
                         }

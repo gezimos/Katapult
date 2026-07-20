@@ -65,6 +65,7 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         overridePendingTransition(0, 0)
         viewModel.applyStatusBar(this)
+        viewModel.checkLockscreenService(this)
         viewModel.startClock()
         viewModel.loadApps()
         viewModel.refreshNotifications()
@@ -95,7 +96,7 @@ class MainActivity : ComponentActivity() {
         }
 
         if (viewModel.prefs.einkRefreshOnHome) {
-            EinkRefreshHelper.refresh(this)
+            EinkRefreshHelper.refresh(this, darkMode = viewModel.prefs.darkMode)
         }
     }
 }

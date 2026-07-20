@@ -98,13 +98,13 @@ fun BottomSheet(
                     Column(
                         Modifier
                             .fillMaxWidth()
-                            .background(Color.White)
+                            .background(LocalSurface.current)
                     ) {
                         Box(
                             Modifier
                                 .fillMaxWidth()
                                 .height(2.5.dp)
-                                .background(Color.Black)
+                                .background(LocalInk.current)
                         )
                         Column(Modifier.padding(16.dp)) {
                             currentContent()
@@ -127,8 +127,6 @@ fun BottomSheet(
         sheetDialog.updateOnDismiss(onDismiss)
     }
 
-    // Dismiss when the shared signal bumps (e.g. Home button press). Skip the initial
-    // value so a sheet opened after a prior signal bump isn't instantly closed.
     val dismissSignal = LocalSheetDismissSignal.current
     val initialSignal = remember { dismissSignal }
     val latestOnDismiss by rememberUpdatedState(onDismiss)
@@ -217,9 +215,11 @@ private class BottomSheetDialog(
         )
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
+        val darkMode = context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
+            .getBoolean("dark_mode", false)
         WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = true
-            isAppearanceLightNavigationBars = true
+            isAppearanceLightStatusBars = !darkMode
+            isAppearanceLightNavigationBars = !darkMode
         }
 
         if (hideStatusBar) {

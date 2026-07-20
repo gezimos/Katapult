@@ -80,10 +80,48 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var mediaInfo by mutableStateOf<AudioWidgetHelper.MediaInfo?>(null)
         private set
     var roundedIcons by mutableStateOf(prefs.roundedIcons)
+    var darkMode by mutableStateOf(prefs.darkMode)
 
-    val appsPerPage = 12
+    // Experimental lockscreen widget: prompt once per process to re-enable the
+    // accessibility service when it got dropped (happens after app updates).
+    var showLockscreenReEnable by mutableStateOf(false)
+    private var lockscreenReEnableChecked = false
+
+    fun checkLockscreenService(context: Context) {
+        if (lockscreenReEnableChecked) return
+        lockscreenReEnableChecked = true
+        val needsService = prefs.lockscreenWidget ||
+            (prefs.screensaverEnabled && prefs.screensaverOnPower)
+        if (needsService &&
+            !com.gezimos.katapult.lockscreen.LockscreenWidgetService.isEnabled(context)
+        ) {
+            showLockscreenReEnable = true
+        }
+    }
+
+    // Experimental screensaver: opens the full-screen screensaver activity (zero setup).
+    fun startScreensaver(context: Context) {
+        try {
+            context.startActivity(
+                Intent(context, com.gezimos.katapult.lockscreen.ScreensaverActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK),
+            )
+        } catch (_: Exception) {}
+    }
+
+    val gridColumns = 3
+    var appsPerPage by mutableIntStateOf(12)
+        private set
     val totalPages: Int
         get() = if (orderedApps.isEmpty()) 1 else ((orderedApps.size + appsPerPage - 1) / appsPerPage)
+
+    fun updateAppsPerPage(perPage: Int) {
+        val clamped = perPage.coerceAtLeast(gridColumns)
+        if (clamped == appsPerPage) return
+        appsPerPage = clamped
+        val maxPage = (totalPages - 1).coerceAtLeast(0)
+        if (currentPage > maxPage) currentPage = maxPage
+    }
 
     private val ctx get() = getApplication<Application>()
     private val isMudita = DeviceHelper.isMuditaKompakt()
@@ -190,12 +228,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    fun getPageApps(page: Int): List<AppModel> {
-        val start = page * appsPerPage
-        val end = minOf(start + appsPerPage, orderedApps.size)
-        return if (start < orderedApps.size) orderedApps.subList(start, end) else emptyList()
-    }
-
     fun getAllApps(): List<AppModel> {
         return AppLoader.loadApps(ctx).map { app ->
             val customName = prefs.getAppRename(app.packageName)
@@ -214,7 +246,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         screen = target
     }
 
-    /** Bumps a signal observed by every open BottomSheet so they dismiss themselves. */
     fun dismissAllSheets() {
         sheetDismissSignal++
     }
@@ -302,7 +333,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun applyStatusBar(context: Context) {
         val activity = context as? Activity ?: return
+        activity.window.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(
+                if (prefs.darkMode) android.graphics.Color.BLACK else android.graphics.Color.WHITE
+            )
+        )
         val controller = activity.window.insetsController ?: return
+        val lightBarsMask = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+            WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+        controller.setSystemBarsAppearance(if (prefs.darkMode) 0 else lightBarsMask, lightBarsMask)
         if (prefs.hideStatusBar) {
             controller.hide(android.view.WindowInsets.Type.statusBars())
             controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
@@ -467,6 +506,25 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         prefs.wallpaperPath?.let { File(it).delete() }
         prefs.wallpaperPath = null
         wallpaperBitmap = null
+    }
+
+    fun setScreensaverWallpaper(context: Context, uri: Uri) {
+        try {
+            val input = context.contentResolver.openInputStream(uri) ?: return
+            val bitmap = BitmapFactory.decodeStream(input)
+            input.close()
+            if (bitmap == null) return
+            val file = File(ctx.filesDir, "screensaver_wallpaper.png")
+            file.outputStream().use { out ->
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+            prefs.screensaverWallpaperPath = file.absolutePath
+        } catch (_: Exception) {}
+    }
+
+    fun clearScreensaverWallpaper() {
+        prefs.screensaverWallpaperPath?.let { File(it).delete() }
+        prefs.screensaverWallpaperPath = null
     }
 
     // --- Icon overrides ---

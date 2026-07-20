@@ -23,12 +23,16 @@ fun App(
     val iconShape = if (viewModel.roundedIcons) RoundedIconShape else CircleShape
     val smallShape = if (viewModel.roundedIcons) RoundedSmallShape else CircleShape
     val badgeShape = if (viewModel.roundedIcons) RoundedBadgeShape else CircleShape
+    val dark = viewModel.darkMode
     CompositionLocalProvider(
         androidx.compose.foundation.LocalIndication provides noIndication,
         LocalIconShape provides iconShape,
         LocalSmallIconShape provides smallShape,
         LocalBadgeShape provides badgeShape,
         LocalSheetDismissSignal provides viewModel.sheetDismissSignal,
+        LocalInk provides if (dark) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color.Black,
+        LocalSurface provides if (dark) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White,
+        LocalIconFilter provides if (dark) EinkColorFilterDark else EinkColorFilter,
     ) {
         when (viewModel.screen) {
             Screen.ONBOARDING -> OnboardingScreen(viewModel)
@@ -36,5 +40,6 @@ fun App(
             Screen.ALL_APPS -> AllAppsScreen(viewModel, iconPicker)
             Screen.SETTINGS -> SettingsScreen(viewModel)
         }
+        com.gezimos.katapult.lockscreen.LockscreenReEnableSheet(viewModel)
     }
 }

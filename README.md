@@ -56,6 +56,8 @@
 - **Rename apps**: long-press any app in the grid
 - **App context menu**: Reorder, Rename, Hide, App Info, Uninstall
 - **Reorder apps**: swap-based reordering from the context menu, with reset to alphabetical option
+- **Lockscreen Notifications (experimental)**: per-app notification counts on the lock screen, with an app allowlist and sort order. Long-press the widget to move/resize it, tap to save.
+- **Screensaver (experimental)**: a Katapult screen saver showing the home clock, date, alarm, battery, and up to 4 notification rows. Start it with a two-finger long-press on the home screen (or the home long-press menu); the power button exits. Select Katapult once in system Screen saver settings (Settings → Experimental → Screensaver opens it).
 
 ## Permissions
 
@@ -67,6 +69,7 @@
 | `BIND_NOTIFICATION_LISTENER_SERVICE` | Read notifications for badge counts |
 | `READ_CALL_LOG` | Missed call badge on Mudita Phone (Mudita Kompakt only) |
 | `READ_SMS` | Unread SMS badge on Mudita Messages (Mudita Kompakt only) |
+| `BIND_ACCESSIBILITY_SERVICE` | Draws the experimental lockscreen widget over the lock screen — an accessibility overlay is the only way a normal app can display there. The permission sounds scary, but Katapult reads only the lock screen itself — never your apps — so the widget can hide when the PIN screen appears. It records and shares nothing; this open source code is the proof. |
 
 ## FAQ
 
@@ -100,3 +103,7 @@ There are no allowlists. Go to Settings > App Notifications, tap the app, and di
 <td><a href="https://buymeacoffee.com/gezimos"><img src="docs/img/bmc-button.png" alt="Buy me a coffee" height="40" style="max-width:200px;"></a></td>
 <td valign="middle">Katapult is free, open source, and ad-free forever. If it's made your phone better, consider supporting development.</td>
 </tr></table>
+
+## Acknowledgments
+
+- The experimental lockscreen widget's approach — drawing over the keyguard through an accessibility overlay — was inspired by [Lockscreen Widgets](https://github.com/zacharee/LockscreenWidgets) by Zachary Wander. Katapult's implementation is its own; no code was copied.

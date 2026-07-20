@@ -16,8 +16,30 @@ class NotificationListener : NotificationListenerService() {
 
         private val clearedKeys = ConcurrentHashMap<String, MutableSet<String>>()
 
+        // Latest notification post time per package, for the lockscreen widget sort order.
+        private val lastPostByPkg = ConcurrentHashMap<String, Long>()
+
         var onCountsChanged: (() -> Unit)? = null
+        // Extra slots for the experimental lockscreen widget and screensaver (see .lockscreen package).
+        var onCountsChangedExtra: (() -> Unit)? = null
+        var onCountsChangedDream: (() -> Unit)? = null
         private val skipPackages = if (DeviceHelper.isMuditaKompakt()) DirectBadgeHelper.DIRECT_PACKAGES else emptySet()
+
+        // System packages whose notifications are never user-relevant (USB mode,
+        // "app running in background", update prompts, etc.).
+        private val systemNoisePackages = setOf(
+            "android",
+            "com.android.systemui",
+            "com.android.settings",
+            "com.google.android.gms",
+            "com.mudita.service", // "KompaktOsApi" background service
+        )
+
+        private fun notifyChanged() {
+            onCountsChanged?.invoke()
+            onCountsChangedExtra?.invoke()
+            onCountsChangedDream?.invoke()
+        }
 
         @Volatile
         private var instance: NotificationListener? = null
@@ -28,6 +50,8 @@ class NotificationListener : NotificationListenerService() {
         fun getCount(packageName: String): Int = keysByPkg[packageName]?.size ?: 0
 
         fun getAllCounts(): Map<String, Int> = keysByPkg.mapValues { it.value.size }
+
+        fun getLastPostTimes(): Map<String, Long> = lastPostByPkg.toMap()
 
         fun cancelFor(packageName: String) {
             val self = instance ?: return
@@ -46,7 +70,8 @@ class NotificationListener : NotificationListenerService() {
             }
 
             keysByPkg.remove(packageName)
-            onCountsChanged?.invoke()
+            lastPostByPkg.remove(packageName)
+            notifyChanged()
 
             if (keys.isEmpty()) return
 
@@ -66,6 +91,10 @@ class NotificationListener : NotificationListenerService() {
 
     private fun shouldCount(sbn: StatusBarNotification): Boolean {
         if (sbn.packageName in skipPackages) return false
+        if (sbn.packageName in systemNoisePackages) return false
+        // Persistent notifications (foreground services, media, ongoing calls)
+        // are status, not something the user needs to act on.
+        if (!sbn.isClearable) return false
         if (isGroupSummary(sbn)) return false
         if (clearedKeys[sbn.packageName]?.contains(sbn.key) == true) return false
         return true
@@ -74,11 +103,13 @@ class NotificationListener : NotificationListenerService() {
     override fun onListenerConnected() {
         instance = this
         keysByPkg.clear()
+        lastPostByPkg.clear()
         for (sbn in activeNotifications) {
             if (!shouldCount(sbn)) continue
             keysByPkg.getOrPut(sbn.packageName) { newKeySet() }.add(sbn.key)
+            lastPostByPkg.merge(sbn.packageName, sbn.postTime) { a, b -> maxOf(a, b) }
         }
-        onCountsChanged?.invoke()
+        notifyChanged()
 
         val componentName = ComponentName(this, NotificationListener::class.java)
         AudioWidgetHelper.getInstance(this).initialize(componentName)
@@ -92,8 +123,9 @@ class NotificationListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         if (!shouldCount(sbn)) return
         val set = keysByPkg.getOrPut(sbn.packageName) { newKeySet() }
+        lastPostByPkg.merge(sbn.packageName, sbn.postTime) { a, b -> maxOf(a, b) }
         if (set.add(sbn.key)) {
-            onCountsChanged?.invoke()
+            notifyChanged()
         }
     }
 
@@ -104,8 +136,11 @@ class NotificationListener : NotificationListenerService() {
         }
         val set = keysByPkg[sbn.packageName] ?: return
         if (set.remove(sbn.key)) {
-            if (set.isEmpty()) keysByPkg.remove(sbn.packageName)
-            onCountsChanged?.invoke()
+            if (set.isEmpty()) {
+                keysByPkg.remove(sbn.packageName)
+                lastPostByPkg.remove(sbn.packageName)
+            }
+            notifyChanged()
         }
     }
 

@@ -11,6 +11,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +49,7 @@ import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.VisibilityOff
@@ -61,17 +65,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.Screen
@@ -105,7 +117,44 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
+            .background(LocalSurface.current)
+            .pointerInput(viewModel.prefs.verticalAppGestures) {
+                // One handler for both: a single-finger swipe opens All Apps, a two-finger
+                // pinch-in (zoom out) opens the screensaver. Kept together so the pinch and
+                // the swipe can't fire each other.
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    var swipeAcc = 0f
+                    var pinchStart = 0f
+                    var pinch = false
+                    var pinchFired = false
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val pressed = event.changes.filter { it.pressed }
+                        if (pressed.isEmpty()) break
+                        if (pressed.size >= 2) {
+                            pinch = true
+                            val distance = (pressed[0].position - pressed[1].position).getDistance()
+                            if (pinchStart == 0f) {
+                                pinchStart = distance
+                            } else if (!pinchFired && viewModel.prefs.screensaverEnabled && pinchStart > 80.dp.toPx() && distance < pinchStart * 0.6f) {
+                                pinchFired = true
+                                viewModel.startScreensaver(context)
+                            }
+                        } else if (!pinch) {
+                            val delta = if (viewModel.prefs.verticalAppGestures) {
+                                pressed[0].positionChange().y
+                            } else {
+                                pressed[0].positionChange().x
+                            }
+                            swipeAcc += delta
+                        }
+                    }
+                    if (!pinch && viewModel.prefs.swipeUpAllApps && swipeAcc < -100f) {
+                        viewModel.navigateTo(Screen.ALL_APPS)
+                    }
+                }
+            },
     ) {
         if (viewModel.wallpaperBitmap != null) {
             Image(
@@ -135,135 +184,53 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                                 if (viewModel.prefs.doubleTapBrightness) {
                                     BrightnessHelper.toggleBrightness(context, viewModel.prefs)
                                 }
-                            }
+                            },
                         )
                     },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Spacer(Modifier.height(32.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    if (viewModel.alarmTime != null) {
-                        Icon(
-                            imageVector = Icons.Filled.Notifications,
-                            contentDescription = stringResource(R.string.cd_alarm),
-                            tint = Color.Black,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = viewModel.alarmTime!!,
-                            fontSize = 18.sp,
-                            fontFamily = LatoFamily,
-                            color = Color.Black,
-                        )
-                    }
-                    if (viewModel.prefs.showBattery && viewModel.batteryPercent >= 0) {
-                        if (viewModel.alarmTime != null) {
-                            Spacer(Modifier.width(16.dp))
+                ClockDisplay(
+                    clockTime = viewModel.clockTime,
+                    clockAmPm = viewModel.clockAmPm,
+                    clockDate = viewModel.clockDate,
+                    alarmTime = viewModel.alarmTime,
+                    batteryPercent = viewModel.batteryPercent,
+                    isCharging = viewModel.isCharging,
+                    showBattery = viewModel.prefs.showBattery,
+                    islandsActive = viewModel.prefs.homeIslands,
+                    onClockClick = {
+                        val saved = viewModel.prefs.loadShortcut("clock")
+                        if (saved != null) {
+                            viewModel.launchPackage(context, saved.first, saved.second)
+                        } else if (!viewModel.prefs.disableHomeEditing) {
+                            pickerSlot = "clock"
                         }
-                        val batteryIcon = if (viewModel.isCharging) {
-                            Icons.Rounded.BatteryChargingFull
-                        } else {
-                            when {
-                                viewModel.batteryPercent >= 95 -> Icons.Rounded.BatteryFull
-                                viewModel.batteryPercent >= 85 -> Icons.Rounded.Battery6Bar
-                                viewModel.batteryPercent >= 70 -> Icons.Rounded.Battery5Bar
-                                viewModel.batteryPercent >= 55 -> Icons.Rounded.Battery4Bar
-                                viewModel.batteryPercent >= 40 -> Icons.Rounded.Battery3Bar
-                                viewModel.batteryPercent >= 25 -> Icons.Rounded.Battery2Bar
-                                viewModel.batteryPercent >= 10 -> Icons.Rounded.Battery1Bar
-                                else -> Icons.Rounded.Battery0Bar
-                            }
+                    },
+                    onClockLongClick = { handleSlotLongPress("clock") },
+                    onDateClick = {
+                        val saved = viewModel.prefs.loadShortcut("calendar")
+                        if (saved != null) {
+                            viewModel.launchPackage(context, saved.first, saved.second)
+                        } else if (!viewModel.prefs.disableHomeEditing) {
+                            pickerSlot = "calendar"
                         }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {
-                                val intent = Intent(Intent.ACTION_POWER_USAGE_SUMMARY)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                try {
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    try {
-                                        context.startActivity(
-                                            Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS)
-                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        )
-                                    } catch (_: Exception) { }
-                                }
-                            },
-                        ) {
-                            Icon(
-                                imageVector = batteryIcon,
-                                contentDescription = stringResource(R.string.cd_battery),
-                                tint = Color.Black,
-                                modifier = Modifier.size(18.dp),
-                            )
-                            Spacer(Modifier.width(2.dp))
-                            Text(
-                                text = stringResource(R.string.battery_percent, viewModel.batteryPercent),
-                                fontSize = 18.sp,
-                                fontFamily = LatoFamily,
-                                color = Color.Black,
-                            )
+                    },
+                    onDateLongClick = { handleSlotLongPress("calendar") },
+                    onBatteryClick = {
+                        val intent = Intent(Intent.ACTION_POWER_USAGE_SUMMARY)
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        try {
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
+                            try {
+                                context.startActivity(
+                                    Intent(android.provider.Settings.ACTION_BATTERY_SAVER_SETTINGS)
+                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                )
+                            } catch (_: Exception) { }
                         }
-                    }
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.combinedClickable(
-                        onClick = {
-                            val saved = viewModel.prefs.loadShortcut("clock")
-                            if (saved != null) {
-                                viewModel.launchPackage(context, saved.first, saved.second)
-                            } else if (!viewModel.prefs.disableHomeEditing) {
-                                pickerSlot = "clock"
-                            }
-                        },
-                        onLongClick = { handleSlotLongPress("clock") },
-                    ),
-                ) {
-                    Text(
-                        text = viewModel.clockTime,
-                        fontSize = 72.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = LatoFamily,
-                        color = Color.Black,
-                        modifier = Modifier,
-                    )
-                    if (viewModel.clockAmPm != null) {
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = viewModel.clockAmPm!!,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = LatoFamily,
-                            color = Color.Black,
-                        )
-                    }
-                }
-
-                Text(
-                    text = viewModel.clockDate,
-                    fontSize = 18.sp,
-                    fontFamily = LatoFamily,
-                    color = Color.Black,
-                    modifier = Modifier.combinedClickable(
-                        onClick = {
-                            val saved = viewModel.prefs.loadShortcut("calendar")
-                            if (saved != null) {
-                                viewModel.launchPackage(context, saved.first, saved.second)
-                            } else if (!viewModel.prefs.disableHomeEditing) {
-                                pickerSlot = "calendar"
-                            }
-                        },
-                        onLongClick = { handleSlotLongPress("calendar") },
-                    ),
+                    },
                 )
-
             }
 
             // Music widget - aligned with app icon edges
@@ -354,13 +321,20 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.clickable { viewModel.navigateTo(Screen.ALL_APPS) },
                         ) {
-                            // Dashed outline with grid dots
+                            // Dashed outline with grid dots; solid filled tile when islands are on
                             val strokeWidth = 2.5.dp
                             val isRounded = viewModel.roundedIcons
+                            val tileShape = if (isRounded) RoundedIconShape else CircleShape
                             Box(
                                 modifier = Modifier
                                     .size(IconSize)
-                                    .dashedDotBorder(strokeWidth = strokeWidth, isRounded = isRounded),
+                                    .then(
+                                        if (viewModel.prefs.homeIslands)
+                                            Modifier
+                                                .background(LocalSurface.current, tileShape)
+                                                .border(strokeWidth, LocalInk.current, tileShape)
+                                        else Modifier.dashedDotBorder(strokeWidth = strokeWidth, isRounded = isRounded, color = LocalInk.current)
+                                    ),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Column(
@@ -423,6 +397,12 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     showMenu = false
                 }
             }
+            if (viewModel.prefs.screensaverEnabled) {
+                BottomSheetOption(stringResource(R.string.screensaver), icon = Icons.Rounded.Bedtime) {
+                    showMenu = false
+                    viewModel.startScreensaver(context)
+                }
+            }
             BottomSheetOption(stringResource(R.string.donate_label), icon = Icons.Rounded.FavoriteBorder) {
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.buymeacoffee.com/gezimos")))
                 showMenu = false
@@ -481,7 +461,9 @@ private fun AppPickerDialog(
         apps.subList(start, end)
     }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
-    val iconShape = LocalIconShape.current
+    // Proportional rounding for the small 36dp icons — the absolute 19dp radius of
+    // LocalIconShape saturates into a circle at this size.
+    val iconShape = if (viewModel.roundedIcons) RoundedCornerShape(percent = 26) else CircleShape
 
     BottomSheet(onDismiss = onDismiss) {
         Text(
@@ -489,7 +471,7 @@ private fun AppPickerDialog(
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = LatoFamily,
-            color = Color.Black,
+            color = LocalInk.current,
             modifier = Modifier.padding(bottom = 12.dp),
         )
         Column(
@@ -524,7 +506,7 @@ private fun AppPickerDialog(
                     ) {
                         AppIconCircle(bitmap = bitmap, size = 36.dp, borderWidth = 1.5.dp, shape = iconShape)
                         Spacer(Modifier.width(12.dp))
-                        Text(app.label, fontSize = 18.sp, fontFamily = LatoFamily, color = Color.Black)
+                        Text(app.label, fontSize = 18.sp, fontFamily = LatoFamily, color = LocalInk.current)
                     }
                 } else {
                     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
@@ -559,8 +541,8 @@ private fun AppPickerDialog(
                                     .padding(horizontal = 2.dp)
                                     .size(6.dp)
                                     .then(
-                                        if (i == page) Modifier.background(Color.Black, CircleShape)
-                                        else Modifier.border(1.5.dp, Color.Black, CircleShape)
+                                        if (i == page) Modifier.background(LocalInk.current, CircleShape)
+                                        else Modifier.border(1.5.dp, LocalInk.current, CircleShape)
                                     )
                             )
                         }
@@ -606,8 +588,8 @@ private fun MusicWidget(viewModel: MainViewModel) {
             .fillMaxWidth()
             .height(90.dp)
             .clip(widgetShape)
-            .background(Color.White)
-            .border(2.5.dp, Color.Black, widgetShape),
+            .background(LocalSurface.current)
+            .border(2.5.dp, LocalInk.current, widgetShape),
     ) {
         // Song info row
         Box(
@@ -622,7 +604,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 text = songLabel.ifEmpty { noMediaLabel },
                 fontSize = 18.sp,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = LocalInk.current,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -633,7 +615,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
             Modifier
                 .fillMaxWidth()
                 .height(2.5.dp)
-                .background(Color.Black)
+                .background(LocalInk.current)
         )
 
         // Controls row (2/3 height)
@@ -656,7 +638,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     .fillMaxHeight()
                     .aspectRatio(1f)
                     .clip(artShape)
-                    .background(Color.Black)
+                    .background(LocalInk.current)
                     .clickable { viewModel.mediaOpenApp(context) }
                     .padding(bottom = 3.dp),
                 contentAlignment = Alignment.Center,
@@ -672,14 +654,14 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     Icon(
                         imageVector = Icons.Rounded.MusicNote,
                         contentDescription = stringResource(R.string.cd_music),
-                        tint = Color.White,
+                        tint = LocalSurface.current,
                         modifier = Modifier.size(28.dp),
                     )
                 }
             }
 
             // Separator
-            Box(Modifier.fillMaxHeight().width(2.5.dp).background(Color.Black))
+            Box(Modifier.fillMaxHeight().width(2.5.dp).background(LocalInk.current))
 
             // Controls
             Row(
@@ -694,7 +676,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 Icon(
                     imageVector = Icons.Rounded.SkipPrevious,
                     contentDescription = stringResource(R.string.cd_previous),
-                    tint = Color.Black,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { viewModel.mediaPrevious() },
@@ -703,7 +685,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 Icon(
                     imageVector = if (info.isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                     contentDescription = stringResource(R.string.cd_play_pause),
-                    tint = Color.Black,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .size(42.dp)
                         .clickable { viewModel.mediaPlayPause() },
@@ -712,7 +694,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 Icon(
                     imageVector = Icons.Rounded.SkipNext,
                     contentDescription = stringResource(R.string.cd_next),
-                    tint = Color.Black,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { viewModel.mediaNext() },
@@ -721,7 +703,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 Icon(
                     imageVector = Icons.Rounded.Stop,
                     contentDescription = stringResource(R.string.cd_stop),
-                    tint = Color.Black,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { viewModel.mediaStop() },
@@ -766,12 +748,45 @@ private fun ShortcutItem(
                 )
             }
         }
-        Spacer(Modifier.height(4.dp))
-        Text(
-            text = if (viewModel.prefs.hideAppNames) "" else label,
-            fontSize = 18.sp,
-            fontFamily = LatoFamily,
-            color = Color.Black,
-        )
+        if (!viewModel.prefs.hideAppNames) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = label,
+                modifier = Modifier.homeIsland(
+                    show = viewModel.prefs.homeIslands,
+                    surface = LocalSurface.current,
+                    ink = LocalInk.current,
+                    hPad = 12.dp,
+                    vPad = 2.dp,
+                ),
+                fontSize = 18.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+            )
+        }
     }
 }
+
+internal fun Modifier.homeIsland(show: Boolean, surface: Color, ink: Color, hPad: Dp = 8.dp, vPad: Dp = 7.dp): Modifier =
+    if (!show) this else drawBehind {
+        val px = hPad.toPx()
+        val py = vPad.toPx()
+        val radius = 19.dp.toPx()
+        val stroke = 2.5.dp.toPx()
+        val corner = CornerRadius(radius, radius)
+        val bias = (size.height * 0.05f)
+            .coerceAtMost(2.dp.toPx())
+            .coerceAtMost(py - 1.dp.toPx())
+            .coerceAtLeast(0f)
+        val topLeft = Offset(-px, -py + bias)
+        val rectSize = Size(size.width + px * 2, size.height + py * 2)
+        drawRoundRect(color = surface, topLeft = topLeft, size = rectSize, cornerRadius = corner)
+        drawRoundRect(
+            color = ink,
+            topLeft = Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
+            size = Size(rectSize.width - stroke, rectSize.height - stroke),
+            // Inset path needs an inset radius to stay concentric with the fill.
+            cornerRadius = CornerRadius(radius - stroke / 2, radius - stroke / 2),
+            style = Stroke(width = stroke),
+        )
+    }

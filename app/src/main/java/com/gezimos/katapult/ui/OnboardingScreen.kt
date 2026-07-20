@@ -59,6 +59,8 @@ import com.gezimos.katapult.util.DeviceHelper
 @Composable
 fun OnboardingScreen(viewModel: MainViewModel) {
     val context = LocalContext.current
+    val ink = LocalInk.current
+    val surface = LocalSurface.current
     val isMudita = remember { DeviceHelper.isMuditaKompakt() }
 
     var hasNotificationPermission by remember { mutableStateOf(false) }
@@ -111,7 +113,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(surface)
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(16.dp),
@@ -121,7 +123,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
             Icon(
                 painter = painterResource(R.drawable.katapult_logo),
                 contentDescription = null,
-                tint = Color.Black,
+                tint = ink,
                 modifier = Modifier.width(160.dp).height(43.dp),
             )
         }
@@ -176,7 +178,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
             text = stringResource(R.string.required_hint),
             fontSize = 14.sp,
             fontFamily = LatoFamily,
-            color = Color.Black.copy(alpha = if (showHighlight && !allDone) flashAlpha else 1f),
+            color = ink.copy(alpha = if (showHighlight && !allDone) flashAlpha else 1f),
             modifier = Modifier.padding(top = 8.dp),
         )
 
@@ -188,7 +190,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
                 .fillMaxWidth()
                 .then(
                     if (allDone) Modifier
-                        .border(2.5.dp, Color.Black, RoundedCornerShape(10.dp))
+                        .border(2.5.dp, ink, RoundedCornerShape(10.dp))
                         .clickable {
                             viewModel.prefs.onboardingComplete = true
                             viewModel.prefs.notificationIndicators = true
@@ -201,7 +203,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
                             val gap = 6.dp.toPx()
                             val cr = 10.dp.toPx()
                             drawRoundRect(
-                                color = Color.Black,
+                                color = ink,
                                 size = Size(size.width, size.height),
                                 cornerRadius = CornerRadius(cr, cr),
                                 style = Stroke(
@@ -220,7 +222,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = LatoFamily,
-                color = Color.Black,
+                color = ink,
             )
         }
 
