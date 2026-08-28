@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Katapult</string>
 
-    <!-- Common -->
     <string name="save">Opslaan</string>
     <string name="save_uppercase">OPSLAAN</string>
     <string name="cancel">Annuleren</string>
@@ -9,7 +8,6 @@
     <string name="finish">Voltooien</string>
     <string name="rename">Hernoemen</string>
 
-    <!-- Home screen -->
     <string name="phone">Telefoon</string>
     <string name="sms">SMS</string>
     <string name="music">Muziek</string>
@@ -24,7 +22,6 @@
     <string name="no_media">Geen media</string>
     <string name="battery_percent">%1$d%%</string>
 
-    <!-- Content descriptions -->
     <string name="cd_alarm">Wekker</string>
     <string name="cd_battery">Batterij</string>
     <string name="cd_album_art">Albumhoes</string>
@@ -35,7 +32,6 @@
     <string name="cd_stop">Stoppen</string>
     <string name="cd_reset_order">Volgorde herstellen</string>
 
-    <!-- App picker -->
     <string name="set_left_app">Linker app instellen</string>
     <string name="set_right_app">Rechter app instellen</string>
     <string name="set_clock_app">Klok-app instellen</string>
@@ -45,7 +41,6 @@
     <string name="set_extra_right_app">Extra rechter app instellen</string>
     <string name="choose_app">Kies app</string>
 
-    <!-- Context menu -->
     <string name="reorder">Herordenen</string>
     <string name="hide">Verbergen</string>
     <string name="app_info">App-info</string>
@@ -54,25 +49,26 @@
     <string name="uninstall">Verwijderen</string>
     <string name="reset_order_confirm">Volgorde alfabetisch herstellen?</string>
 
-    <!-- All apps -->
     <string name="all_apps">Apps</string>
 
-    <!-- Notification badge -->
     <string name="badge_overflow">99+</string>
 
-    <!-- Settings -->
     <string name="icon_shape">Pictogramvorm</string>
     <string name="icon_shape_rounded">Afgerond</string>
     <string name="icon_shape_circle">Cirkel</string>
     <string name="change_icon">Pictogram wijzigen</string>
     <string name="import_icon">Pictogram importeren</string>
     <string name="katapult_icons">Katapult-pictogrammen</string>
+    <string name="material_icons">Material-iconen</string>
     <string name="choose_png">Pictogram importeren (png, svg)</string>
     <string name="reset_icon">Standaard herstellen</string>
     <string name="notification_indicators">Meldingsindicatoren</string>
     <string name="notification_indicators_desc">Toon meldingsbadges op app-pictogrammen</string>
     <string name="hide_status_bar">Statusbalk verbergen</string>
     <string name="hide_status_bar_desc">Verberg de systeemstatusbalk</string>
+    <string name="hide_status_bar_clock">Statusbalkklok verbergen</string>
+    <string name="hide_status_bar_clock_desc">Bedekt de dubbele klok in de statusbalk, vereist de toegankelijkheidsdienst</string>
+    <string name="hide_status_bar_clock_a11y">De klokafdekking wordt getekend door de toegankelijkheidsdienst van Katapult. Schakel deze in via de systeeminstellingen om deze functie te gebruiken.</string>
     <string name="eink_refresh">E-Ink vernieuwen op Home</string>
     <string name="eink_refresh_desc">Ghosting verwijderen bij thuisknop</string>
     <string name="eink_auto_mode">E-Ink-modus</string>
@@ -80,8 +76,10 @@
     <string name="extra_dock_row_desc">Toon 3 extra apps op het startscherm</string>
     <string name="infinite_scroll">Oneindig scrollen</string>
     <string name="infinite_scroll_desc">Veeg pagina\'s van beide kanten</string>
-    <string name="double_tap_brightness">Dubbeltik helderheid</string>
-    <string name="double_tap_brightness_desc">Dubbeltik op Home om helderheid uit te schakelen.</string>
+    <string name="double_tap_action">Dubbeltik op Home</string>
+    <string name="double_tap_off">Uitgeschakeld</string>
+    <string name="double_tap_brightness">Helderheid</string>
+    <string name="double_tap_lock">Vergrendelen</string>
     <string name="clock_format">Klokformaat</string>
     <string name="date_format">Datumformaat</string>
     <string name="show_battery">Batterij %% tonen</string>
@@ -104,13 +102,26 @@
     <string name="notification_log_desc">Bekijk meldingsgeschiedenis</string>
     <string name="set_default_launcher">Als standaard launcher instellen</string>
     <string name="set_default_launcher_desc">Kies Katapult als je startscherm</string>
+    <string name="config_backup">Configuratie exporteren/importeren</string>
+    <string name="config_backup_desc">Instellingen opslaan of herstellen als JSON-bestand</string>
+    <string name="config_export">Exporteren</string>
+    <string name="config_import">Importeren</string>
+    <string name="config_clear">Alle gegevens wissen</string>
+    <string name="config_clear_confirm">Alle instellingen wissen en Katapult herstarten?</string>
+    <string name="config_exported">Configuratie geëxporteerd</string>
+    <string name="config_export_failed">Exporteren mislukt</string>
+    <string name="config_import_failed">Importeren mislukt, geen geldig configuratiebestand</string>
+    <string name="app_shortcuts">App-snelkoppelingen</string>
+    <string name="remove_shortcut">Snelkoppeling verwijderen</string>
+    <string name="no_app_shortcuts">Geen snelkoppelingen beschikbaar. Katapult moet de standaard launcher zijn.</string>
+    <string name="no_app_shortcuts_app">Deze app heeft geen snelkoppelingen.</string>
+    <string name="shortcut_pinned">%1$s toegevoegd aan apps</string>
+    <string name="shortcut_already_added">%1$s staat al in apps</string>
 
-    <!-- Notifications -->
     <string name="notification_access_title">Meldingstoegang inschakelen</string>
     <string name="notification_access_message">Katapult heeft meldingstoegang nodig om badges te tonen. Toegang verlenen in Instellingen?</string>
     <string name="no_alarm">Geen wekker ingesteld</string>
 
-    <!-- Onboarding -->
     <string name="onboarding_icon">K</string>
     <string name="welcome_title">Welkom bij Katapult</string>
     <string name="onboarding_notification_desc">Schakelt meldingsbadges in op apps van derden zoals WhatsApp, Signal, enz.</string>
@@ -140,15 +151,17 @@
     <string name="section_experimental">Meldingen op vergrendelscherm (Experimenteel)</string>
     <string name="lockscreen_widget">Meldingen op vergrendelscherm</string>
     <string name="lockscreen_widget_desc">Toon meldingsaantallen op het vergrendelscherm.</string>
-    <string name="lockscreen_widget_a11y_desc">Toont het meldingenwidget over het vergrendelscherm en verbergt het wanneer het PIN-scherm verschijnt.</string>
+    <string name="a11y_service_label">Katapult Action Service</string>
+    <string name="a11y_shortcut_warning">Schakel in de toegankelijkheidsinstellingen alleen de Katapult Action Service zelf in, niet de sneltoets. De sneltoets zet een zwevende toegankelijkheidsknop op je scherm.</string>
+    <string name="lockscreen_widget_a11y_desc">Gebruikt voor de meldingswidget op het vergrendelscherm, het bedekken van de statusbalkklok, het vergrendelen van de telefoon en de schermbeveiliging. Tekent alleen over het vergrendelscherm en de statusbalk; leest niets uit je apps.</string>
     <string name="lockscreen_widget_apps">Apps voor vergrendelscherm-meldingen</string>
     <string name="lockscreen_widget_apps_desc">Kies welke apps in de vergrendelscherm-widget verschijnen</string>
     <string name="lockscreen_sort">Sortering vergrendelscherm</string>
     <string name="sort_latest_top">Nieuwste bovenaan</string>
     <string name="sort_oldest_top">Oudste bovenaan</string>
-    <string name="lockscreen_reenable_message">Toegankelijkheidstoegang wordt uitgeschakeld bij app-updates. Schakel deze opnieuw in om meldingen op het vergrendelscherm te behouden.</string>
+    <string name="lockscreen_reenable_message">Toegankelijkheidstoegang wordt uitgeschakeld bij het bijwerken van de app. Schakel deze opnieuw in om de functies te blijven gebruiken die deze nodig hebben.</string>
     <string name="lockscreen_reenable_enable">Inschakelen in instellingen</string>
-    <string name="lockscreen_reenable_disable">Widget uitschakelen</string>
+    <string name="lockscreen_reenable_disable">Deze functies uitschakelen</string>
     <string name="lockscreen_readme">Lees mij</string>
     <string name="lockscreen_readme_desc">Over de toegankelijkheidsmachtiging en widgetbediening</string>
     <string name="lockscreen_readme_privacy">Deze functie tekent over het vergrendelscherm via een toegankelijkheidsoverlay. De machtiging klinkt eng, maar Katapult gebruikt deze alleen om de widget te tonen en het vergrendelscherm zelf te lezen, nooit je apps, zodat de widget zich kan verbergen wanneer het PIN-scherm verschijnt. Er wordt niets geregistreerd of gedeeld; de open source code is het bewijs.</string>
@@ -168,6 +181,12 @@
     <string name="screensaver_enable_desc">Toon klok en meldingen met een knijpbeweging op het startscherm</string>
     <string name="screensaver_system">Systeemschermbeveiliging</string>
     <string name="donate_desc">Steun Katapult op Buy Me a Coffee</string>
+    <string name="github_label">github.com/gezimos</string>
+    <string name="github_desc">Broncode en andere projecten</string>
+    <string name="youtube_label">youtube.com/@gezimos</string>
+    <string name="youtube_desc">Video\'s en nieuws</string>
+    <string name="inkos_label">inkOS</string>
+    <string name="inkos_desc">E-ink launcher van dezelfde ontwikkelaar</string>
     <string name="lic_app_title">App License</string>
     <string name="lic_app_desc">GNU General Public License v3.0</string>
     <string name="lic_font_title">Font License</string>

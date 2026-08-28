@@ -1,8 +1,11 @@
 package com.gezimos.katapult.ui
 
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import com.gezimos.katapult.lockscreen.LockscreenWidgetService
 import androidx.core.app.NotificationManagerCompat
 import androidx.compose.foundation.background
@@ -32,7 +35,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Contrast
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DoneAll
+import androidx.compose.material.icons.rounded.Download
 import androidx.compose.material.icons.rounded.Gesture
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
@@ -41,6 +46,7 @@ import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.RemoveDone
 import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.Upload
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -53,7 +59,11 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -79,6 +89,9 @@ import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.EinkHelper
 import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.IconUtility
+import com.gezimos.katapult.util.ShortcutHelper
+import com.gezimos.katapult.util.UpdateChecker
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 private val ClockFormats = listOf("system", "HH:mm", "hh:mm a", "h:mm a", "h:mm")
@@ -111,9 +124,11 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
     var darkMode by remember { mutableStateOf(prefs.darkMode) }
     var hideStatusBar by remember { mutableStateOf(prefs.hideStatusBar) }
+    var hideStatusBarClock by remember { mutableStateOf(prefs.hideStatusBarClock) }
+    var showClockCoverSheet by remember { mutableStateOf(false) }
     var einkRefreshOnHome by remember { mutableStateOf(prefs.einkRefreshOnHome) }
     var einkHelperMode by remember { mutableIntStateOf(prefs.einkHelperMode) }
-    var doubleTapBrightness by remember { mutableStateOf(prefs.doubleTapBrightness) }
+    var doubleTapAction by remember { mutableIntStateOf(prefs.doubleTapAction) }
     var homeExtraRow by remember { mutableStateOf(prefs.homeExtraRow) }
     var disableMusicWidget by remember { mutableStateOf(prefs.disableMusicWidget) }
     var infiniteScroll by remember { mutableStateOf(prefs.infiniteScroll) }
@@ -126,12 +141,52 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var homeIslands by remember { mutableStateOf(prefs.homeIslands) }
     var verticalAppGestures by remember { mutableStateOf(prefs.verticalAppGestures) }
     var lockscreenWidget by remember { mutableStateOf(prefs.lockscreenWidget) }
+    var actionServiceEnabled by remember { mutableStateOf(LockscreenWidgetService.isEnabled(context)) }
     var showLockscreenApps by remember { mutableStateOf(false) }
     var showLockscreenReadMe by remember { mutableStateOf(false) }
     var showNotificationsReadMe by remember { mutableStateOf(false) }
     var showScreensaverReadMe by remember { mutableStateOf(false) }
     var showEinkReadMe by remember { mutableStateOf(false) }
     var showGesturesReadMe by remember { mutableStateOf(false) }
+    var showUpdateSheet by remember { mutableStateOf(false) }
+    var showConfigSheet by remember { mutableStateOf(false) }
+    var showClearConfirm by remember { mutableStateOf(false) }
+    val configExporter = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let {
+            val ok = try {
+                context.contentResolver.openOutputStream(it)?.use { out ->
+                    out.write(prefs.exportToJson(context).toByteArray())
+                }
+                true
+            } catch (_: Exception) {
+                false
+            }
+            Toast.makeText(
+                context,
+                if (ok) R.string.config_exported else R.string.config_export_failed,
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
+    val configImporter = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let {
+            val text = try {
+                context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
+            } catch (_: Exception) {
+                null
+            }
+            if (text != null && prefs.importFromJson(text)) {
+                ShortcutHelper.syncAllPins(context, prefs)
+                restartApp(context)
+            } else {
+                Toast.makeText(context, R.string.config_import_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     var lockscreenLatestFirst by remember { mutableStateOf(prefs.lockscreenWidgetLatestFirst) }
     var screensaverIslands by remember { mutableStateOf(prefs.screensaverIslands) }
     var screensaverWallpaper by remember { mutableStateOf(prefs.screensaverWallpaper) }
@@ -164,6 +219,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 notificationIndicators = hasPermission
                 prefs.notificationIndicators = hasPermission
             }
+            val serviceOn = LockscreenWidgetService.isEnabled(context)
+            if (actionServiceEnabled != serviceOn) actionServiceEnabled = serviceOn
         }
     }
 
@@ -272,6 +329,26 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     },
                 )
             }
+            if (isMudita) {
+                add {
+                    SettingsToggleRow(
+                        title = stringResource(R.string.hide_status_bar_clock),
+                        description = stringResource(R.string.hide_status_bar_clock_desc),
+                        checked = hideStatusBarClock && actionServiceEnabled,
+                        onCheckedChange = { requested ->
+                            val serviceOn = LockscreenWidgetService.isEnabled(context)
+                            actionServiceEnabled = serviceOn
+                            val value = requested && serviceOn
+                            hideStatusBarClock = value
+                            prefs.hideStatusBarClock = value
+                            if (requested && !serviceOn) {
+                                showClockCoverSheet = true
+                            }
+                            LockscreenWidgetService.onLauncherForeground(true)
+                        },
+                    )
+                }
+            }
             add {
                 SettingsToggleRow(
                     title = stringResource(R.string.hide_status_bar),
@@ -281,6 +358,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         hideStatusBar = it
                         prefs.hideStatusBar = it
                         viewModel.applyStatusBar(context)
+                        LockscreenWidgetService.onLauncherForeground(true)
                     },
                 )
             }
@@ -456,13 +534,23 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.double_tap_brightness),
-                    description = stringResource(R.string.double_tap_brightness_desc),
-                    checked = doubleTapBrightness,
-                    onCheckedChange = {
-                        doubleTapBrightness = it
-                        prefs.doubleTapBrightness = it
+                val actionLabel = when (doubleTapAction) {
+                    PrefsManager.DOUBLE_TAP_BRIGHTNESS -> stringResource(R.string.double_tap_brightness)
+                    PrefsManager.DOUBLE_TAP_LOCK -> stringResource(R.string.double_tap_lock)
+                    else -> stringResource(R.string.double_tap_off)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.double_tap_action),
+                    description = actionLabel,
+                    onClick = {
+                        val next = (doubleTapAction + 1) % 3
+                        doubleTapAction = next
+                        prefs.doubleTapAction = next
+                        if (next == PrefsManager.DOUBLE_TAP_LOCK && !LockscreenWidgetService.isEnabled(context)) {
+                            try {
+                                context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                            } catch (_: Exception) {}
+                        }
                     },
                 )
             }
@@ -538,9 +626,9 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
 
-            // --- E-Ink (Mudita only) ---
+            // --- E-Ink (modes are Mudita only) ---
+            addHeader(R.string.section_eink)
             if (isMudita) {
-                addHeader(R.string.section_eink)
                 add {
                     SettingsActionRow(
                         title = stringResource(R.string.lockscreen_readme),
@@ -560,17 +648,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         },
                     )
                 }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.eink_refresh),
-                        description = stringResource(R.string.eink_refresh_desc),
-                        checked = einkRefreshOnHome,
-                        onCheckedChange = {
-                            einkRefreshOnHome = it
-                            prefs.einkRefreshOnHome = it
-                        },
-                    )
-                }
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.eink_refresh),
+                    description = stringResource(R.string.eink_refresh_desc),
+                    checked = einkRefreshOnHome,
+                    onCheckedChange = {
+                        einkRefreshOnHome = it
+                        prefs.einkRefreshOnHome = it
+                    },
+                )
             }
 
             // --- System ---
@@ -585,28 +673,18 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             add {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.app_name),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = LatoFamily,
-                            color = LocalInk.current,
-                        )
-                        Text(
-                            text = versionName,
-                            fontSize = 14.sp,
-                            fontFamily = LatoFamily,
-                            color = LocalInk.current,
-                        )
-                    }
-                }
+                SettingsActionRow(
+                    title = stringResource(R.string.config_backup),
+                    description = stringResource(R.string.config_backup_desc),
+                    onClick = { showConfigSheet = true },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.check_updates),
+                    description = stringResource(R.string.check_updates_desc),
+                    onClick = { showUpdateSheet = true },
+                )
             }
             add {
                 SettingsActionRow(
@@ -634,12 +712,69 @@ fun SettingsScreen(viewModel: MainViewModel) {
             // --- About ---
             addHeader(R.string.section_about)
             add {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = LatoFamily,
+                            color = LocalInk.current,
+                        )
+                        Text(
+                            text = versionName,
+                            fontSize = 14.sp,
+                            fontFamily = LatoFamily,
+                            color = LocalInk.current,
+                        )
+                    }
+                }
+            }
+            add {
                 SettingsActionRow(
                     title = stringResource(R.string.donate_label),
                     description = stringResource(R.string.donate_desc),
                     onClick = {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse("https://www.buymeacoffee.com/gezimos"))
+                        )
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.github_label),
+                    description = stringResource(R.string.github_desc),
+                    onClick = {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/gezimos"))
+                        )
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.youtube_label),
+                    description = stringResource(R.string.youtube_desc),
+                    onClick = {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/@gezimos"))
+                        )
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.inkos_label),
+                    description = stringResource(R.string.inkos_desc),
+                    onClick = {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/gezimos/inkOS"))
                         )
                     },
                 )
@@ -658,11 +793,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 SettingsToggleRow(
                     title = stringResource(R.string.lockscreen_widget),
                     description = stringResource(R.string.lockscreen_widget_desc),
-                    checked = lockscreenWidget,
-                    onCheckedChange = {
-                        lockscreenWidget = it
-                        prefs.lockscreenWidget = it
-                        if (it && !LockscreenWidgetService.isEnabled(context)) {
+                    checked = lockscreenWidget && actionServiceEnabled,
+                    onCheckedChange = { requested ->
+                        val serviceOn = LockscreenWidgetService.isEnabled(context)
+                        actionServiceEnabled = serviceOn
+                        val value = requested && serviceOn
+                        lockscreenWidget = value
+                        prefs.lockscreenWidget = value
+                        if (requested && !serviceOn) {
                             try {
                                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                             } catch (_: Exception) {}
@@ -832,11 +970,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     SettingsToggleRow(
                         title = stringResource(R.string.screensaver_on_power),
                         description = stringResource(R.string.screensaver_on_power_desc),
-                        checked = screensaverOnPower,
-                        onCheckedChange = {
-                            screensaverOnPower = it
-                            prefs.screensaverOnPower = it
-                            if (it && !LockscreenWidgetService.isEnabled(context)) {
+                        checked = screensaverOnPower && actionServiceEnabled,
+                        onCheckedChange = { requested ->
+                            val serviceOn = LockscreenWidgetService.isEnabled(context)
+                            actionServiceEnabled = serviceOn
+                            val value = requested && serviceOn
+                            screensaverOnPower = value
+                            prefs.screensaverOnPower = value
+                            if (requested && !serviceOn) {
                                 try {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 } catch (_: Exception) {}
@@ -940,6 +1081,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 modifier = Modifier.padding(bottom = 12.dp),
             )
             Text(
+                text = stringResource(R.string.a11y_shortcut_warning),
+                fontSize = 14.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            Text(
                 text = stringResource(R.string.lockscreen_readme_usage),
                 fontSize = 14.sp,
                 fontFamily = LatoFamily,
@@ -986,6 +1134,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
             )
             Text(
                 text = stringResource(R.string.screensaver_readme_accessibility),
+                fontSize = 14.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            Text(
+                text = stringResource(R.string.a11y_shortcut_warning),
                 fontSize = 14.sp,
                 fontFamily = LatoFamily,
                 color = LocalInk.current,
@@ -1076,6 +1231,288 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 showScreensaverInterval = false
             },
         )
+    }
+
+    if (showUpdateSheet) {
+        UpdateDialog(
+            viewModel = viewModel,
+            currentVersion = versionName,
+            onDismiss = { showUpdateSheet = false },
+        )
+    }
+
+    if (showClockCoverSheet) {
+        BottomSheet(onDismiss = { showClockCoverSheet = false }) {
+            Text(
+                text = stringResource(R.string.hide_status_bar_clock),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            Text(
+                text = stringResource(R.string.hide_status_bar_clock_a11y),
+                fontSize = 14.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+            Text(
+                text = stringResource(R.string.a11y_shortcut_warning),
+                fontSize = 14.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            BottomSheetOption(
+                text = stringResource(R.string.lockscreen_reenable_enable),
+                icon = Icons.Rounded.Tune,
+            ) {
+                showClockCoverSheet = false
+                try {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
+    if (showConfigSheet) {
+        BottomSheet(onDismiss = { showConfigSheet = false }) {
+            Text(
+                text = stringResource(R.string.config_backup),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            BottomSheetOption(stringResource(R.string.config_export), icon = Icons.Rounded.Upload) {
+                showConfigSheet = false
+                val stamp = java.text.SimpleDateFormat("yyyy-MM-dd-HHmm", java.util.Locale.US)
+                    .format(java.util.Date())
+                configExporter.launch("katapult-config-$stamp.json")
+            }
+            BottomSheetOption(stringResource(R.string.config_import), icon = Icons.Rounded.Download) {
+                showConfigSheet = false
+                configImporter.launch(arrayOf("application/json", "text/plain", "*/*"))
+            }
+            BottomSheetOption(stringResource(R.string.config_clear), icon = Icons.Rounded.DeleteForever) {
+                showConfigSheet = false
+                showClearConfirm = true
+            }
+        }
+    }
+
+    if (showClearConfirm) {
+        BottomSheet(onDismiss = { showClearConfirm = false }) {
+            Text(
+                text = stringResource(R.string.config_clear_confirm),
+                fontSize = 18.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+            BottomSheetOption(stringResource(R.string.config_clear), icon = Icons.Rounded.DeleteForever) {
+                showClearConfirm = false
+                prefs.clearAll(context)
+                restartApp(context)
+            }
+        }
+    }
+}
+
+private fun restartApp(context: Context) {
+    val intent = Intent.makeRestartActivityTask(
+        ComponentName(context, MainActivity::class.java)
+    )
+    context.startActivity(intent)
+}
+
+private sealed interface UpdateState {
+    data object Checking : UpdateState
+    data object UpToDate : UpdateState
+    data class Available(val info: UpdateChecker.ReleaseInfo) : UpdateState
+    data object Error : UpdateState
+}
+
+@Composable
+private fun UpdateDialog(
+    viewModel: MainViewModel,
+    currentVersion: String,
+    onDismiss: () -> Unit,
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var state by remember { mutableStateOf<UpdateState>(UpdateState.Checking) }
+
+    suspend fun check() {
+        state = UpdateState.Checking
+        val latest = UpdateChecker.fetchLatest()
+        state = when {
+            latest == null -> UpdateState.Error
+            UpdateChecker.isNewer(latest.tag, currentVersion) -> {
+                val ready = viewModel.updateReadyTag
+                if (ready != null && ready != latest.tag) viewModel.clearDownloadedUpdate()
+                UpdateState.Available(latest)
+            }
+            else -> {
+                viewModel.clearDownloadedUpdate()
+                UpdateState.UpToDate
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) { check() }
+
+    BottomSheet(onDismiss = onDismiss) {
+        Text(
+            text = stringResource(R.string.check_updates),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        if (viewModel.updateProgress >= 0) {
+            Text(
+                text = stringResource(R.string.update_downloading, viewModel.updateProgress),
+                fontSize = 14.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+            )
+            return@BottomSheet
+        }
+        val readyTag = viewModel.updateReadyTag
+        val apkExists = remember(readyTag) {
+            readyTag != null && UpdateChecker.apkFile(context).exists()
+        }
+        if (readyTag != null && apkExists) {
+            Text(
+                text = stringResource(R.string.update_ready_install),
+                fontSize = 14.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Text(
+                    text = stringResource(R.string.update_install),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                    modifier = Modifier
+                        .clickable {
+                            val file = UpdateChecker.apkFile(context)
+                            if (!file.exists()) {
+                                viewModel.clearDownloadedUpdate()
+                            } else if (UpdateChecker.installApk(context, file)) {
+                                onDismiss()
+                            }
+                        }
+                        .padding(12.dp),
+                )
+            }
+            return@BottomSheet
+        }
+        when (val s = state) {
+            is UpdateState.Checking -> {
+                Text(
+                    text = stringResource(R.string.update_checking),
+                    fontSize = 14.sp,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                )
+            }
+            is UpdateState.UpToDate -> {
+                Text(
+                    text = stringResource(R.string.update_up_to_date, currentVersion),
+                    fontSize = 14.sp,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                )
+            }
+            is UpdateState.Error -> {
+                Text(
+                    text = stringResource(R.string.update_error),
+                    fontSize = 14.sp,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Text(
+                        text = stringResource(R.string.retry),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                        modifier = Modifier
+                            .clickable { scope.launch { check() } }
+                            .padding(12.dp),
+                    )
+                }
+            }
+            is UpdateState.Available -> {
+                Text(
+                    text = stringResource(R.string.update_available, s.info.versionName),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                )
+                Text(
+                    text = stringResource(R.string.update_current_version, currentVersion),
+                    fontSize = 13.sp,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                    modifier = Modifier.padding(bottom = 12.dp),
+                )
+                if (s.info.notes.isNotBlank()) {
+                    Text(
+                        text = stringResource(R.string.update_notes_title),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                    Text(
+                        text = s.info.notes,
+                        fontSize = 13.sp,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 220.dp)
+                            .verticalScroll(rememberScrollState())
+                            .padding(bottom = 16.dp),
+                    )
+                }
+                if (viewModel.updateFailed) {
+                    Text(
+                        text = stringResource(R.string.update_download_failed),
+                        fontSize = 14.sp,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    Text(
+                        text = stringResource(R.string.update_download_install),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                        modifier = Modifier
+                            .clickable { viewModel.downloadUpdate(s.info) }
+                            .padding(12.dp),
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -1348,7 +1785,10 @@ fun HiddenAppsDialog(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
-    val allApps = remember { AppLoader.loadApps(context) }
+    val allApps = remember {
+        (AppLoader.loadApps(context) + ShortcutHelper.installedShortcuts(context, viewModel.prefs))
+            .sortedBy { it.label.lowercase() }
+    }
     var hiddenSet by remember { mutableStateOf(viewModel.prefs.getHiddenApps()) }
     val itemsPerPage = 6
     var page by remember { mutableIntStateOf(0) }
@@ -1389,19 +1829,23 @@ fun HiddenAppsDialog(
             for (i in 0 until itemsPerPage) {
                 if (i < pageApps.size) {
                     val app = pageApps[i]
-                    val isHidden = app.packageName in hiddenSet
+                    val isHidden = app.key in hiddenSet
                     val sizePx = remember { (36 * context.resources.displayMetrics.density).toInt() }
-                    val bitmap = remember(app.packageName) {
-                        IconUtility.loadIcon(context, app.packageName, app.activityName, sizePx)
+                    val bitmap = remember(app.key) {
+                        if (app.shortcutId.isNotEmpty()) {
+                            IconUtility.loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
+                        } else {
+                            IconUtility.loadIcon(context, app.packageName, app.activityName, sizePx)
+                        }
                     }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
                                 if (isHidden) {
-                                    viewModel.prefs.unhideApp(app.packageName)
+                                    viewModel.prefs.unhideApp(app.key)
                                 } else {
-                                    viewModel.prefs.hideApp(app.packageName)
+                                    viewModel.prefs.hideApp(app.key)
                                 }
                                 hiddenSet = viewModel.prefs.getHiddenApps()
                                 viewModel.loadApps()

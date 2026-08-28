@@ -1,6 +1,7 @@
 package com.gezimos.katapult.service
 
 import android.Manifest
+import android.content.ContentValues
 import android.content.Context
 import android.content.pm.PackageManager
 import android.database.ContentObserver
@@ -17,6 +18,16 @@ class DirectBadgeHelper(private val context: Context) {
         const val MUDITA_MESSAGES = "com.mudita.messages"
 
         val DIRECT_PACKAGES = setOf(MUDITA_DIAL, MUDITA_MESSAGES)
+
+        private const val MISSED_SELECTION =
+            "((${CallLog.Calls.TYPE} IN (?, ?) AND ${CallLog.Calls.NEW} = 1) OR " +
+                "(${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.IS_READ} = 0))"
+
+        private val MISSED_ARGS = arrayOf(
+            CallLog.Calls.MISSED_TYPE.toString(),
+            CallLog.Calls.REJECTED_TYPE.toString(),
+            CallLog.Calls.MISSED_TYPE.toString(),
+        )
     }
 
     var onCountsChanged: (() -> Unit)? = null
@@ -42,6 +53,28 @@ class DirectBadgeHelper(private val context: Context) {
     private fun hasSmsPermission(): Boolean =
         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
 
+    fun hasWriteCallLogPermission(): Boolean =
+        ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALL_LOG) == PackageManager.PERMISSION_GRANTED
+
+    fun hasMissedCalls(): Boolean = missedCallCount > 0
+
+    fun clearMissedCalls() {
+        if (!hasWriteCallLogPermission()) return
+        try {
+            val values = ContentValues(2).apply {
+                put(CallLog.Calls.NEW, 0)
+                put(CallLog.Calls.IS_READ, 1)
+            }
+            context.contentResolver.update(
+                CallLog.Calls.CONTENT_URI,
+                values,
+                MISSED_SELECTION,
+                MISSED_ARGS,
+            )
+        } catch (_: Exception) {}
+        queryMissedCalls()
+    }
+
     fun start() {
         if (hasCallLogPermission()) queryMissedCalls()
         if (hasSmsPermission()) queryUnreadSms()
@@ -64,8 +97,8 @@ class DirectBadgeHelper(private val context: Context) {
             val cursor = context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls._ID),
-                "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.NEW} = ?",
-                arrayOf(CallLog.Calls.MISSED_TYPE.toString(), "1"),
+                MISSED_SELECTION,
+                MISSED_ARGS,
                 null,
             )
             val c = cursor?.count ?: 0

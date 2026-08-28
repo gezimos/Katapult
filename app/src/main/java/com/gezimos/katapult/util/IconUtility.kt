@@ -61,7 +61,10 @@ object IconUtility {
         "com.foobar2000.foobar2000" to R.drawable.music,
         "org.videolan.vlc" to R.drawable.music,
         "com.android.settings" to R.drawable.settings,
+        "com.android.quicksearchbox" to R.drawable.search,
         "org.chromium.webview_shell" to R.drawable.chromium,
+        "com.android.webview" to R.drawable.chromium,
+        "com.android.chrome" to R.drawable.chromium,
         "com.brave.browser" to R.drawable.brave,
         "com.zsemberi.killapps" to R.drawable.killapps,
         "org.koreader.launcher" to R.drawable.koreader,
@@ -69,12 +72,12 @@ object IconUtility {
         "com.reddit.frontpage" to R.drawable.reddit,
         "info.plateaukao.einkbro" to R.drawable.einkbro,
         "ws.xsoh.etar" to R.drawable.calendar,
+        "com.android.calendar" to R.drawable.calendar,
         "org.onekash.kashcal" to R.drawable.calendar,
     )
 
     data class BundledIcon(val resId: Int, val resName: String, val label: String)
 
-    // Deduplicated set of bundled drawables users can pick for any app.
     val bundledIcons: List<BundledIcon> = listOf(
         BundledIcon(R.drawable.signal, "signal", "Signal"),
         BundledIcon(R.drawable.telegram, "telegram", "Telegram"),
@@ -95,6 +98,7 @@ object IconUtility {
         BundledIcon(R.drawable.sms, "sms", "SMS"),
         BundledIcon(R.drawable.newpipe, "newpipe", "NewPipe"),
         BundledIcon(R.drawable.music, "music", "Music"),
+        BundledIcon(R.drawable.search, "search", "Search"),
         BundledIcon(R.drawable.settings, "settings", "Settings"),
         BundledIcon(R.drawable.chromium, "chromium", "Chromium"),
         BundledIcon(R.drawable.brave, "brave", "Brave"),
@@ -123,9 +127,11 @@ object IconUtility {
     private fun resolveBundled(resName: String): Int? =
         bundledIcons.firstOrNull { it.resName == resName }?.resId
 
-    fun clearCacheFor(packageName: String) {
-        val prefix = "$packageName:"
-        val keys = bitmapCache.snapshot().keys.filter { it.startsWith(prefix) }
+    fun clearCacheFor(key: String) {
+        val prefixes = if (key.contains('|')) listOf("$key:") else listOf("$key:", "$key|")
+        val keys = bitmapCache.snapshot().keys.filter { cached ->
+            prefixes.any { cached.startsWith(it) }
+        }
         keys.forEach { bitmapCache.remove(it) }
     }
 
@@ -141,9 +147,10 @@ object IconUtility {
     fun loadIcon(context: Context, packageName: String, activityClass: String, sizePx: Int): Bitmap? {
         if (packageName.isBlank() || sizePx <= 0) return null
 
-        val override = context
-            .getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
-            .getString("icon_override_$packageName", null)
+        val override = runCatching {
+            context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
+                .getString("icon_override_$packageName", null)
+        }.getOrNull()
 
         val cacheKey = "$packageName:$activityClass:$sizePx:${override ?: ""}"
         bitmapCache.get(cacheKey)?.let { return it }
@@ -203,8 +210,6 @@ object IconUtility {
         }
     }
 
-    // Android 12 fallback: AdaptiveIconDrawable.getMonochrome() is API 33+, but apps may
-    // still ship a <monochrome> element in their adaptive-icon XML.
     private fun extractMonochromeFromManifest(context: Context, packageName: String): Drawable? {
         return try {
             val pm = context.packageManager
@@ -308,8 +313,44 @@ object IconUtility {
 
     fun preloadIcons(context: Context, apps: List<com.gezimos.katapult.model.AppModel>, sizePx: Int) {
         for (app in apps) {
-            loadIcon(context, app.packageName, app.activityName, sizePx)
+            if (app.shortcutId.isNotEmpty()) loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
+            else loadIcon(context, app.packageName, app.activityName, sizePx)
         }
+    }
+
+    fun loadShortcutIcon(context: Context, packageName: String, shortcutId: String, sizePx: Int): Bitmap? {
+        if (packageName.isBlank() || shortcutId.isBlank() || sizePx <= 0) return null
+        val override = runCatching {
+            context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
+                .getString("icon_override_$packageName|$shortcutId", null)
+        }.getOrNull()
+
+        val cacheKey = "$packageName|$shortcutId:$sizePx:${override ?: ""}"
+        bitmapCache.get(cacheKey)?.let { return it }
+
+        val bitmap = try {
+            val overrideBitmap = override?.let { loadOverrideBitmap(context, it, sizePx) }
+            if (overrideBitmap != null) {
+                overrideBitmap
+            } else {
+                val info = ShortcutHelper.queryShortcuts(context, packageName)
+                    .find { it.id == shortcutId }
+                val drawable = info?.let {
+                    context.getSystemService(android.content.pm.LauncherApps::class.java)
+                        .getShortcutIconDrawable(it, context.resources.displayMetrics.densityDpi)
+                }
+                when {
+                    drawable is AdaptiveIconDrawable -> renderAdaptiveIcon(drawable, sizePx)
+                    drawable != null -> drawableToBitmap(drawable, sizePx)
+                    else -> null
+                }
+            }
+        } catch (_: Exception) {
+            null
+        } ?: return loadIcon(context, packageName, "", sizePx)
+
+        bitmapCache.put(cacheKey, bitmap)
+        return bitmap
     }
 
 }

@@ -87,8 +87,10 @@ import androidx.compose.ui.zIndex
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.Screen
+import com.gezimos.katapult.lockscreen.LockscreenWidgetService
 import com.gezimos.katapult.util.BrightnessHelper
 import com.gezimos.katapult.util.IconUtility
+import com.gezimos.katapult.util.PrefsManager
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -119,9 +121,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             .fillMaxSize()
             .background(LocalSurface.current)
             .pointerInput(viewModel.prefs.verticalAppGestures) {
-                // One handler for both: a single-finger swipe opens All Apps, a two-finger
-                // pinch-in (zoom out) opens the screensaver. Kept together so the pinch and
-                // the swipe can't fire each other.
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
                     var swipeAcc = 0f
@@ -172,7 +171,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                 .navigationBarsPadding()
                 .padding(PagePadding),
         ) {
-            // Clock area - positioned in upper portion like mockup
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -181,8 +179,11 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         detectTapGestures(
                             onLongPress = { showMenu = true },
                             onDoubleTap = {
-                                if (viewModel.prefs.doubleTapBrightness) {
-                                    BrightnessHelper.toggleBrightness(context, viewModel.prefs)
+                                when (viewModel.prefs.doubleTapAction) {
+                                    PrefsManager.DOUBLE_TAP_BRIGHTNESS ->
+                                        BrightnessHelper.toggleBrightness(context, viewModel.prefs)
+                                    PrefsManager.DOUBLE_TAP_LOCK ->
+                                        LockscreenWidgetService.lockScreen()
                                 }
                             },
                         )
@@ -201,7 +202,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     onClockClick = {
                         val saved = viewModel.prefs.loadShortcut("clock")
                         if (saved != null) {
-                            viewModel.launchPackage(context, saved.first, saved.second)
+                            viewModel.launchShortcut(context, "clock")
                         } else if (!viewModel.prefs.disableHomeEditing) {
                             pickerSlot = "clock"
                         }
@@ -210,7 +211,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     onDateClick = {
                         val saved = viewModel.prefs.loadShortcut("calendar")
                         if (saved != null) {
-                            viewModel.launchPackage(context, saved.first, saved.second)
+                            viewModel.launchShortcut(context, "calendar")
                         } else if (!viewModel.prefs.disableHomeEditing) {
                             pickerSlot = "calendar"
                         }
@@ -233,7 +234,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                 )
             }
 
-            // Music widget - aligned with app icon edges
             if (viewModel.mediaInfo != null && !viewModel.prefs.disableMusicWidget) {
                 @Suppress("UnusedBoxWithConstraintsScope")
                 androidx.compose.foundation.layout.BoxWithConstraints(
@@ -249,7 +249,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                 }
             }
 
-            // Extra row (if enabled)
             if (viewModel.prefs.homeExtraRow) {
                 Row(
                     modifier = Modifier
@@ -289,7 +288,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                 }
             }
 
-            // Shortcuts
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -321,7 +319,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.clickable { viewModel.navigateTo(Screen.ALL_APPS) },
                         ) {
-                            // Dashed outline with grid dots; solid filled tile when islands are on
                             val strokeWidth = 2.5.dp
                             val isRounded = viewModel.roundedIcons
                             val tileShape = if (isRounded) RoundedIconShape else CircleShape
@@ -369,7 +366,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
         }
     }
 
-    // Menu bottom sheet (Dialog-based, handles back + tap-outside natively)
     if (showMenu) {
         BottomSheet(onDismiss = { showMenu = false }) {
             BottomSheetOption(stringResource(R.string.settings), icon = Icons.Rounded.Settings) {
@@ -410,7 +406,6 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
         }
     }
 
-    // App picker bottom sheet
     if (pickerSlot != null) {
         val slot = pickerSlot!!
         val title = when (slot) {
@@ -429,7 +424,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             title = title,
             onDismiss = { pickerSlot = null },
             onSelected = { app ->
-                viewModel.saveShortcut(slot, app.packageName, app.activityName)
+                viewModel.saveShortcut(slot, app.packageName, app.activityName, app.shortcutId)
                 viewModel.shortcutRefresh++
                 pickerSlot = null
             },
@@ -461,8 +456,6 @@ private fun AppPickerDialog(
         apps.subList(start, end)
     }
     var dragAccumulator by remember { mutableFloatStateOf(0f) }
-    // Proportional rounding for the small 36dp icons — the absolute 19dp radius of
-    // LocalIconShape saturates into a circle at this size.
     val iconShape = if (viewModel.roundedIcons) RoundedCornerShape(percent = 26) else CircleShape
 
     BottomSheet(onDismiss = onDismiss) {
@@ -494,8 +487,12 @@ private fun AppPickerDialog(
                     val app = pageApps[i]
                     val context = LocalContext.current
                     val sizePx = remember { (36 * context.resources.displayMetrics.density).toInt() }
-                    val bitmap = remember(app.packageName) {
-                        IconUtility.loadIcon(context, app.packageName, app.activityName, sizePx)
+                    val bitmap = remember(app.key) {
+                        if (app.shortcutId.isNotEmpty()) {
+                            IconUtility.loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
+                        } else {
+                            IconUtility.loadIcon(context, app.packageName, app.activityName, sizePx)
+                        }
                     }
                     Row(
                         modifier = Modifier
@@ -568,7 +565,6 @@ private fun MusicWidget(viewModel: MainViewModel) {
     val context = LocalContext.current
     val widgetShape = RoundedIconShape
 
-    // Album art
     val albumArt = remember(info.controller.metadata) {
         try {
             info.controller.metadata?.getBitmap(android.media.MediaMetadata.METADATA_KEY_ALBUM_ART)
@@ -591,7 +587,6 @@ private fun MusicWidget(viewModel: MainViewModel) {
             .background(LocalSurface.current)
             .border(2.5.dp, LocalInk.current, widgetShape),
     ) {
-        // Song info row
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -610,7 +605,6 @@ private fun MusicWidget(viewModel: MainViewModel) {
             )
         }
 
-        // Divider
         Box(
             Modifier
                 .fillMaxWidth()
@@ -618,14 +612,12 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 .background(LocalInk.current)
         )
 
-        // Controls row (2/3 height)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(2f),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Album art - full height, 1:1, bottom-left corner matches container
             val artCorner = 19.dp
             val artShape = RoundedCornerShape(
                 topStart = 0.dp,
@@ -660,10 +652,8 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 }
             }
 
-            // Separator
             Box(Modifier.fillMaxHeight().width(2.5.dp).background(LocalInk.current))
 
-            // Controls
             Row(
                 modifier = Modifier
                     .weight(1f)
@@ -726,13 +716,18 @@ private fun ShortcutItem(
     val context = LocalContext.current
     val pkg = remember(refresh) { viewModel.getShortcutPackage(slot) }
     val activityName = remember(refresh) { viewModel.getShortcutActivity(slot) }
+    val slotShortcutId = remember(refresh) { viewModel.prefs.loadSlotShortcutId(slot) }
     val label = remember(refresh) { viewModel.getShortcutLabel(slot, defaultLabel) }
     val sizePx = remember { (IconSize.value * context.resources.displayMetrics.density).toInt() }
     val bitmap = remember(pkg, activityName, refresh) {
-        if (pkg != null) IconUtility.loadIcon(context, pkg, activityName, sizePx) else null
+        when {
+            pkg == null -> null
+            slotShortcutId != null -> IconUtility.loadShortcutIcon(context, pkg, slotShortcutId, sizePx)
+            else -> IconUtility.loadIcon(context, pkg, activityName, sizePx)
+        }
     }
 
-    val notificationCount = if (viewModel.prefs.notificationIndicators)
+    val notificationCount = if (viewModel.prefs.notificationIndicators && slotShortcutId == null)
         pkg?.let { viewModel.notificationCounts[it] ?: 0 } ?: 0 else 0
 
     Column(
@@ -785,7 +780,6 @@ internal fun Modifier.homeIsland(show: Boolean, surface: Color, ink: Color, hPad
             color = ink,
             topLeft = Offset(topLeft.x + stroke / 2, topLeft.y + stroke / 2),
             size = Size(rectSize.width - stroke, rectSize.height - stroke),
-            // Inset path needs an inset radius to stay concentric with the fill.
             cornerRadius = CornerRadius(radius - stroke / 2, radius - stroke / 2),
             style = Stroke(width = stroke),
         )

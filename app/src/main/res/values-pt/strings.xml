@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Katapult</string>
 
-    <!-- Common -->
     <string name="save">Guardar</string>
     <string name="save_uppercase">GUARDAR</string>
     <string name="cancel">Cancelar</string>
@@ -9,7 +8,6 @@
     <string name="finish">Concluir</string>
     <string name="rename">Renomear</string>
 
-    <!-- Home screen -->
     <string name="phone">Telefone</string>
     <string name="sms">SMS</string>
     <string name="music">Música</string>
@@ -24,7 +22,6 @@
     <string name="no_media">Sem multimédia</string>
     <string name="battery_percent">%1$d%%</string>
 
-    <!-- Content descriptions -->
     <string name="cd_alarm">Alarme</string>
     <string name="cd_battery">Bateria</string>
     <string name="cd_album_art">Capa do álbum</string>
@@ -35,7 +32,6 @@
     <string name="cd_stop">Parar</string>
     <string name="cd_reset_order">Repor ordem</string>
 
-    <!-- App picker -->
     <string name="set_left_app">Definir app esquerda</string>
     <string name="set_right_app">Definir app direita</string>
     <string name="set_clock_app">Definir app do relógio</string>
@@ -45,7 +41,6 @@
     <string name="set_extra_right_app">Definir app extra direita</string>
     <string name="choose_app">Escolher app</string>
 
-    <!-- Context menu -->
     <string name="reorder">Reordenar</string>
     <string name="hide">Ocultar</string>
     <string name="app_info">Info da app</string>
@@ -54,25 +49,26 @@
     <string name="uninstall">Desinstalar</string>
     <string name="reset_order_confirm">Repor ordem alfabética?</string>
 
-    <!-- All apps -->
     <string name="all_apps">Apps</string>
 
-    <!-- Notification badge -->
     <string name="badge_overflow">99+</string>
 
-    <!-- Settings -->
     <string name="icon_shape">Forma do ícone</string>
     <string name="icon_shape_rounded">Arredondado</string>
     <string name="icon_shape_circle">Círculo</string>
     <string name="change_icon">Alterar ícone</string>
     <string name="import_icon">Importar ícone</string>
     <string name="katapult_icons">Ícones Katapult</string>
+    <string name="material_icons">Ícones Material</string>
     <string name="choose_png">Importar ícone (png, svg)</string>
     <string name="reset_icon">Repor predefinição</string>
     <string name="notification_indicators">Indicadores de notificações</string>
     <string name="notification_indicators_desc">Mostrar emblemas de notificações nos ícones</string>
     <string name="hide_status_bar">Ocultar barra de estado</string>
     <string name="hide_status_bar_desc">Oculta a barra de estado do sistema</string>
+    <string name="hide_status_bar_clock">Ocultar relógio da barra de estado</string>
+    <string name="hide_status_bar_clock_desc">Cobre o relógio duplicado na barra de estado, requer o serviço de acessibilidade</string>
+    <string name="hide_status_bar_clock_a11y">A cobertura do relógio é desenhada pelo serviço de acessibilidade do Katapult. Ative-o nas definições do sistema para usar esta funcionalidade.</string>
     <string name="eink_refresh">Atualização E-Ink no ecrã inicial</string>
     <string name="eink_refresh_desc">Remove ghosting ao premir o botão Home</string>
     <string name="eink_auto_mode">Modo E-Ink</string>
@@ -80,8 +76,10 @@
     <string name="extra_dock_row_desc">Mostrar 3 apps extra no ecrã inicial</string>
     <string name="infinite_scroll">Deslocamento infinito</string>
     <string name="infinite_scroll_desc">Deslizar páginas de ambos os lados</string>
-    <string name="double_tap_brightness">Duplo toque brilho</string>
-    <string name="double_tap_brightness_desc">Duplo toque no ecrã inicial para desligar o brilho.</string>
+    <string name="double_tap_action">Duplo toque no ecrã inicial</string>
+    <string name="double_tap_off">Desativado</string>
+    <string name="double_tap_brightness">Brilho</string>
+    <string name="double_tap_lock">Bloquear</string>
     <string name="clock_format">Formato da Hora</string>
     <string name="date_format">Formato da Data</string>
     <string name="show_battery">Mostrar bateria %%</string>
@@ -104,13 +102,26 @@
     <string name="notification_log_desc">Ver histórico de notificações</string>
     <string name="set_default_launcher">Definir como launcher predefinido</string>
     <string name="set_default_launcher_desc">Escolher Katapult como ecrã inicial</string>
+    <string name="config_backup">Exportar/importar configuração</string>
+    <string name="config_backup_desc">Guardar ou restaurar as definições como ficheiro JSON</string>
+    <string name="config_export">Exportar</string>
+    <string name="config_import">Importar</string>
+    <string name="config_clear">Apagar todos os dados</string>
+    <string name="config_clear_confirm">Apagar todas as definições e reiniciar o Katapult?</string>
+    <string name="config_exported">Configuração exportada</string>
+    <string name="config_export_failed">Falha ao exportar</string>
+    <string name="config_import_failed">Falha ao importar, ficheiro de configuração inválido</string>
+    <string name="app_shortcuts">Atalhos da app</string>
+    <string name="remove_shortcut">Remover atalho</string>
+    <string name="no_app_shortcuts">Sem atalhos disponíveis. O Katapult tem de ser o launcher predefinido.</string>
+    <string name="no_app_shortcuts_app">Esta app não tem atalhos.</string>
+    <string name="shortcut_pinned">%1$s adicionado às apps</string>
+    <string name="shortcut_already_added">%1$s já está nas apps</string>
 
-    <!-- Notifications -->
     <string name="notification_access_title">Ativar acesso a notificações</string>
     <string name="notification_access_message">O Katapult precisa de acesso a notificações para mostrar emblemas. Conceder acesso nas Definições?</string>
     <string name="no_alarm">Sem alarme definido</string>
 
-    <!-- Onboarding -->
     <string name="onboarding_icon">K</string>
     <string name="welcome_title">Bem-vindo ao Katapult</string>
     <string name="onboarding_notification_desc">Ativa emblemas de notificação em apps de terceiros como WhatsApp, Signal, etc.</string>
@@ -140,15 +151,17 @@
     <string name="section_experimental">Notificações no ecrã de bloqueio (Experimental)</string>
     <string name="lockscreen_widget">Notificações no ecrã de bloqueio</string>
     <string name="lockscreen_widget_desc">Mostrar o número de notificações no ecrã de bloqueio.</string>
-    <string name="lockscreen_widget_a11y_desc">Mostra o widget de notificações sobre o ecrã de bloqueio e oculta-o quando aparece o ecrã do PIN.</string>
+    <string name="a11y_service_label">Katapult Action Service</string>
+    <string name="a11y_shortcut_warning">Nas definições de acessibilidade, ative apenas o Katapult Action Service, não o seu atalho. O atalho adiciona um botão de acessibilidade flutuante ao ecrã.</string>
+    <string name="lockscreen_widget_a11y_desc">Usado para o widget de notificações do ecrã de bloqueio, cobrir o relógio da barra de estado, bloquear o telefone e a proteção de ecrã. Desenha apenas sobre o ecrã de bloqueio e a barra de estado; não lê nada das suas apps.</string>
     <string name="lockscreen_widget_apps">Apps de notificações do ecrã de bloqueio</string>
     <string name="lockscreen_widget_apps_desc">Escolha que apps aparecem no widget do ecrã de bloqueio</string>
     <string name="lockscreen_sort">Ordenação do ecrã de bloqueio</string>
     <string name="sort_latest_top">Mais recentes no topo</string>
     <string name="sort_oldest_top">Mais antigas no topo</string>
-    <string name="lockscreen_reenable_message">O acesso de acessibilidade é desativado quando a app é atualizada. Ative-o novamente para manter as notificações no ecrã de bloqueio.</string>
+    <string name="lockscreen_reenable_message">O acesso de acessibilidade é desativado ao atualizar a app. Ative-o novamente para continuar a usar as funcionalidades que dele precisam.</string>
     <string name="lockscreen_reenable_enable">Ativar nas definições</string>
-    <string name="lockscreen_reenable_disable">Desativar o widget</string>
+    <string name="lockscreen_reenable_disable">Desativar estas funcionalidades</string>
     <string name="lockscreen_readme">Leia-me</string>
     <string name="lockscreen_readme_desc">Sobre a permissão de acessibilidade e os controlos do widget</string>
     <string name="lockscreen_readme_privacy">Esta funcionalidade desenha sobre o ecrã de bloqueio através de uma sobreposição de acessibilidade. A permissão parece assustadora, mas o Katapult usa-a apenas para mostrar o widget e ler o próprio ecrã de bloqueio, nunca as suas apps, para que o widget se possa ocultar quando o ecrã do PIN aparece. Nada é registado ou partilhado; o seu código aberto é a prova.</string>
@@ -168,6 +181,12 @@
     <string name="screensaver_enable_desc">Mostrar relógio e notificações com um gesto de pinça no ecrã inicial</string>
     <string name="screensaver_system">Proteção de ecrã do sistema</string>
     <string name="donate_desc">Apoie o Katapult no Buy Me a Coffee</string>
+    <string name="github_label">github.com/gezimos</string>
+    <string name="github_desc">Código-fonte e outros projetos</string>
+    <string name="youtube_label">youtube.com/@gezimos</string>
+    <string name="youtube_desc">Vídeos e novidades</string>
+    <string name="inkos_label">inkOS</string>
+    <string name="inkos_desc">Launcher e-ink do mesmo programador</string>
     <string name="lic_app_title">App License</string>
     <string name="lic_app_desc">GNU General Public License v3.0</string>
     <string name="lic_font_title">Font License</string>

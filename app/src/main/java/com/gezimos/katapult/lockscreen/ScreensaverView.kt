@@ -332,7 +332,7 @@ private fun computeRows(
     directBadges: DirectBadgeHelper?,
 ): Pair<List<SsRow>, Int> {
     val merged = NotificationListener.getAllCounts().toMutableMap()
-    directBadges?.getCounts()?.forEach { (pkg, count) -> merged[pkg] = count }
+    directBadges?.getCounts()?.forEach { (pkg, count) -> merged[pkg] = (merged[pkg] ?: 0) + count }
     val excluded = prefs.getLockscreenExcludedApps()
     val counts = merged.filter { (pkg, count) -> count > 0 && pkg !in excluded }
     val times = NotificationListener.getLastPostTimes()

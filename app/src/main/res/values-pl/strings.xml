@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Katapult</string>
 
-    <!-- Common -->
     <string name="save">Zapisz</string>
     <string name="save_uppercase">ZAPISZ</string>
     <string name="cancel">Anuluj</string>
@@ -9,7 +8,6 @@
     <string name="finish">Zakończ</string>
     <string name="rename">Zmień nazwę</string>
 
-    <!-- Home screen -->
     <string name="phone">Telefon</string>
     <string name="sms">SMS</string>
     <string name="music">Muzyka</string>
@@ -24,7 +22,6 @@
     <string name="no_media">Brak mediów</string>
     <string name="battery_percent">%1$d%%</string>
 
-    <!-- Content descriptions -->
     <string name="cd_alarm">Alarm</string>
     <string name="cd_battery">Bateria</string>
     <string name="cd_album_art">Okładka albumu</string>
@@ -35,7 +32,6 @@
     <string name="cd_stop">Stop</string>
     <string name="cd_reset_order">Resetuj kolejność</string>
 
-    <!-- App picker -->
     <string name="set_left_app">Ustaw lewą aplikację</string>
     <string name="set_right_app">Ustaw prawą aplikację</string>
     <string name="set_clock_app">Ustaw aplikację zegara</string>
@@ -45,7 +41,6 @@
     <string name="set_extra_right_app">Ustaw dodatkową prawą aplikację</string>
     <string name="choose_app">Wybierz aplikację</string>
 
-    <!-- Context menu -->
     <string name="reorder">Zmień kolejność</string>
     <string name="hide">Ukryj</string>
     <string name="app_info">Info o aplikacji</string>
@@ -54,25 +49,26 @@
     <string name="uninstall">Odinstaluj</string>
     <string name="reset_order_confirm">Przywrócić kolejność alfabetyczną?</string>
 
-    <!-- All apps -->
     <string name="all_apps">Aplikacje</string>
 
-    <!-- Notification badge -->
     <string name="badge_overflow">99+</string>
 
-    <!-- Settings -->
     <string name="icon_shape">Kształt ikony</string>
     <string name="icon_shape_rounded">Zaokrąglony</string>
     <string name="icon_shape_circle">Koło</string>
     <string name="change_icon">Zmień ikonę</string>
     <string name="import_icon">Importuj ikonę</string>
     <string name="katapult_icons">Ikony Katapult</string>
+    <string name="material_icons">Ikony Material</string>
     <string name="choose_png">Importuj ikonę (png, svg)</string>
     <string name="reset_icon">Przywróć domyślną</string>
     <string name="notification_indicators">Wskaźniki powiadomień</string>
     <string name="notification_indicators_desc">Pokaż znaczniki powiadomień na ikonach</string>
     <string name="hide_status_bar">Ukryj pasek stanu</string>
     <string name="hide_status_bar_desc">Ukrywa systemowy pasek stanu</string>
+    <string name="hide_status_bar_clock">Ukryj zegar paska stanu</string>
+    <string name="hide_status_bar_clock_desc">Zakrywa zduplikowany zegar na pasku stanu, wymaga usługi ułatwień dostępu</string>
+    <string name="hide_status_bar_clock_a11y">Zasłonę zegara rysuje usługa ułatwień dostępu Katapult. Włącz ją w ustawieniach systemu, aby korzystać z tej funkcji.</string>
     <string name="eink_refresh">Odświeżanie E-Ink na ekranie głównym</string>
     <string name="eink_refresh_desc">Usuwa ghosting po naciśnięciu przycisku Home</string>
     <string name="eink_auto_mode">Tryb E-Ink</string>
@@ -80,8 +76,10 @@
     <string name="extra_dock_row_desc">Pokaż 3 dodatkowe aplikacje na ekranie głównym</string>
     <string name="infinite_scroll">Nieskończone przewijanie</string>
     <string name="infinite_scroll_desc">Przewijaj strony z obu stron</string>
-    <string name="double_tap_brightness">Podwójne dotknięcie jasność</string>
-    <string name="double_tap_brightness_desc">Podwójne dotknięcie na ekranie głównym wyłącza jasność.</string>
+    <string name="double_tap_action">Podwójne dotknięcie na ekranie głównym</string>
+    <string name="double_tap_off">Wyłączone</string>
+    <string name="double_tap_brightness">Jasność</string>
+    <string name="double_tap_lock">Zablokuj telefon</string>
     <string name="clock_format">Format zegara</string>
     <string name="date_format">Format daty</string>
     <string name="show_battery">Pokaż baterię %%</string>
@@ -104,13 +102,26 @@
     <string name="notification_log_desc">Wyświetl historię powiadomień</string>
     <string name="set_default_launcher">Ustaw jako domyślny launcher</string>
     <string name="set_default_launcher_desc">Wybierz Katapult jako ekran główny</string>
+    <string name="config_backup">Eksport/import konfiguracji</string>
+    <string name="config_backup_desc">Zapisz lub przywróć ustawienia jako plik JSON</string>
+    <string name="config_export">Eksportuj</string>
+    <string name="config_import">Importuj</string>
+    <string name="config_clear">Wyczyść wszystkie dane</string>
+    <string name="config_clear_confirm">Usunąć wszystkie ustawienia i uruchomić Katapult ponownie?</string>
+    <string name="config_exported">Konfiguracja wyeksportowana</string>
+    <string name="config_export_failed">Eksport nie powiódł się</string>
+    <string name="config_import_failed">Import nie powiódł się, nieprawidłowy plik konfiguracji</string>
+    <string name="app_shortcuts">Skróty aplikacji</string>
+    <string name="remove_shortcut">Usuń skrót</string>
+    <string name="no_app_shortcuts">Brak dostępnych skrótów. Katapult musi być domyślnym launcherem.</string>
+    <string name="no_app_shortcuts_app">Ta aplikacja nie ma skrótów.</string>
+    <string name="shortcut_pinned">%1$s dodano do aplikacji</string>
+    <string name="shortcut_already_added">%1$s jest już w aplikacjach</string>
 
-    <!-- Notifications -->
     <string name="notification_access_title">Włącz dostęp do powiadomień</string>
     <string name="notification_access_message">Katapult potrzebuje dostępu do powiadomień, aby wyświetlać znaczniki. Przyznać dostęp w Ustawieniach?</string>
     <string name="no_alarm">Brak ustawionego alarmu</string>
 
-    <!-- Onboarding -->
     <string name="onboarding_icon">K</string>
     <string name="welcome_title">Witaj w Katapult</string>
     <string name="onboarding_notification_desc">Włącza znaczniki powiadomień na aplikacjach firm trzecich, takich jak WhatsApp, Signal itp.</string>
@@ -140,15 +151,17 @@
     <string name="section_experimental">Powiadomienia na ekranie blokady (Eksperymentalne)</string>
     <string name="lockscreen_widget">Powiadomienia na ekranie blokady</string>
     <string name="lockscreen_widget_desc">Pokazuj liczbę powiadomień na ekranie blokady.</string>
-    <string name="lockscreen_widget_a11y_desc">Wyświetla widżet powiadomień na ekranie blokady i ukrywa go, gdy pojawi się ekran PIN.</string>
+    <string name="a11y_service_label">Katapult Action Service</string>
+    <string name="a11y_shortcut_warning">W ustawieniach ułatwień dostępu włącz tylko samą usługę Katapult Action Service, nie jej skrót. Skrót dodaje pływający przycisk ułatwień dostępu na ekranie.</string>
+    <string name="lockscreen_widget_a11y_desc">Używana do widżetu powiadomień na ekranie blokady, zakrywania zegara paska stanu, blokowania telefonu i wygaszacza. Rysuje tylko na ekranie blokady i pasku stanu; nie odczytuje niczego z Twoich aplikacji.</string>
     <string name="lockscreen_widget_apps">Aplikacje powiadomień na ekranie blokady</string>
     <string name="lockscreen_widget_apps_desc">Wybierz, które aplikacje pojawiają się w widżecie ekranu blokady</string>
     <string name="lockscreen_sort">Sortowanie na ekranie blokady</string>
     <string name="sort_latest_top">Najnowsze na górze</string>
     <string name="sort_oldest_top">Najstarsze na górze</string>
-    <string name="lockscreen_reenable_message">Dostęp ułatwień dostępu jest wyłączany po aktualizacji aplikacji. Włącz go ponownie, aby zachować powiadomienia na ekranie blokady.</string>
+    <string name="lockscreen_reenable_message">Dostęp ułatwień dostępu jest wyłączany przy aktualizacji aplikacji. Włącz go ponownie, aby dalej korzystać z funkcji, które go wymagają.</string>
     <string name="lockscreen_reenable_enable">Włącz w ustawieniach</string>
-    <string name="lockscreen_reenable_disable">Wyłącz widżet</string>
+    <string name="lockscreen_reenable_disable">Wyłącz te funkcje</string>
     <string name="lockscreen_readme">Przeczytaj</string>
     <string name="lockscreen_readme_desc">O uprawnieniu ułatwień dostępu i sterowaniu widżetem</string>
     <string name="lockscreen_readme_privacy">Ta funkcja rysuje na ekranie blokady za pomocą nakładki ułatwień dostępu. Uprawnienie brzmi groźnie, ale Katapult używa go tylko do wyświetlania widżetu i odczytywania samego ekranu blokady, nigdy Twoich aplikacji, aby widżet mógł się ukryć, gdy pojawi się ekran PIN. Nic nie jest nagrywane ani udostępniane; dowodem jest otwarty kod źródłowy.</string>
@@ -168,6 +181,12 @@
     <string name="screensaver_enable_desc">Pokaż zegar i powiadomienia gestem szczypania na ekranie głównym</string>
     <string name="screensaver_system">Systemowy wygaszacz ekranu</string>
     <string name="donate_desc">Wesprzyj Katapult na Buy Me a Coffee</string>
+    <string name="github_label">github.com/gezimos</string>
+    <string name="github_desc">Kod źródłowy i inne projekty</string>
+    <string name="youtube_label">youtube.com/@gezimos</string>
+    <string name="youtube_desc">Filmy i nowości</string>
+    <string name="inkos_label">inkOS</string>
+    <string name="inkos_desc">Launcher e-ink od tego samego dewelopera</string>
     <string name="lic_app_title">App License</string>
     <string name="lic_app_desc">GNU General Public License v3.0</string>
     <string name="lic_font_title">Font License</string>

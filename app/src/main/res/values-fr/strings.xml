@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Katapult</string>
 
-    <!-- Common -->
     <string name="save">Enregistrer</string>
     <string name="save_uppercase">ENREGISTRER</string>
     <string name="cancel">Annuler</string>
@@ -9,7 +8,6 @@
     <string name="finish">Terminer</string>
     <string name="rename">Renommer</string>
 
-    <!-- Home screen -->
     <string name="phone">Téléphone</string>
     <string name="sms">SMS</string>
     <string name="music">Musique</string>
@@ -24,7 +22,6 @@
     <string name="no_media">Aucun média</string>
     <string name="battery_percent">%1$d%%</string>
 
-    <!-- Content descriptions -->
     <string name="cd_alarm">Alarme</string>
     <string name="cd_battery">Batterie</string>
     <string name="cd_album_art">Pochette d\'album</string>
@@ -35,7 +32,6 @@
     <string name="cd_stop">Arrêter</string>
     <string name="cd_reset_order">Réinitialiser l\'ordre</string>
 
-    <!-- App picker -->
     <string name="set_left_app">Définir l\'app de gauche</string>
     <string name="set_right_app">Définir l\'app de droite</string>
     <string name="set_clock_app">Définir l\'app horloge</string>
@@ -45,7 +41,6 @@
     <string name="set_extra_right_app">Définir l\'app supplémentaire droite</string>
     <string name="choose_app">Choisir une app</string>
 
-    <!-- Context menu -->
     <string name="reorder">Réorganiser</string>
     <string name="hide">Masquer</string>
     <string name="app_info">Infos de l\'app</string>
@@ -54,25 +49,26 @@
     <string name="uninstall">Désinstaller</string>
     <string name="reset_order_confirm">Rétablir l\'ordre alphabétique ?</string>
 
-    <!-- All apps -->
     <string name="all_apps">Apps</string>
 
-    <!-- Notification badge -->
     <string name="badge_overflow">99+</string>
 
-    <!-- Settings -->
     <string name="icon_shape">Forme des icônes</string>
     <string name="icon_shape_rounded">Arrondie</string>
     <string name="icon_shape_circle">Cercle</string>
     <string name="change_icon">Changer l\'icône</string>
     <string name="import_icon">Importer une icône</string>
     <string name="katapult_icons">Icônes Katapult</string>
+    <string name="material_icons">Icônes Material</string>
     <string name="choose_png">Importer une icône (png, svg)</string>
     <string name="reset_icon">Rétablir par défaut</string>
     <string name="notification_indicators">Indicateurs de notifications</string>
     <string name="notification_indicators_desc">Afficher les badges de notifications sur les icônes</string>
     <string name="hide_status_bar">Masquer la barre d\'état</string>
     <string name="hide_status_bar_desc">Masque la barre d\'état du système</string>
+    <string name="hide_status_bar_clock">Masquer l\'horloge de la barre d\'état</string>
+    <string name="hide_status_bar_clock_desc">Masque l\'horloge en double dans la barre d\'état, nécessite le service d\'accessibilité</string>
+    <string name="hide_status_bar_clock_a11y">Le cache de l\'horloge est dessiné par le service d\'accessibilité de Katapult. Activez-le dans les paramètres du système pour utiliser cette fonction.</string>
     <string name="eink_refresh">Rafraîchissement E-Ink à l\'accueil</string>
     <string name="eink_refresh_desc">Supprime le ghosting en appuyant sur le bouton Accueil</string>
     <string name="eink_auto_mode">Mode E-Ink</string>
@@ -80,8 +76,10 @@
     <string name="extra_dock_row_desc">Afficher 3 apps supplémentaires sur l\'accueil</string>
     <string name="infinite_scroll">Défilement infini</string>
     <string name="infinite_scroll_desc">Faire défiler les pages des deux côtés</string>
-    <string name="double_tap_brightness">Double appui luminosité</string>
-    <string name="double_tap_brightness_desc">Double appui sur l\'accueil pour éteindre la luminosité.</string>
+    <string name="double_tap_action">Double appui sur l\'accueil</string>
+    <string name="double_tap_off">Désactivé</string>
+    <string name="double_tap_brightness">Luminosité</string>
+    <string name="double_tap_lock">Verrouiller</string>
     <string name="clock_format">Format de l\'heure</string>
     <string name="date_format">Format de date</string>
     <string name="show_battery">Afficher batterie %%</string>
@@ -104,13 +102,26 @@
     <string name="notification_log_desc">Consulter l\'historique des notifications</string>
     <string name="set_default_launcher">Définir comme lanceur par défaut</string>
     <string name="set_default_launcher_desc">Choisir Katapult comme écran d\'accueil</string>
+    <string name="config_backup">Exporter/importer la configuration</string>
+    <string name="config_backup_desc">Sauvegarder ou restaurer les réglages dans un fichier JSON</string>
+    <string name="config_export">Exporter</string>
+    <string name="config_import">Importer</string>
+    <string name="config_clear">Effacer toutes les données</string>
+    <string name="config_clear_confirm">Effacer tous les réglages et redémarrer Katapult ?</string>
+    <string name="config_exported">Configuration exportée</string>
+    <string name="config_export_failed">Échec de l\'exportation</string>
+    <string name="config_import_failed">Échec de l\'importation, fichier de configuration invalide</string>
+    <string name="app_shortcuts">Raccourcis de l\'app</string>
+    <string name="remove_shortcut">Retirer le raccourci</string>
+    <string name="no_app_shortcuts">Aucun raccourci disponible. Katapult doit être le lanceur par défaut.</string>
+    <string name="no_app_shortcuts_app">Cette app n\'a pas de raccourcis.</string>
+    <string name="shortcut_pinned">%1$s ajouté aux applications</string>
+    <string name="shortcut_already_added">%1$s est déjà dans les applications</string>
 
-    <!-- Notifications -->
     <string name="notification_access_title">Activer l\'accès aux notifications</string>
     <string name="notification_access_message">Katapult a besoin de l\'accès aux notifications pour afficher les badges. Accorder l\'accès dans les Paramètres ?</string>
     <string name="no_alarm">Aucune alarme définie</string>
 
-    <!-- Onboarding -->
     <string name="onboarding_icon">K</string>
     <string name="welcome_title">Bienvenue dans Katapult</string>
     <string name="onboarding_notification_desc">Active les badges de notification sur les apps tierces comme WhatsApp, Signal, etc.</string>
@@ -140,15 +151,17 @@
     <string name="section_experimental">Notifications sur l\'écran de verrouillage (Expérimental)</string>
     <string name="lockscreen_widget">Notifications sur l\'écran de verrouillage</string>
     <string name="lockscreen_widget_desc">Afficher le nombre de notifications sur l\'écran de verrouillage.</string>
-    <string name="lockscreen_widget_a11y_desc">Affiche le widget de notifications sur l\'écran de verrouillage et le masque quand l\'écran du code PIN apparaît.</string>
+    <string name="a11y_service_label">Katapult Action Service</string>
+    <string name="a11y_shortcut_warning">Dans les paramètres d\'accessibilité, activez uniquement le Katapult Action Service, pas son raccourci. Le raccourci ajoute un bouton d\'accessibilité flottant à l\'écran.</string>
+    <string name="lockscreen_widget_a11y_desc">Utilisé pour le widget de notifications de l\'écran de verrouillage, le masquage de l\'horloge de la barre d\'état, le verrouillage du téléphone et l\'économiseur. Ne dessine que sur l\'écran de verrouillage et la barre d\'état ; ne lit rien de vos apps.</string>
     <string name="lockscreen_widget_apps">Apps de notifications de l\'écran de verrouillage</string>
     <string name="lockscreen_widget_apps_desc">Choisissez les apps affichées dans le widget de l\'écran de verrouillage</string>
     <string name="lockscreen_sort">Tri de l\'écran de verrouillage</string>
     <string name="sort_latest_top">Récentes en haut</string>
     <string name="sort_oldest_top">Anciennes en haut</string>
-    <string name="lockscreen_reenable_message">L\'accès d\'accessibilité est désactivé lors des mises à jour de l\'app. Réactivez-le pour garder les notifications sur l\'écran de verrouillage.</string>
+    <string name="lockscreen_reenable_message">L\'accès d\'accessibilité est désactivé lors de la mise à jour de l\'app. Réactivez-le pour continuer à utiliser les fonctions qui en ont besoin.</string>
     <string name="lockscreen_reenable_enable">Activer dans les paramètres</string>
-    <string name="lockscreen_reenable_disable">Désactiver le widget</string>
+    <string name="lockscreen_reenable_disable">Désactiver ces fonctions</string>
     <string name="lockscreen_readme">À lire</string>
     <string name="lockscreen_readme_desc">À propos de la permission d\'accessibilité et des contrôles du widget</string>
     <string name="lockscreen_readme_privacy">Cette fonction dessine sur l\'écran de verrouillage via une superposition d\'accessibilité. Cette permission peut sembler inquiétante, mais Katapult ne l\'utilise que pour afficher le widget et lire l\'écran de verrouillage lui-même, jamais vos apps, afin que le widget puisse se masquer quand l\'écran du code PIN apparaît. Rien n\'est enregistré ni partagé ; son code open source en est la preuve.</string>
@@ -168,6 +181,12 @@
     <string name="screensaver_enable_desc">Afficher l\'horloge et les notifications par un pincement sur l\'accueil</string>
     <string name="screensaver_system">Économiseur d\'écran du système</string>
     <string name="donate_desc">Soutenez Katapult sur Buy Me a Coffee</string>
+    <string name="github_label">github.com/gezimos</string>
+    <string name="github_desc">Code source et autres projets</string>
+    <string name="youtube_label">youtube.com/@gezimos</string>
+    <string name="youtube_desc">Vidéos et actualités</string>
+    <string name="inkos_label">inkOS</string>
+    <string name="inkos_desc">Launcher e-ink du même développeur</string>
     <string name="lic_app_title">App License</string>
     <string name="lic_app_desc">GNU General Public License v3.0</string>
     <string name="lic_font_title">Font License</string>

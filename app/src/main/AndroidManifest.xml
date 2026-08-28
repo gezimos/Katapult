@@ -9,7 +9,10 @@
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
     <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="true"
@@ -37,6 +40,18 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".PinShortcutActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:autoRemoveFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.content.pm.action.CONFIRM_PIN_SHORTCUT" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".service.NotificationListener"
             android:exported="true"
@@ -46,7 +61,6 @@
             </intent-filter>
         </service>
 
-        <!-- Experimental: the on-demand full-screen screensaver (see .lockscreen package) -->
         <activity
             android:name=".lockscreen.ScreensaverActivity"
             android:exported="false"
@@ -54,7 +68,6 @@
             android:screenOrientation="nosensor"
             android:theme="@style/Theme.Katapult" />
 
-        <!-- Experimental screensaver dream (see .lockscreen package) -->
         <service
             android:name=".lockscreen.KatapultDreamService"
             android:exported="true"
@@ -66,11 +79,10 @@
             </intent-filter>
         </service>
 
-        <!-- Experimental lockscreen notification widget (see .lockscreen package) -->
         <service
             android:name=".lockscreen.LockscreenWidgetService"
             android:exported="true"
-            android:label="@string/lockscreen_widget"
+            android:label="@string/a11y_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
@@ -79,6 +91,16 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/lockscreen_widget_service" />
         </service>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
     </application>
 

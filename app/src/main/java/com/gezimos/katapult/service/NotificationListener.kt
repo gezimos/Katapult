@@ -33,6 +33,7 @@ class NotificationListener : NotificationListenerService() {
             "com.android.settings",
             "com.google.android.gms",
             "com.mudita.service", // "KompaktOsApi" background service
+            "com.mediatek.duraspeed", // MediaTek background-app manager
         )
 
         private fun notifyChanged() {

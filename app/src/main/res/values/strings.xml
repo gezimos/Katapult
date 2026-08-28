@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Katapult</string>
 
-    <!-- Common -->
     <string name="save">Save</string>
     <string name="save_uppercase">SAVE</string>
     <string name="cancel">Cancel</string>
@@ -9,7 +8,6 @@
     <string name="finish">Finish</string>
     <string name="rename">Rename</string>
 
-    <!-- Home screen -->
     <string name="phone">Phone</string>
     <string name="sms">SMS</string>
     <string name="music">Music</string>
@@ -24,7 +22,6 @@
     <string name="no_media">No media</string>
     <string name="battery_percent">%1$d%%</string>
 
-    <!-- Content descriptions -->
     <string name="cd_alarm">Alarm</string>
     <string name="cd_battery">Battery</string>
     <string name="cd_album_art">Album art</string>
@@ -35,7 +32,6 @@
     <string name="cd_stop">Stop</string>
     <string name="cd_reset_order">Reset order</string>
 
-    <!-- App picker -->
     <string name="set_left_app">Set left app</string>
     <string name="set_right_app">Set right app</string>
     <string name="set_clock_app">Set clock app</string>
@@ -45,7 +41,6 @@
     <string name="set_extra_right_app">Set extra right app</string>
     <string name="choose_app">Choose App</string>
 
-    <!-- Context menu -->
     <string name="reorder">Reorder</string>
     <string name="hide">Hide</string>
     <string name="app_info">App Info</string>
@@ -55,13 +50,10 @@
     <string name="reset_order_confirm">Reset app order to alphabetical?</string>
     <string name="reorder_hint">Tap an app to swap it with the highlighted one</string>
 
-    <!-- All apps -->
     <string name="all_apps">Apps</string>
 
-    <!-- Notification badge -->
     <string name="badge_overflow">99+</string>
 
-    <!-- Settings -->
     <string name="section_appearance">Appearance</string>
     <string name="section_home">Home Screen</string>
     <string name="section_all_apps">All Apps</string>
@@ -77,12 +69,16 @@
     <string name="change_icon">Change Icon</string>
     <string name="import_icon">Import Icon</string>
     <string name="katapult_icons">Katapult Icons</string>
+    <string name="material_icons">Material Icons</string>
     <string name="choose_png">Import icon (png, svg)</string>
     <string name="reset_icon">Reset to Default</string>
     <string name="notification_indicators">Notification Indicators</string>
     <string name="notification_indicators_desc">Show notification badges on app icons</string>
     <string name="hide_status_bar">Hide Status Bar</string>
     <string name="hide_status_bar_desc">Hide the system status bar</string>
+    <string name="hide_status_bar_clock">Hide Status Bar Clock</string>
+    <string name="hide_status_bar_clock_desc">Cover the duplicate clock in the status bar, needs the accessibility service</string>
+    <string name="hide_status_bar_clock_a11y">The clock cover is drawn by the Katapult accessibility service. Enable it in system settings to use this feature.</string>
     <string name="eink_refresh">E-Ink Refresh on Home</string>
     <string name="eink_refresh_desc">Clear-ghosting when home button is pressed</string>
     <string name="eink_auto_mode">E-Ink Mode</string>
@@ -92,8 +88,10 @@
     <string name="disable_music_widget_desc">Hide the media controls widget</string>
     <string name="infinite_scroll">Infinite Scroll</string>
     <string name="infinite_scroll_desc">Swipe pages from both sides</string>
-    <string name="double_tap_brightness">Double-Tap Brightness</string>
-    <string name="double_tap_brightness_desc">Double-tap in home to turn off brightness.</string>
+    <string name="double_tap_action">Double tap in home</string>
+    <string name="double_tap_off">Disabled</string>
+    <string name="double_tap_brightness">Brightness</string>
+    <string name="double_tap_lock">Lock Phone</string>
     <string name="clock_format">Clock Format</string>
     <string name="date_format">Date Format</string>
     <string name="show_battery">Show Battery %%</string>
@@ -123,13 +121,40 @@
     <string name="notification_log_desc">View notification history</string>
     <string name="set_default_launcher">Set as Default Launcher</string>
     <string name="set_default_launcher_desc">Choose Katapult as your home</string>
+    <string name="config_backup">Config Export/Import</string>
+    <string name="config_backup_desc">Save or restore your settings as a JSON file</string>
+    <string name="config_export">Export</string>
+    <string name="config_import">Import</string>
+    <string name="config_clear">Clear All Data</string>
+    <string name="config_clear_confirm">Erase all settings and restart Katapult?</string>
+    <string name="config_exported">Config exported</string>
+    <string name="config_export_failed">Export failed</string>
+    <string name="config_import_failed">Import failed, not a valid config file</string>
+    <string name="app_shortcuts">App Shortcuts</string>
+    <string name="remove_shortcut">Remove Shortcut</string>
+    <string name="no_app_shortcuts">No shortcuts available. Katapult must be the default launcher.</string>
+    <string name="no_app_shortcuts_app">This app has no shortcuts.</string>
+    <string name="shortcut_pinned">%1$s added to All Apps</string>
+    <string name="shortcut_already_added">%1$s is already in All Apps</string>
+    <string name="check_updates">Check for Updates</string>
+    <string name="check_updates_desc">Download the latest version from GitHub</string>
+    <string name="update_checking">Checking for updates…</string>
+    <string name="update_up_to_date">You\'re on the latest version (v%1$s).</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_current_version">Installed: v%1$s</string>
+    <string name="update_notes_title">What\'s new</string>
+    <string name="update_download_install">Download</string>
+    <string name="update_downloading">Downloading… %1$d%%</string>
+    <string name="update_error">Couldn\'t check for updates. Check your connection and try again.</string>
+    <string name="update_ready_install">Downloaded. If Android asks, allow Katapult to install apps, then come back and tap Install.</string>
+    <string name="update_install">Install</string>
+    <string name="update_download_failed">Download failed. Check your connection and try again.</string>
+    <string name="retry">Retry</string>
 
-    <!-- Notifications -->
     <string name="notification_access_title">Enable Notification Access</string>
     <string name="notification_access_message">Katapult needs notification access to show notification badges. Grant access in Settings?</string>
     <string name="no_alarm">No alarm set</string>
 
-    <!-- Onboarding -->
     <string name="onboarding_icon">K</string>
     <string name="welcome_title">Welcome to Katapult</string>
     <string name="onboarding_notification_desc">Enables notification badges on third-party apps like WhatsApp, Signal, etc.</string>
@@ -140,15 +165,17 @@
     <string name="section_experimental">Lockscreen Notifications</string>
     <string name="lockscreen_widget">Lockscreen Notifications</string>
     <string name="lockscreen_widget_desc">Show notification counts on the lock screen.</string>
-    <string name="lockscreen_widget_a11y_desc">Draws the notification widget over the lock screen and hides it when the PIN screen appears.</string>
+    <string name="a11y_service_label">Katapult Action Service</string>
+    <string name="a11y_shortcut_warning">In accessibility settings, turn on only the Katapult Action Service itself, not its shortcut. The shortcut adds a floating accessibility button to your screen.</string>
+    <string name="lockscreen_widget_a11y_desc">Used for the lockscreen notification widget, covering the status bar clock, locking the phone, and the screensaver. Draws only over the lock screen and status bar; reads nothing from your apps.</string>
     <string name="lockscreen_widget_apps">Lockscreen Notification Apps</string>
     <string name="lockscreen_widget_apps_desc">Choose which apps appear on the lockscreen widget</string>
     <string name="lockscreen_sort">Lockscreen Sort</string>
     <string name="sort_latest_top">Latest on top</string>
     <string name="sort_oldest_top">Oldest on top</string>
-    <string name="lockscreen_reenable_message">Accessibility access gets turned off when the app is updated. Enable it again to keep notifications on the lock screen.</string>
+    <string name="lockscreen_reenable_message">Accessibility access gets turned off when the app is updated. Enable it again to keep using the features that need it.</string>
     <string name="lockscreen_reenable_enable">Enable in settings</string>
-    <string name="lockscreen_reenable_disable">Turn off the widget</string>
+    <string name="lockscreen_reenable_disable">Turn off these features</string>
     <string name="lockscreen_readme">Read Me</string>
     <string name="lockscreen_readme_desc">About the accessibility permission and widget controls</string>
     <string name="lockscreen_readme_privacy">This feature draws over the lock screen using an accessibility overlay. That permission sounds scary, but Katapult uses it only to display the widget and to read the lock screen itself, never your apps, so the widget can hide when the PIN screen appears. Nothing is recorded or shared; the open source code is the proof.</string>
@@ -168,6 +195,12 @@
     <string name="screensaver_enable_desc">Show a clock and notifications with a pinch on home</string>
     <string name="screensaver_system">System Screen Saver</string>
     <string name="donate_desc">Support Katapult on Buy Me a Coffee</string>
+    <string name="github_label">github.com/gezimos</string>
+    <string name="github_desc">Source code and other projects</string>
+    <string name="youtube_label">youtube.com/@gezimos</string>
+    <string name="youtube_desc">Videos and updates</string>
+    <string name="inkos_label">inkOS</string>
+    <string name="inkos_desc">E-ink launcher by the same developer</string>
     <string name="lic_app_title">App License</string>
     <string name="lic_app_desc">GNU General Public License v3.0</string>
     <string name="lic_font_title">Font License</string>
@@ -205,7 +238,7 @@
     <string name="notifications_readme_control">Katapult only shows notification badges, it doesn\'t manage notifications itself. Use App Notifications, an Android settings screen, to choose which apps can notify you and turn any of them off.</string>
     <string name="notifications_readme_debug">If you hear a notification but can\'t find it, open the Notification Log to see every notification the Android system has posted and track down where it came from.</string>
     <string name="screensaver_readme_desc">About the screensaver and how to open it</string>
-    <string name="screensaver_readme_accessibility">Open on Power Button needs the Katapult Notifications Accessibility Service enabled.</string>
+    <string name="screensaver_readme_accessibility">Open on Power Button needs the Katapult Action Service enabled.</string>
     <string name="screensaver_readme_about">This uses the screensaver to mimic an Always On Display. It shows the clock, date, battery, notification counts and wallpaper, like the home screen.</string>
     <string name="screensaver_readme_use">Open it with a pinch-in (zoom-out) gesture on home, from the home long-press menu, or turn on Open on Power Button so it appears after you lock the phone. If Double-Tap Brightness is on, the screen stays dark and a double-tap lights it up. To exit, press Back or Home. While it\'s showing, press power to turn the display off again.</string>
     <string name="screensaver_readme_modes">Update Mode sets how often it refreshes: Static never updates (best for wallpapers), Auto updates in real time, and Timed updates every few minutes. This is not a true AOD, the phone doesn\'t go idle, so don\'t leave it on all the time, it can use more power than the display being fully off.</string>

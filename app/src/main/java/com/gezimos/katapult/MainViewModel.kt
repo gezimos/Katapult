@@ -39,6 +39,7 @@ import com.gezimos.katapult.util.AppLoader
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
+import com.gezimos.katapult.util.ShortcutHelper
 import java.io.File
 import java.util.Date
 
@@ -82,24 +83,60 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var roundedIcons by mutableStateOf(prefs.roundedIcons)
     var darkMode by mutableStateOf(prefs.darkMode)
 
-    // Experimental lockscreen widget: prompt once per process to re-enable the
-    // accessibility service when it got dropped (happens after app updates).
     var showLockscreenReEnable by mutableStateOf(false)
     private var lockscreenReEnableChecked = false
 
     fun checkLockscreenService(context: Context) {
-        if (lockscreenReEnableChecked) return
-        lockscreenReEnableChecked = true
+        if (lockscreenReEnableChecked || screen != Screen.HOME) return
+        if (com.gezimos.katapult.lockscreen.LockscreenWidgetService.isEnabled(context)) return
         val needsService = prefs.lockscreenWidget ||
+            (prefs.hideStatusBarClock && DeviceHelper.isMuditaKompakt()) ||
+            prefs.doubleTapAction == PrefsManager.DOUBLE_TAP_LOCK ||
             (prefs.screensaverEnabled && prefs.screensaverOnPower)
-        if (needsService &&
-            !com.gezimos.katapult.lockscreen.LockscreenWidgetService.isEnabled(context)
-        ) {
+        if (needsService) {
+            lockscreenReEnableChecked = true
             showLockscreenReEnable = true
         }
     }
 
-    // Experimental screensaver: opens the full-screen screensaver activity (zero setup).
+    fun resolveLockscreenReEnable() {
+        showLockscreenReEnable = false
+    }
+
+    var updateProgress by mutableIntStateOf(-1)
+        private set
+    var updateReadyTag by mutableStateOf<String?>(null)
+        private set
+    var updateFailed by mutableStateOf(false)
+        private set
+
+    fun downloadUpdate(info: com.gezimos.katapult.util.UpdateChecker.ReleaseInfo) {
+        if (updateProgress >= 0) return
+        updateProgress = 0
+        updateFailed = false
+        updateReadyTag = null
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val ok = try {
+                val file = com.gezimos.katapult.util.UpdateChecker.apkFile(ctx)
+                com.gezimos.katapult.util.UpdateChecker.downloadApk(info.apkUrl, file) { p ->
+                    if (p >= updateProgress + 5 || p == 100) updateProgress = p
+                }
+            } catch (_: Exception) {
+                false
+            }
+            if (ok) updateReadyTag = info.tag else updateFailed = true
+            updateProgress = -1
+        }
+    }
+
+    fun clearDownloadedUpdate() {
+        updateReadyTag = null
+        updateFailed = false
+        try {
+            com.gezimos.katapult.util.UpdateChecker.apkFile(ctx).delete()
+        } catch (_: Exception) {}
+    }
+
     fun startScreensaver(context: Context) {
         try {
             context.startActivity(
@@ -154,19 +191,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val sizePx = (IconSize.value * ctx.resources.displayMetrics.density).toInt()
-            // Preload home shortcut icons first (visible immediately)
-            val slots = listOf("phone", "sms", "extra_left", "extra_center", "extra_right")
-            for (slot in slots) {
+            for (slot in PrefsManager.HOME_SLOTS) {
                 val pkg = getShortcutPackage(slot) ?: continue
-                val activity = getShortcutActivity(slot)
-                IconUtility.loadIcon(ctx, pkg, activity, sizePx)
+                val shortcutId = prefs.loadSlotShortcutId(slot)
+                if (shortcutId != null) {
+                    IconUtility.loadShortcutIcon(ctx, pkg, shortcutId, sizePx)
+                } else {
+                    IconUtility.loadIcon(ctx, pkg, getShortcutActivity(slot), sizePx)
+                }
             }
-            // Then preload all app list icons
             IconUtility.preloadIcons(ctx, orderedApps, sizePx)
         }
     }
-
-    // --- Clock ---
 
     fun updateClock() {
         val now = Date()
@@ -209,14 +245,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         clockHandler.removeCallbacks(clockRunnable)
     }
 
-    // --- Apps ---
-
     fun loadApps() {
-        val currentApps = AppLoader.loadApps(ctx, showSelf = prefs.showKatapultIcon)
+        val currentApps = AppLoader.loadApps(ctx, showSelf = prefs.showKatapultIcon) +
+            ShortcutHelper.installedShortcuts(ctx, prefs)
         val hidden = prefs.getHiddenApps()
-        val visible = currentApps.filter { it.packageName !in hidden }
+        val visible = currentApps.filter { it.key !in hidden }
         val renamed = visible.map { app ->
-            val customName = prefs.getAppRename(app.packageName)
+            val customName = prefs.getAppRename(app.key)
             if (customName != null) app.copy(label = customName) else app
         }
         val savedOrder = prefs.loadAppOrder()
@@ -227,12 +262,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
     fun getAllApps(): List<AppModel> {
-        return AppLoader.loadApps(ctx).map { app ->
-            val customName = prefs.getAppRename(app.packageName)
+        val all = AppLoader.loadApps(ctx) + ShortcutHelper.installedShortcuts(ctx, prefs)
+        return all.map { app ->
+            val customName = prefs.getAppRename(app.key)
             if (customName != null) app.copy(label = customName) else app
-        }
+        }.sortedBy { it.label.lowercase() }
     }
 
     fun showPage(page: Int) {
@@ -250,7 +285,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         sheetDismissSignal++
     }
 
-
     fun goBack(): Boolean {
         if (reorderMode) {
             reorderMode = false
@@ -267,10 +301,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // --- Reorder ---
-
     fun enterReorderMode(app: AppModel) {
-        val index = orderedApps.indexOfFirst { it.packageName == app.packageName }
+        val index = orderedApps.indexOfFirst { it.key == app.key }
         if (index >= 0) {
             reorderHighlightIndex = index
             reorderMode = true
@@ -280,13 +312,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun reorderTap(targetIndex: Int) {
         if (reorderHighlightIndex < 0) {
-            // Nothing selected — select this app
             reorderHighlightIndex = targetIndex
         } else if (targetIndex == reorderHighlightIndex) {
-            // Tapped the same app — deselect
             reorderHighlightIndex = -1
         } else {
-            // Swap and clear selection
             val list = orderedApps.toMutableList()
             val temp = list[reorderHighlightIndex]
             list[reorderHighlightIndex] = list[targetIndex]
@@ -299,37 +328,61 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun finishReorder() {
         reorderMode = false
         reorderHighlightIndex = -1
-        prefs.saveAppOrder(orderedApps.map { it.packageName })
+        prefs.saveAppOrder(orderedApps.map { it.key })
     }
 
     fun resetOrder() {
         orderedApps = orderedApps.sortedBy { it.label.lowercase() }
         reorderHighlightIndex = -1
-        prefs.saveAppOrder(orderedApps.map { it.packageName })
+        prefs.saveAppOrder(orderedApps.map { it.key })
     }
 
-    // --- App actions ---
-
-    fun hideApp(packageName: String) {
-        prefs.hideApp(packageName)
+    fun hideApp(key: String) {
+        prefs.hideApp(key)
         contextMenuApp = null
         loadApps()
     }
 
-    fun renameApp(packageName: String, newName: String) {
-        prefs.setAppRename(packageName, newName.ifBlank { null })
+    fun renameApp(key: String, newName: String, currentLabel: String) {
+        val name = newName.ifBlank { null }
         contextMenuApp = null
         showRenameDialog = false
+        if (name == currentLabel) return
+        if (name != prefs.getAppRename(key)) prefs.removeFromAppOrder(key)
+        prefs.setAppRename(key, name)
         loadApps()
     }
 
-    fun getAppDisplayName(packageName: String): String {
-        return prefs.getAppRename(packageName)
-            ?: AppLoader.loadApps(ctx).find { it.packageName == packageName }?.label
-            ?: packageName
+    fun removeShortcut(app: AppModel) {
+        forgetShortcut(app.packageName, app.shortcutId)
+        contextMenuApp = null
+        loadApps()
     }
 
-    // --- Status bar ---
+    fun setShortcutEnabled(packageName: String, shortcutId: String, label: String, enabled: Boolean) {
+        if (enabled) {
+            prefs.addSavedShortcut(packageName, shortcutId, label)
+            prefs.unhideApp("$packageName|$shortcutId")
+        } else {
+            prefs.removeSavedShortcut(packageName, shortcutId)
+            prefs.clearSlotsForShortcut(packageName, shortcutId)
+        }
+        ShortcutHelper.syncPins(ctx, prefs, packageName)
+        loadApps()
+    }
+
+    private fun forgetShortcut(packageName: String, shortcutId: String) {
+        val key = "$packageName|$shortcutId"
+        prefs.removeSavedShortcut(packageName, shortcutId)
+        prefs.clearSlotsForShortcut(packageName, shortcutId)
+        prefs.setAppRename(key, null)
+        prefs.removeFromAppOrder(key)
+        prefs.unhideApp(key)
+        deleteOverrideFile(key)
+        prefs.clearIconOverride(key)
+        IconUtility.clearCacheFor(key)
+        ShortcutHelper.syncPins(ctx, prefs, packageName)
+    }
 
     fun applyStatusBar(context: Context) {
         val activity = context as? Activity ?: return
@@ -350,8 +403,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // --- Launching ---
-
     fun launchIntent(context: Context, intent: Intent) {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         try {
@@ -360,6 +411,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun launchApp(context: Context, app: AppModel) {
+        if (app.shortcutId.isEmpty() &&
+            app.packageName == ctx.packageName &&
+            DeviceHelper.isDefaultLauncher(ctx)
+        ) {
+            navigateTo(Screen.SETTINGS)
+            return
+        }
+        if (app.shortcutId.isNotEmpty()) {
+            if (ShortcutHelper.launch(ctx, app.packageName, app.shortcutId)) {
+                (context as? Activity)?.overridePendingTransition(0, 0)
+            } else {
+                launchPackage(context, app.packageName, "")
+            }
+            return
+        }
         launchPackage(context, app.packageName, app.activityName)
     }
 
@@ -381,7 +447,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun launchShortcut(context: Context, slot: String) {
         val saved = prefs.loadShortcut(slot)
         if (saved != null) {
-            launchPackage(context, saved.first, saved.second)
+            val shortcutId = prefs.loadSlotShortcutId(slot)
+            if (shortcutId != null) {
+                if (ShortcutHelper.launch(ctx, saved.first, shortcutId)) {
+                    (context as? Activity)?.overridePendingTransition(0, 0)
+                } else {
+                    launchPackage(context, saved.first, "")
+                }
+            } else {
+                launchPackage(context, saved.first, saved.second)
+            }
             return
         }
         val defaultPkg = getDefaultPackageForSlot(slot)
@@ -404,6 +479,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getShortcutLabel(slot: String, defaultLabel: String): String {
         val pkg = getShortcutPackage(slot) ?: return defaultLabel
+        val shortcutId = prefs.loadSlotShortcutId(slot)
+        if (shortcutId != null) {
+            prefs.getAppRename("$pkg|$shortcutId")?.let { return it }
+            return prefs.getSavedShortcuts()
+                .find { it.packageName == pkg && it.shortcutId == shortcutId }
+                ?.label ?: defaultLabel
+        }
         val customName = prefs.getAppRename(pkg)
         if (customName != null) return customName
         return try {
@@ -414,8 +496,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun saveShortcut(slot: String, packageName: String, activityName: String) {
-        prefs.saveShortcut(slot, packageName, activityName)
+    fun saveShortcut(slot: String, packageName: String, activityName: String, shortcutId: String = "") {
+        prefs.saveShortcut(slot, packageName, activityName, shortcutId)
     }
 
     private fun getDefaultPackageForSlot(slot: String): String? {
@@ -445,15 +527,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } catch (_: Exception) { null }
     }
 
-    // --- Notifications ---
-
     fun refreshNotifications() {
         val counts = NotificationListener.getAllCounts()
-        notificationCounts = if (directBadgeHelper != null) counts + directBadgeHelper.getCounts() else counts
+        notificationCounts = if (directBadgeHelper != null) {
+            val merged = counts.toMutableMap()
+            directBadgeHelper.getCounts().forEach { (pkg, n) -> merged[pkg] = (merged[pkg] ?: 0) + n }
+            merged
+        } else {
+            counts
+        }
     }
 
     fun clearNotificationsFor(pkg: String) {
         NotificationListener.cancelFor(pkg)
+    }
+
+    fun hasMissedCalls(): Boolean = directBadgeHelper?.hasMissedCalls() == true
+
+    fun canWriteCallLog(): Boolean = directBadgeHelper?.hasWriteCallLogPermission() == true
+
+    fun clearMissedCalls() {
+        directBadgeHelper?.clearMissedCalls()
     }
 
     private val audioHelper get() = AudioWidgetHelper.getInstance(ctx)
@@ -483,8 +577,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             it.stop()
         }
     }
-
-    // --- Wallpaper ---
 
     fun setWallpaper(context: Context, uri: Uri) {
         try {
@@ -527,10 +619,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         prefs.screensaverWallpaperPath = null
     }
 
-    // --- Icon overrides ---
+    private fun iconFile(key: String): File {
+        val dir = File(ctx.filesDir, "icons").apply { mkdirs() }
+        val safe = key.replace(Regex("[^A-Za-z0-9._-]"), "_")
+        val name = if (safe == key) safe
+        else "${safe.take(60)}_${key.hashCode().toUInt().toString(16)}"
+        return File(dir, "$name.png")
+    }
+
+    fun saveMaterialIcon(key: String, bitmap: Bitmap) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val file = iconFile(key)
+                file.outputStream().use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+                prefs.setIconOverride(key, "file:${file.absolutePath}")
+                IconUtility.clearCacheFor(key)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    shortcutRefresh++
+                    loadApps()
+                }
+            } catch (_: Exception) {}
+        }
+    }
 
     fun saveImportedIcon(context: Context, uri: Uri) {
-        val pkg = iconOverrideTarget ?: return
+        val key = iconOverrideTarget ?: return
         iconOverrideTarget = null
 
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
@@ -549,13 +664,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 }
                 if (bitmap == null) return@launch
 
-                val dir = File(ctx.filesDir, "icons").apply { mkdirs() }
-                val file = File(dir, "$pkg.png")
+                val file = iconFile(key)
                 file.outputStream().use { out ->
                     bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
                 }
-                prefs.setIconOverride(pkg, "file:${file.absolutePath}")
-                IconUtility.clearCacheFor(pkg)
+                prefs.setIconOverride(key, "file:${file.absolutePath}")
+                IconUtility.clearCacheFor(key)
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     shortcutRefresh++
                 }
@@ -563,7 +677,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // Two-pass decode: read bounds first, downsample to keep memory bounded.
     private fun decodeSampled(context: Context, uri: Uri, maxSide: Int): Bitmap? {
         return try {
             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -590,28 +703,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         iconOverrideTarget = null
     }
 
-    fun setBundledIcon(pkg: String, resName: String) {
-        deleteOverrideFile(pkg)
-        prefs.setIconOverride(pkg, "res:$resName")
-        IconUtility.clearCacheFor(pkg)
+    fun setBundledIcon(key: String, resName: String) {
+        deleteOverrideFile(key)
+        prefs.setIconOverride(key, "res:$resName")
+        IconUtility.clearCacheFor(key)
         shortcutRefresh++
     }
 
-    fun clearIconOverride(pkg: String) {
-        deleteOverrideFile(pkg)
-        prefs.clearIconOverride(pkg)
-        IconUtility.clearCacheFor(pkg)
+    fun clearIconOverride(key: String) {
+        deleteOverrideFile(key)
+        prefs.clearIconOverride(key)
+        IconUtility.clearCacheFor(key)
         shortcutRefresh++
     }
 
-    private fun deleteOverrideFile(pkg: String) {
-        val existing = prefs.getIconOverride(pkg) ?: return
+    private fun deleteOverrideFile(key: String) {
+        val existing = prefs.getIconOverride(key) ?: return
         if (existing.startsWith("file:")) {
             File(existing.removePrefix("file:")).delete()
         }
     }
 
-    // Matches SvgRasterizer: draw the source centered at 60% of the target canvas.
     private fun fitToIcon(source: Bitmap, targetPx: Int): Bitmap {
         val target = createBitmap(targetPx, targetPx, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(target)

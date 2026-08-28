@@ -5,6 +5,8 @@ import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -86,11 +88,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
             hasNotificationPermission = NotificationManagerCompat.getEnabledListenerPackages(context)
                 .contains(context.packageName)
 
-            val intent = Intent(Intent.ACTION_MAIN).apply {
-                addCategory(Intent.CATEGORY_HOME)
-            }
-            val resolveInfo = context.packageManager.resolveActivity(intent, 0)
-            isDefaultLauncher = resolveInfo?.activityInfo?.packageName == context.packageName
+            isDefaultLauncher = DeviceHelper.isDefaultLauncher(context)
 
             hasCallSmsPermission =
                 ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED &&
@@ -148,17 +146,40 @@ fun OnboardingScreen(viewModel: MainViewModel) {
 
         // 2. Call & SMS Badges (Mudita Kompakt only)
         if (isMudita) {
+            val callSmsPermissions = remember {
+                arrayOf(
+                    Manifest.permission.READ_CALL_LOG,
+                    Manifest.permission.WRITE_CALL_LOG,
+                    Manifest.permission.READ_SMS,
+                )
+            }
+            val openAppSettings = {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.fromParts("package", context.packageName, null)
+                        }
+                    )
+                } catch (_: Exception) {}
+            }
+            val callSmsLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestMultiplePermissions()
+            ) { result ->
+                if (result.values.any { !it }) {
+                    val activity = context as? Activity
+                    val canAskAgain = activity != null && callSmsPermissions.any {
+                        ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
+                    }
+                    if (!canAskAgain) openAppSettings()
+                }
+            }
             SettingsToggleRow(
                 title = stringResource(R.string.call_sms_badges) + callSmsAsterisk,
                 description = stringResource(R.string.call_sms_badges_desc),
                 checked = hasCallSmsPermission,
                 onCheckedChange = {
-                    val activity = context as? Activity ?: return@SettingsToggleRow
-                    ActivityCompat.requestPermissions(
-                        activity,
-                        arrayOf(Manifest.permission.READ_CALL_LOG, Manifest.permission.READ_SMS),
-                        1001,
-                    )
+                    if (hasCallSmsPermission) openAppSettings()
+                    else callSmsLauncher.launch(callSmsPermissions)
                 },
             )
         }

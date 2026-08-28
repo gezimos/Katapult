@@ -2,6 +2,27 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.4]
+
+### Added
+- **App Shortcuts**: long-press an app in All Apps and pick App Shortcuts to enable the shortcuts it publishes (New timer, a specific conversation, and so on). Enabled shortcuts appear in All Apps as their own tiles with reorder, rename, custom icons, and remove, and can be assigned to any home slot including clock and date. Requires Katapult to be the default launcher.
+- Pinned shortcut support: "Add to Home screen" from the browser (websites and PWAs) and pin requests from other apps now land in All Apps instead of going nowhere.
+- **Config Export/Import**: save all settings to a timestamped JSON file and restore them later, plus a Clear All Data option. Imports are validated, so a foreign or corrupted file is rejected instead of wiping settings.
+- **Check for Updates**: in-app updater that checks GitHub releases, shows the release notes, and downloads and installs the new APK.
+- **Double Tap in home** now cycles between Disabled, Brightness, and Lock Phone (locking uses the accessibility service). Replaces the Double-Tap Brightness toggle; an enabled toggle carries over as Brightness.
+- **Hide Status Bar Clock** setting (Kompakt only): covers the duplicate status bar clock while the launcher is in the foreground, since the home screen shows its own clock. Needs the accessibility service; off by default.
+- **Material Icons** in Change Icon: the dialog now has two tabs, Katapult Icons (bundled set plus PNG/SVG import, as before) and Material Icons with 133 outlined Material icons to assign to any app.
+- **Rejected calls and voicemail in the Phone badge** (Kompakt only): the badge now counts declined calls and waiting voicemail alongside missed calls, mirroring how the Mudita phone app and launcher behave on MuditaOS 1.6.0, so both launchers show the same number.
+- **Clear Notifications for the Phone app** (Kompakt only): long-press Phone in All Apps to reset its badge. The Phone and Messages badges are read from the call log and SMS databases rather than notifications, so this option was previously hidden. It now works for Phone, and also clears counts the stock launcher cannot.
+
+### Changed
+- The accessibility service is now listed as **Katapult Action Service** in system accessibility settings, since it powers the lockscreen widget, the status bar clock cover, phone locking, and the screensaver. Only the label changed; an already enabled service stays enabled after updating.
+- Tapping the Katapult icon in All Apps (Show Katapult Icon) now opens Katapult Settings while Katapult is the default launcher, instead of just returning to the home screen. When another launcher is default, the icon opens the app normally.
+
+### Fixed
+- AOSP Calendar, WebView DevTools, AOSP Search (Quick Search Box), and Chrome now get bundled default icons instead of their stock ones.
+- Turning on Lockscreen Notifications or Screensaver on power no longer saves the setting when the Katapult Action Service was never enabled. The toggle used to stick on while the feature did nothing, and enabling the service later for an unrelated reason would switch it on unannounced.
+
 ## [1.3]
 
 ### Added

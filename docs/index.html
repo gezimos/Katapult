@@ -43,7 +43,7 @@
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": "Android",
         "downloadUrl": "https://github.com/gezimos/Katapult/releases",
-        "softwareVersion": "1.3",
+        "softwareVersion": "1.4",
         "image": "https://katapult.gez.im/img/screenshots/home-rounded.png",
         "license": "https://github.com/gezimos/Katapult/blob/main/LICENSE",
         "isAccessibleForFree": true,
@@ -81,7 +81,7 @@
             <h1 class="hero-title">A minimal launcher for the Mudita Kompakt.</h1>
             <p class="hero-lead">Katapult keeps the familiar grid of the stock launcher and adds what it leaves out: notification badges, reorderable apps, and customizable home shortcuts.</p>
             <div class="actions">
-                <a href="https://github.com/gezimos/Katapult/releases/download/v1.3/katapult-v1.3-release.apk" class="btn btn-solid">Download APK</a>
+                <a href="https://github.com/gezimos/Katapult/releases/download/v1.4/katapult-v1.4-release.apk" class="btn btn-solid">Download APK</a>
                 <a href="https://github.com/gezimos/Katapult" class="btn">Source Code</a>
             </div>
         </div>
@@ -143,21 +143,25 @@
         </div>
         <div class="block-body">
             <div class="feature-grid">
-                <div class="feat"><h3>Adaptive App Grid</h3><p>Horizontal or vertical swipe navigation with dot indicators and infinite scroll.</p></div>
+                <div class="feat"><h3>App Shortcuts</h3><p>Shortcuts like New timer get their own tiles. Rename, re-icon, or assign to any home slot. Pinned websites too.</p></div>
                 <div class="feat"><h3>Dark Mode</h3><p>White-on-black across the whole launcher, monochrome icons included.</p></div>
                 <div class="feat"><h3>Text Backgrounds</h3><p>White islands behind clock, date, and app names keep text legible over any wallpaper.</p></div>
                 <div class="feat"><h3>Lockscreen Notifications</h3><p>Experimental: per-app notification counts on the lock screen. Movable and resizable.</p></div>
                 <div class="feat"><h3>Music Widget</h3><p>Playback controls with song info. Works with Auxio, Spotify, Fossify Music, Foobar, and more.</p></div>
                 <div class="feat"><h3>Icon Tinting &amp; Shaping</h3><p>Circle or rounded shapes. Uniform black &amp; white across ~95% of apps.</p></div>
-                <div class="feat"><h3>Notification Badges</h3><p>Badge counts on app icons. Works with any app that sends notifications.</p></div>
+                <div class="feat"><h3>Custom &amp; Material Icons</h3><p>Swap any app's icon for a bundled Katapult one, a 133-strong outlined Material set, or your own PNG or SVG.</p></div>
+                <div class="feat"><h3>Notification Badges</h3><p>Badge counts on app icons. Works with any app that sends notifications. Long-press an app to clear its badge.</p></div>
+                <div class="feat"><h3>Call &amp; SMS Badges</h3><p>Kompakt only. Missed, declined, and voicemail counts on Phone, unread counts on Messages, matching the stock Mudita launcher.</p></div>
                 <div class="feat"><h3>E-Ink Optimized</h3><p>Zero animations, instant swaps, screen refresh on home press to clear ghosting.</p></div>
                 <div class="feat"><h3>Extra Dock Row</h3><p>Optional 3 additional shortcuts above the Phone/SMS bar.</p></div>
                 <div class="feat"><h3>Battery &amp; Clock</h3><p>Battery percentage with level icon, alarm indicator, selectable clock &amp; date formats.</p></div>
                 <div class="feat"><h3>Simple Wallpaper</h3><p>Set a background image directly. Not managed by Android.</p></div>
                 <div class="feat"><h3>Hide &amp; Rename Apps</h3><p>Hide from the context menu or bulk-hide. Rename any app.</p></div>
                 <div class="feat"><h3>Reorder Apps</h3><p>Swap-based reordering with reset to alphabetical.</p></div>
-                <div class="feat"><h3>Double-Tap Brightness</h3><p>Toggle display brightness by double-tapping the background.</p></div>
-                <div class="feat"><h3>Hide Status Bar</h3><p>Remove the Android status bar for a cleaner look.</p></div>
+                <div class="feat"><h3>Double-Tap Action</h3><p>Double-tap the background to toggle brightness or lock the phone. Or leave it off.</p></div>
+                <div class="feat"><h3>Hide Status Bar</h3><p>Remove the Android status bar for a cleaner look, or keep it and hide just its duplicate clock.</p></div>
+                <div class="feat"><h3>Config Backup</h3><p>Export every setting to a JSON file and restore it later. Foreign or corrupted files are rejected, not applied.</p></div>
+                <div class="feat"><h3>Check for Updates</h3><p>See the latest release and its notes from inside the launcher, then download and install without a trip to GitHub.</p></div>
             </div>
         </div>
     </section>
@@ -182,11 +186,11 @@
                 </details>
                 <details>
                     <summary>Call Log &amp; SMS (Mudita Kompakt only)</summary>
-                    <p>The Mudita Phone and Messages apps don't post Android notifications, so badges won't appear via the notification listener. To show missed call and unread SMS counts on these apps, Katapult reads the call log and SMS databases directly. These permissions are only requested on Mudita Kompakt devices.</p>
+                    <p>Badges for the Mudita Phone and Messages apps can't come from the notification listener, so Katapult reads the call log and SMS databases directly to count missed calls, declined calls, voicemail, and unread messages. This is the same approach the stock Mudita launcher takes. Write access to the call log is used for one thing only: clearing the Phone badge when you ask it to, by marking those calls as seen. Nothing is read from or written to your messages. These permissions are only requested on Mudita Kompakt devices.</p>
                 </details>
                 <details>
-                    <summary>Accessibility Service (only for Lockscreen Notifications)</summary>
-                    <p>An accessibility overlay is the only way an app can draw over the lock screen, so the experimental Lockscreen Notifications widget needs this. The permission sounds scary, but Katapult reads only the lock screen itself, never your apps, so the widget can hide when the PIN screen appears. It records and shares nothing; the open source code is the proof. Not requested unless you turn the widget on.</p>
+                    <summary>Accessibility Service (optional features only)</summary>
+                    <p>Listed as <strong>Katapult Action Service</strong>. An accessibility overlay is the only way an app can draw over the lock screen, so the experimental Lockscreen Notifications widget needs this. The same service also covers hiding the duplicate status bar clock, locking the phone on double-tap, and the screensaver. The permission sounds scary, but Katapult reads only the lock screen itself, never your apps, so the widget can hide when the PIN screen appears. It records and shares nothing; the open source code is the proof. Not requested unless you turn one of those features on.</p>
                 </details>
             </div>
         </div>

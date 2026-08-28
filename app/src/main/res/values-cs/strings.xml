@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Katapult</string>
 
-    <!-- Common -->
     <string name="save">Uložit</string>
     <string name="save_uppercase">ULOŽIT</string>
     <string name="cancel">Zrušit</string>
@@ -9,7 +8,6 @@
     <string name="finish">Dokončit</string>
     <string name="rename">Přejmenovat</string>
 
-    <!-- Home screen -->
     <string name="phone">Telefon</string>
     <string name="sms">SMS</string>
     <string name="music">Hudba</string>
@@ -24,7 +22,6 @@
     <string name="no_media">Žádné médium</string>
     <string name="battery_percent">%1$d%%</string>
 
-    <!-- Content descriptions -->
     <string name="cd_alarm">Budík</string>
     <string name="cd_battery">Baterie</string>
     <string name="cd_album_art">Obal alba</string>
@@ -35,7 +32,6 @@
     <string name="cd_stop">Zastavit</string>
     <string name="cd_reset_order">Obnovit pořadí</string>
 
-    <!-- App picker -->
     <string name="set_left_app">Nastavit levou aplikaci</string>
     <string name="set_right_app">Nastavit pravou aplikaci</string>
     <string name="set_clock_app">Nastavit aplikaci hodin</string>
@@ -45,7 +41,6 @@
     <string name="set_extra_right_app">Nastavit extra pravou aplikaci</string>
     <string name="choose_app">Vybrat aplikaci</string>
 
-    <!-- Context menu -->
     <string name="reorder">Změnit pořadí</string>
     <string name="hide">Skrýt</string>
     <string name="app_info">Informace o aplikaci</string>
@@ -54,25 +49,26 @@
     <string name="uninstall">Odinstalovat</string>
     <string name="reset_order_confirm">Obnovit pořadí aplikací na abecední?</string>
 
-    <!-- All apps -->
     <string name="all_apps">Aplikace</string>
 
-    <!-- Notification badge -->
     <string name="badge_overflow">99+</string>
 
-    <!-- Settings -->
     <string name="icon_shape">Tvar ikon</string>
     <string name="icon_shape_rounded">Zaoblený</string>
     <string name="icon_shape_circle">Kruh</string>
     <string name="change_icon">Změnit ikonu</string>
     <string name="import_icon">Importovat ikonu</string>
     <string name="katapult_icons">Ikony Katapult</string>
+    <string name="material_icons">Ikony Material</string>
     <string name="choose_png">Importovat ikonu (png, svg)</string>
     <string name="reset_icon">Obnovit výchozí</string>
     <string name="notification_indicators">Indikátory oznámení</string>
     <string name="notification_indicators_desc">Zobrazit odznaky oznámení na ikonách aplikací</string>
     <string name="hide_status_bar">Skrýt stavový řádek</string>
     <string name="hide_status_bar_desc">Skrýt systémový stavový řádek</string>
+    <string name="hide_status_bar_clock">Skrýt hodiny stavového řádku</string>
+    <string name="hide_status_bar_clock_desc">Zakryje duplicitní hodiny ve stavovém řádku, vyžaduje službu usnadnění přístupu</string>
+    <string name="hide_status_bar_clock_a11y">Překrytí hodin vykresluje služba usnadnění přístupu Katapult. Pro použití této funkce ji povolte v nastavení systému.</string>
     <string name="eink_refresh">Obnovení E-ink na domovské</string>
     <string name="eink_refresh_desc">Vyčistí zbytkový obraz při stisknutí tlačítka domů</string>
     <string name="eink_auto_mode">Režim E-ink</string>
@@ -82,8 +78,10 @@
     <string name="disable_music_widget_desc">Skrýt widget ovládání médií</string>
     <string name="infinite_scroll">Nekonečné posouvání</string>
     <string name="infinite_scroll_desc">Posouvání stránek z obou stran</string>
-    <string name="double_tap_brightness">Jas dvojitým klepnutím</string>
-    <string name="double_tap_brightness_desc">Dvojitým klepnutím na domovské vypnete jas.</string>
+    <string name="double_tap_action">Dvojité klepnutí na domovské</string>
+    <string name="double_tap_off">Vypnuto</string>
+    <string name="double_tap_brightness">Jas</string>
+    <string name="double_tap_lock">Zamknout telefon</string>
     <string name="clock_format">Formát hodin</string>
     <string name="date_format">Formát data</string>
     <string name="show_battery">Zobrazit baterii %%</string>
@@ -113,13 +111,26 @@
     <string name="notification_log_desc">Zobrazit historii oznámení</string>
     <string name="set_default_launcher">Nastavit jako výchozí launcher</string>
     <string name="set_default_launcher_desc">Zvolte Katapult jako domovskou obrazovku</string>
+    <string name="config_backup">Export/import nastavení</string>
+    <string name="config_backup_desc">Uložit nebo obnovit nastavení jako soubor JSON</string>
+    <string name="config_export">Exportovat</string>
+    <string name="config_import">Importovat</string>
+    <string name="config_clear">Vymazat všechna data</string>
+    <string name="config_clear_confirm">Vymazat všechna nastavení a restartovat Katapult?</string>
+    <string name="config_exported">Nastavení exportováno</string>
+    <string name="config_export_failed">Export se nezdařil</string>
+    <string name="config_import_failed">Import se nezdařil, neplatný soubor nastavení</string>
+    <string name="app_shortcuts">Zkratky aplikace</string>
+    <string name="remove_shortcut">Odebrat zkratku</string>
+    <string name="no_app_shortcuts">Žádné zkratky nejsou k dispozici. Katapult musí být výchozí launcher.</string>
+    <string name="no_app_shortcuts_app">Tato aplikace nemá žádné zkratky.</string>
+    <string name="shortcut_pinned">%1$s přidáno do aplikací</string>
+    <string name="shortcut_already_added">%1$s už je v aplikacích</string>
 
-    <!-- Notifications -->
     <string name="notification_access_title">Povolit přístup k oznámením</string>
     <string name="notification_access_message">Katapult potřebuje přístup k oznámením pro zobrazení odznaků oznámení. Udělit přístup v Nastavení?</string>
     <string name="no_alarm">Není nastaven budík</string>
 
-    <!-- Onboarding -->
     <string name="onboarding_icon">K</string>
     <string name="welcome_title">Vítejte v Katapult</string>
     <string name="onboarding_notification_desc">Umožňuje odznaky oznámení pro aplikace třetích stran jako WhatsApp, Signal atd.</string>
@@ -140,15 +151,17 @@
     <string name="section_experimental">Oznámení na zamykací obrazovce (Experimentální)</string>
     <string name="lockscreen_widget">Oznámení na zamykací obrazovce</string>
     <string name="lockscreen_widget_desc">Zobrazit počty oznámení na zamykací obrazovce.</string>
-    <string name="lockscreen_widget_a11y_desc">Kreslí widget oznámení přes zamykací obrazovku a skryje jej, když se objeví obrazovka PIN.</string>
+    <string name="a11y_service_label">Katapult Action Service</string>
+    <string name="a11y_shortcut_warning">V nastavení přístupnosti zapněte pouze samotnou službu Katapult Action Service, ne její zkratku. Zkratka přidá na obrazovku plovoucí tlačítko přístupnosti.</string>
+    <string name="lockscreen_widget_a11y_desc">Používá se pro widget oznámení na zamykací obrazovce, zakrytí hodin stavového řádku, zamknutí telefonu a spořič. Kreslí pouze přes zamykací obrazovku a stavový řádek; z vašich aplikací nic nečte.</string>
     <string name="lockscreen_widget_apps">Aplikace oznámení na zamykací obrazovce</string>
     <string name="lockscreen_widget_apps_desc">Vyberte, které aplikace se zobrazí ve widgetu zamykací obrazovky</string>
     <string name="lockscreen_sort">Řazení na zamykací obrazovce</string>
     <string name="sort_latest_top">Nejnovější nahoře</string>
     <string name="sort_oldest_top">Nejstarší nahoře</string>
-    <string name="lockscreen_reenable_message">Přístup k usnadnění přístupu se při aktualizaci aplikace vypne. Znovu jej povolte, aby oznámení na zamykací obrazovce zůstala.</string>
+    <string name="lockscreen_reenable_message">Přístup k usnadnění přístupu se při aktualizaci aplikace vypne. Povolte jej znovu, aby funkce, které jej potřebují, dál fungovaly.</string>
     <string name="lockscreen_reenable_enable">Povolit v nastavení</string>
-    <string name="lockscreen_reenable_disable">Vypnout widget</string>
+    <string name="lockscreen_reenable_disable">Vypnout tyto funkce</string>
     <string name="lockscreen_readme">Přečtěte si</string>
     <string name="lockscreen_readme_desc">O oprávnění usnadnění přístupu a ovládání widgetu</string>
     <string name="lockscreen_readme_privacy">Tato funkce kreslí přes zamykací obrazovku pomocí překryvné vrstvy usnadnění přístupu. Oprávnění zní děsivě, ale Katapult jej používá pouze k zobrazení widgetu a ke čtení samotné zamykací obrazovky, nikdy vašich aplikací, aby se widget mohl skrýt, když se objeví obrazovka PIN. Nic se nenahrává ani nesdílí; důkazem je otevřený zdrojový kód.</string>
@@ -168,6 +181,12 @@
     <string name="screensaver_enable_desc">Zobrazit hodiny a oznámení sevřením na domovské obrazovce</string>
     <string name="screensaver_system">Systémový spořič obrazovky</string>
     <string name="donate_desc">Podpořte Katapult na Buy Me a Coffee</string>
+    <string name="github_label">github.com/gezimos</string>
+    <string name="github_desc">Zdrojový kód a další projekty</string>
+    <string name="youtube_label">youtube.com/@gezimos</string>
+    <string name="youtube_desc">Videa a novinky</string>
+    <string name="inkos_label">inkOS</string>
+    <string name="inkos_desc">E-ink launcher od stejného vývojáře</string>
     <string name="lic_app_title">App License</string>
     <string name="lic_app_desc">GNU General Public License v3.0</string>
     <string name="lic_font_title">Font License</string>

@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
+import com.gezimos.katapult.lockscreen.LockscreenWidgetService
 import com.gezimos.katapult.ui.App
 import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.DeviceHelper
@@ -61,6 +62,11 @@ class MainActivity : ComponentActivity() {
         einkHelper?.setMeinkMode(mode)
     }
 
+    override fun onStart() {
+        super.onStart()
+        LockscreenWidgetService.onLauncherForeground(true)
+    }
+
     override fun onResume() {
         super.onResume()
         overridePendingTransition(0, 0)
@@ -71,6 +77,7 @@ class MainActivity : ComponentActivity() {
         viewModel.refreshNotifications()
         viewModel.startNotificationListener()
         AudioWidgetHelper.getInstance(this).resetDismissalState()
+        LockscreenWidgetService.onLauncherForeground(true)
 
         val savedMode = viewModel.prefs.einkHelperMode
         if (savedMode != EinkHelper.MEINK_MODE_DISABLED) {
@@ -84,11 +91,18 @@ class MainActivity : ComponentActivity() {
         viewModel.stopNotificationListener()
     }
 
+    override fun onStop() {
+        super.onStop()
+        LockscreenWidgetService.onLauncherForeground(false)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         overridePendingTransition(0, 0)
         viewModel.dismissAllSheets()
-        viewModel.navigateTo(Screen.HOME)
+        if (viewModel.screen != Screen.ONBOARDING) {
+            viewModel.navigateTo(Screen.HOME)
+        }
 
         val savedMode = viewModel.prefs.einkHelperMode
         if (savedMode != EinkHelper.MEINK_MODE_DISABLED) {

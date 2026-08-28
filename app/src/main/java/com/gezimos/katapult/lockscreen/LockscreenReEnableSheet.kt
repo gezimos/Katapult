@@ -20,6 +20,7 @@ import com.gezimos.katapult.ui.BottomSheet
 import com.gezimos.katapult.ui.BottomSheetOption
 import com.gezimos.katapult.ui.LatoFamily
 import com.gezimos.katapult.ui.LocalInk
+import com.gezimos.katapult.util.PrefsManager
 
 /**
  * Shown when the lockscreen widget is enabled but its accessibility service is off —
@@ -32,7 +33,7 @@ fun LockscreenReEnableSheet(viewModel: MainViewModel) {
     val context = LocalContext.current
     BottomSheet(onDismiss = { viewModel.showLockscreenReEnable = false }) {
         Text(
-            text = stringResource(R.string.lockscreen_widget),
+            text = stringResource(R.string.a11y_service_label),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = LatoFamily,
@@ -50,7 +51,7 @@ fun LockscreenReEnableSheet(viewModel: MainViewModel) {
             text = stringResource(R.string.lockscreen_reenable_enable),
             icon = Icons.Rounded.SettingsIcon,
         ) {
-            viewModel.showLockscreenReEnable = false
+            viewModel.resolveLockscreenReEnable()
             try {
                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
             } catch (_: Exception) {}
@@ -61,7 +62,11 @@ fun LockscreenReEnableSheet(viewModel: MainViewModel) {
         ) {
             viewModel.prefs.lockscreenWidget = false
             viewModel.prefs.screensaverOnPower = false
-            viewModel.showLockscreenReEnable = false
+            viewModel.prefs.hideStatusBarClock = false
+            if (viewModel.prefs.doubleTapAction == PrefsManager.DOUBLE_TAP_LOCK) {
+                viewModel.prefs.doubleTapAction = PrefsManager.DOUBLE_TAP_OFF
+            }
+            viewModel.resolveLockscreenReEnable()
         }
     }
 }

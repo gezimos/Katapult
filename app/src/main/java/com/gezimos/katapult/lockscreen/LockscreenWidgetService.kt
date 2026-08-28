@@ -88,6 +88,18 @@ class LockscreenWidgetService : AccessibilityService() {
             false
         }
 
+        /**
+         * Called from MainActivity's onResume/onPause. While the launcher is foreground
+         * (and the setting is on) a small surface-colored overlay covers the status bar
+         * clock; leaving the launcher removes it.
+         */
+        fun onLauncherForeground(foreground: Boolean) {
+            launcherForeground = foreground
+            instance?.let { s -> s.mainHandler.post { s.applyClockCover(foreground) } }
+        }
+
+        private var launcherForeground = false
+
         /** Whether the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {
             val component = ComponentName(context, LockscreenWidgetService::class.java)
@@ -105,6 +117,7 @@ class LockscreenWidgetService : AccessibilityService() {
     private val mainHandler = Handler(Looper.getMainLooper())
     private var overlay: View? = null
     private var overlayParams: WindowManager.LayoutParams? = null
+    private var clockCover: View? = null
     private var shownRows: List<Pair<String, Int>> = emptyList()
     private var directBadges: DirectBadgeHelper? = null
     private lateinit var prefs: PrefsManager
@@ -154,6 +167,7 @@ class LockscreenWidgetService : AccessibilityService() {
             }
         }
         NotificationListener.onCountsChangedExtra = { mainHandler.post { evaluate() } }
+        applyClockCover(launcherForeground)
         evaluate()
     }
 
@@ -173,7 +187,57 @@ class LockscreenWidgetService : AccessibilityService() {
         directBadges = null
         try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
         removeOverlay()
+        removeClockCover()
         super.onDestroy()
+    }
+
+    /**
+     * Hides the status bar clock while the launcher is foreground (Mudita Kompakt
+     * only, always on): SystemUI owns the status bar, so the clock can't be removed
+     * per-app — but a TYPE_ACCESSIBILITY_OVERLAY window composites above it, so a
+     * white rectangle over the centered clock visually erases it. Skipped when the
+     * whole status bar is hidden anyway. The launcher shows its own clock, so the
+     * duplicate in the bar is just noise.
+     */
+    fun applyClockCover(show: Boolean) {
+        if (!::prefs.isInitialized) return
+        val want = show && prefs.hideStatusBarClock && !prefs.hideStatusBar && DeviceHelper.isMuditaKompakt()
+        if (want && clockCover != null) return
+        removeClockCover()
+        if (!want) return
+        // The Kompakt's status bar is always white, regardless of app dark mode.
+        val view = View(this).apply {
+            setBackgroundColor(Color.WHITE)
+        }
+        val params = WindowManager.LayoutParams().apply {
+            type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            format = PixelFormat.OPAQUE
+            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            width = (resources.displayMetrics.widthPixels * 0.45f).toInt()
+            height = statusBarHeightPx()
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = 0
+        }
+        try {
+            getSystemService(WindowManager::class.java).addView(view, params)
+            clockCover = view
+        } catch (_: Exception) {
+            clockCover = null
+        }
+    }
+
+    private fun removeClockCover() {
+        clockCover?.let {
+            try { getSystemService(WindowManager::class.java).removeView(it) } catch (_: Exception) {}
+        }
+        clockCover = null
+    }
+
+    private fun statusBarHeightPx(): Int {
+        val id = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (id > 0) resources.getDimensionPixelSize(id)
+        else (24 * resources.displayMetrics.density).toInt()
     }
 
     private fun evaluate() {
@@ -231,7 +295,7 @@ class LockscreenWidgetService : AccessibilityService() {
 
     private fun currentCounts(): Map<String, Int> {
         val merged = NotificationListener.getAllCounts().toMutableMap()
-        directBadges?.getCounts()?.forEach { (pkg, count) -> merged[pkg] = count }
+        directBadges?.getCounts()?.forEach { (pkg, count) -> merged[pkg] = (merged[pkg] ?: 0) + count }
         val excluded = prefs.getLockscreenExcludedApps()
         return merged.filter { (pkg, count) -> count > 0 && pkg !in excluded }
     }
