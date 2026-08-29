@@ -164,13 +164,19 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             )
         }
 
-        Column(
+        androidx.compose.foundation.layout.BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .then(if (!viewModel.prefs.hideStatusBar) Modifier.statusBarsPadding() else Modifier)
                 .navigationBarsPadding()
                 .padding(PagePadding),
         ) {
+        val gridRowHeight = if (viewModel.prefs.hideAppNames) AllAppsRowHeightNoLabels else AllAppsRowHeight
+        val gridRows = (maxHeight / gridRowHeight).toInt().coerceAtLeast(1)
+        val dockRows = if (viewModel.prefs.homeExtraRow) 2 else 1
+        val topWeight = (gridRows - dockRows).coerceAtLeast(1).toFloat()
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxWidth().weight(topWeight)) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -199,6 +205,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     isCharging = viewModel.isCharging,
                     showBattery = viewModel.prefs.showBattery,
                     islandsActive = viewModel.prefs.homeIslands,
+                    topSpacing = if (viewModel.prefs.hideStatusBar) 32.dp else 8.dp,
                     onClockClick = {
                         val saved = viewModel.prefs.loadShortcut("clock")
                         if (saved != null) {
@@ -239,7 +246,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                 androidx.compose.foundation.layout.BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .padding(bottom = 8.dp),
                 ) {
                     val columnWidth = maxWidth / 3
                     val iconPad = (columnWidth - IconSize) / 2
@@ -248,12 +255,14 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     }
                 }
             }
+            }
 
             if (viewModel.prefs.homeExtraRow) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         ShortcutItem(
@@ -291,7 +300,8 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     ShortcutItem(
@@ -348,6 +358,15 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                                     }
                                 }
                             }
+                            if (!viewModel.prefs.hideAppNames) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = "",
+                                    fontSize = 18.sp,
+                                    fontFamily = LatoFamily,
+                                    color = LocalInk.current,
+                                )
+                            }
                         }
                     }
                 }
@@ -363,6 +382,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     )
                 }
             }
+        }
         }
     }
 

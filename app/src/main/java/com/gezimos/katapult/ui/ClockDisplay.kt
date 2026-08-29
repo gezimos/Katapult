@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -55,8 +56,9 @@ fun ColumnScope.ClockDisplay(
     onDateClick: (() -> Unit)? = null,
     onDateLongClick: (() -> Unit)? = null,
     onBatteryClick: (() -> Unit)? = null,
+    topSpacing: Dp = 32.dp,
 ) {
-    Spacer(Modifier.height(32.dp))
+    Spacer(Modifier.height(topSpacing))
     val hasStatus = alarmTime != null || (showBattery && batteryPercent >= 0)
     Row(
         horizontalArrangement = Arrangement.Center,
