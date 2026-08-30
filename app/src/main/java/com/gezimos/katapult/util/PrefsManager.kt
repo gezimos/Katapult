@@ -292,6 +292,10 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_LOCKSCREEN_WIDGET, false)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_WIDGET, value).apply()
 
+    var lockscreenMusicWidget: Boolean
+        get() = boolPref(KEY_LOCKSCREEN_MUSIC_WIDGET, false)
+        set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_MUSIC_WIDGET, value).apply()
+
     var lockscreenWidgetY: Int
         get() = intPref(KEY_LOCKSCREEN_WIDGET_Y, -1)
         set(value) = prefs.edit().putInt(KEY_LOCKSCREEN_WIDGET_Y, value).apply()
@@ -530,6 +534,7 @@ class PrefsManager(context: Context) {
         private const val KEY_HOME_ISLANDS = "home_islands"
         private const val KEY_VERTICAL_APP_GESTURES = "vertical_app_gestures"
         private const val KEY_LOCKSCREEN_WIDGET = "lockscreen_widget"
+        private const val KEY_LOCKSCREEN_MUSIC_WIDGET = "lockscreen_music_widget"
         private const val KEY_LOCKSCREEN_WIDGET_Y = "lockscreen_widget_y"
         private const val KEY_LOCKSCREEN_WIDGET_ROWS = "lockscreen_widget_rows"
         private const val KEY_LOCKSCREEN_WIDGET_EXCLUDED = "lockscreen_widget_excluded"

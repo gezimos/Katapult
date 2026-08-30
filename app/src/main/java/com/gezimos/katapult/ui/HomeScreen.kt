@@ -88,6 +88,7 @@ import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.Screen
 import com.gezimos.katapult.lockscreen.LockscreenWidgetService
+import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.BrightnessHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
@@ -251,7 +252,16 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     val columnWidth = maxWidth / 3
                     val iconPad = (columnWidth - IconSize) / 2
                     Box(Modifier.fillMaxWidth().padding(horizontal = iconPad)) {
-                        MusicWidget(viewModel)
+                        viewModel.mediaInfo?.let { media ->
+                            MusicWidget(
+                                info = media,
+                                onOpenApp = { viewModel.mediaOpenApp(context) },
+                                onPrevious = { viewModel.mediaPrevious() },
+                                onPlayPause = { viewModel.mediaPlayPause() },
+                                onNext = { viewModel.mediaNext() },
+                                onStop = { viewModel.mediaStop() },
+                            )
+                        }
                     }
                 }
             }
@@ -580,10 +590,17 @@ private fun AppPickerDialog(
 }
 
 @Composable
-private fun MusicWidget(viewModel: MainViewModel) {
-    val info = viewModel.mediaInfo ?: return
-    val context = LocalContext.current
-    val widgetShape = RoundedIconShape
+internal fun MusicWidget(
+    info: AudioWidgetHelper.MediaInfo,
+    onOpenApp: () -> Unit,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    onStop: () -> Unit,
+    cornerRadius: Dp = 19.dp,
+    borderWidth: Dp = 2.5.dp,
+) {
+    val widgetShape = RoundedCornerShape(cornerRadius)
 
     val albumArt = remember(info.controller.metadata) {
         try {
@@ -605,14 +622,14 @@ private fun MusicWidget(viewModel: MainViewModel) {
             .height(90.dp)
             .clip(widgetShape)
             .background(LocalSurface.current)
-            .border(2.5.dp, LocalInk.current, widgetShape),
+            .border(borderWidth, LocalInk.current, widgetShape),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1.4f)
                 .padding(horizontal = 12.dp)
-                .clickable { viewModel.mediaOpenApp(context) },
+                .clickable { onOpenApp() },
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -638,7 +655,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 .weight(2f),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val artCorner = 19.dp
+            val artCorner = cornerRadius
             val artShape = RoundedCornerShape(
                 topStart = 0.dp,
                 topEnd = 0.dp,
@@ -650,8 +667,8 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     .fillMaxHeight()
                     .aspectRatio(1f)
                     .clip(artShape)
-                    .background(LocalInk.current)
-                    .clickable { viewModel.mediaOpenApp(context) }
+                    .background(if (albumArt != null) LocalInk.current else LocalSurface.current)
+                    .clickable { onOpenApp() }
                     .padding(bottom = 3.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -666,7 +683,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     Icon(
                         imageVector = Icons.Rounded.MusicNote,
                         contentDescription = stringResource(R.string.cd_music),
-                        tint = LocalSurface.current,
+                        tint = LocalInk.current,
                         modifier = Modifier.size(28.dp),
                     )
                 }
@@ -689,7 +706,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { viewModel.mediaPrevious() },
+                        .clickable { onPrevious() },
                 )
 
                 Icon(
@@ -698,7 +715,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(42.dp)
-                        .clickable { viewModel.mediaPlayPause() },
+                        .clickable { onPlayPause() },
                 )
 
                 Icon(
@@ -707,7 +724,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { viewModel.mediaNext() },
+                        .clickable { onNext() },
                 )
 
                 Icon(
@@ -716,7 +733,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { viewModel.mediaStop() },
+                        .clickable { onStop() },
                 )
             }
         }

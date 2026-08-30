@@ -76,6 +76,14 @@ val LocalInk = staticCompositionLocalOf { Color.Black }
 val LocalSurface = staticCompositionLocalOf { Color.White }
 val LocalIconFilter = staticCompositionLocalOf { EinkColorFilter }
 
+val NoIndication = object : androidx.compose.foundation.IndicationNodeFactory {
+    override fun create(interactionSource: androidx.compose.foundation.interaction.InteractionSource): androidx.compose.ui.Modifier.Node {
+        return object : androidx.compose.ui.Modifier.Node() {}
+    }
+    override fun hashCode() = 0
+    override fun equals(other: Any?) = other === this
+}
+
 val RoundedIconShape = RoundedCornerShape(19.dp)
 val RoundedSmallShape = RoundedCornerShape(10.dp)
 val RoundedBadgeShape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomEnd = 0.dp, bottomStart = 8.dp)

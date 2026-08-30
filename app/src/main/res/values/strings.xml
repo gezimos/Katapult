@@ -121,6 +121,8 @@
     <string name="notification_log_desc">View notification history</string>
     <string name="set_default_launcher">Set as Default Launcher</string>
     <string name="set_default_launcher_desc">Choose Katapult as your home</string>
+    <string name="search_settings">Search Settings</string>
+    <string name="search_settings_desc">Find a setting in the Android system settings</string>
     <string name="config_backup">Config Export/Import</string>
     <string name="config_backup_desc">Save or restore your settings as a JSON file</string>
     <string name="config_export">Export</string>
@@ -164,6 +166,8 @@
     <string name="call_sms_badges_desc">Reads call log and SMS directly for Mudita Phone &amp; SMS, which don\'t work with the notification listener</string>
     <string name="section_experimental">Lockscreen Notifications</string>
     <string name="lockscreen_widget">Lockscreen Notifications</string>
+    <string name="lockscreen_music_widget">Lockscreen Music Controls</string>
+    <string name="lockscreen_music_widget_desc">Show media controls on the lock screen for players other than the Mudita one</string>
     <string name="lockscreen_widget_desc">Show notification counts on the lock screen.</string>
     <string name="a11y_service_label">Katapult Action Service</string>
     <string name="a11y_shortcut_warning">In accessibility settings, turn on only the Katapult Action Service itself, not its shortcut. The shortcut adds a floating accessibility button to your screen.</string>

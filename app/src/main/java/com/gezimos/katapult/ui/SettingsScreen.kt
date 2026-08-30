@@ -141,6 +141,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var homeIslands by remember { mutableStateOf(prefs.homeIslands) }
     var verticalAppGestures by remember { mutableStateOf(prefs.verticalAppGestures) }
     var lockscreenWidget by remember { mutableStateOf(prefs.lockscreenWidget) }
+    var lockscreenMusicWidget by remember { mutableStateOf(prefs.lockscreenMusicWidget) }
     var actionServiceEnabled by remember { mutableStateOf(LockscreenWidgetService.isEnabled(context)) }
     var showLockscreenApps by remember { mutableStateOf(false) }
     var showLockscreenReadMe by remember { mutableStateOf(false) }
@@ -674,6 +675,21 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             add {
                 SettingsActionRow(
+                    title = stringResource(R.string.search_settings),
+                    description = stringResource(R.string.search_settings_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent(Settings.ACTION_APP_SEARCH_SETTINGS))
+                        } catch (_: Exception) {
+                            try {
+                                context.startActivity(Intent(Settings.ACTION_SETTINGS))
+                            } catch (_: Exception) {}
+                        }
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
                     title = stringResource(R.string.config_backup),
                     description = stringResource(R.string.config_backup_desc),
                     onClick = { showConfigSheet = true },
@@ -800,6 +816,25 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         val value = requested && serviceOn
                         lockscreenWidget = value
                         prefs.lockscreenWidget = value
+                        if (requested && !serviceOn) {
+                            try {
+                                context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                            } catch (_: Exception) {}
+                        }
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.lockscreen_music_widget),
+                    description = stringResource(R.string.lockscreen_music_widget_desc),
+                    checked = lockscreenMusicWidget && actionServiceEnabled,
+                    onCheckedChange = { requested ->
+                        val serviceOn = LockscreenWidgetService.isEnabled(context)
+                        actionServiceEnabled = serviceOn
+                        val value = requested && serviceOn
+                        lockscreenMusicWidget = value
+                        prefs.lockscreenMusicWidget = value
                         if (requested && !serviceOn) {
                             try {
                                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))

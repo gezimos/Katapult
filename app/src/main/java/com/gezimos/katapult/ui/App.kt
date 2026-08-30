@@ -13,19 +13,12 @@ fun App(
     imagePicker: ActivityResultLauncher<String>,
     iconPicker: ActivityResultLauncher<Array<String>>,
 ) {
-    val noIndication = object : androidx.compose.foundation.IndicationNodeFactory {
-        override fun create(interactionSource: androidx.compose.foundation.interaction.InteractionSource): androidx.compose.ui.Modifier.Node {
-            return object : androidx.compose.ui.Modifier.Node() {}
-        }
-        override fun hashCode() = 0
-        override fun equals(other: Any?) = other === this
-    }
     val iconShape = if (viewModel.roundedIcons) RoundedIconShape else CircleShape
     val smallShape = if (viewModel.roundedIcons) RoundedSmallShape else CircleShape
     val badgeShape = if (viewModel.roundedIcons) RoundedBadgeShape else CircleShape
     val dark = viewModel.darkMode
     CompositionLocalProvider(
-        androidx.compose.foundation.LocalIndication provides noIndication,
+        androidx.compose.foundation.LocalIndication provides NoIndication,
         LocalIconShape provides iconShape,
         LocalSmallIconShape provides smallShape,
         LocalBadgeShape provides badgeShape,
