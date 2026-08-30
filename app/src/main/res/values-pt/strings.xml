@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">Sobre a navegação de páginas e os gestos de deslize</string>
     <string name="gestures_readme_nav">Por predefinição navega nas páginas na horizontal ou com os botões de seta. Se preferir, pode mudar a direção dos gestos para vertical e ocultar as setas.</string>
     <string name="gestures_readme_apps">Deslizar para todas as apps permite deslizar para cima ou para a esquerda para abrir a página de todas as apps, consoante a direção dos gestos.</string>
+    <string name="search_settings">Pesquisar definições</string>
+    <string name="search_settings_desc">Encontrar uma definição nas definições do sistema Android</string>
+    <string name="check_updates">Procurar atualizações</string>
+    <string name="check_updates_desc">Transferir a versão mais recente do GitHub</string>
+    <string name="update_checking">A procurar atualizações…</string>
+    <string name="update_up_to_date">Tem a versão mais recente (v%1$s).</string>
+    <string name="update_available">A versão %1$s está disponível</string>
+    <string name="update_current_version">Instalada: v%1$s</string>
+    <string name="update_notes_title">Novidades</string>
+    <string name="update_download_install">Transferir</string>
+    <string name="update_downloading">A transferir… %1$d%%</string>
+    <string name="update_error">Não foi possível procurar atualizações. Verifique a ligação e tente novamente.</string>
+    <string name="update_ready_install">Transferida. Se o Android pedir, permita que o Katapult instale aplicações, volte e toque em Instalar.</string>
+    <string name="update_install">Instalar</string>
+    <string name="update_download_failed">A transferência falhou. Verifique a ligação e tente novamente.</string>
+    <string name="retry">Tentar novamente</string>
+    <string name="lockscreen_music_widget">Controlos de música no ecrã de bloqueio</string>
+    <string name="lockscreen_music_widget_desc">Mostrar controlos de multimédia no ecrã de bloqueio para leitores além do da Mudita</string>
+    <string name="screensaver_readme_accessibility">Abrir com o botão de ligar requer o Katapult Action Service ativado.</string>
 </resources>

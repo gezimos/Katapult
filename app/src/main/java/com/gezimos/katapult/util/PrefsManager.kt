@@ -13,6 +13,29 @@ class PrefsManager(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
 
+    init { seedDefaultsOnce() }
+
+    /**
+     * Defaults that ship on from 1.5, applied to fresh installs only. Existing users keep
+     * whatever they have: a pref reads its default whenever the key is absent, which is just
+     * as true for an upgrader who never touched that setting, so the defaults themselves are
+     * deliberately left alone and explicit values are written instead. Empty prefs mean a
+     * first launch rather than an upgrade, since a user who finished onboarding always has
+     * onboarding_complete and notification_indicators written. Clear All Data wipes the file,
+     * so it re-seeds, which is the intended behaviour.
+     */
+    private fun seedDefaultsOnce() {
+        if (prefs.contains(KEY_DEFAULTS_SEEDED)) return
+        val editor = prefs.edit()
+        if (prefs.all.isEmpty()) {
+            editor.putBoolean(KEY_HOME_EXTRA_ROW, true)
+            editor.putBoolean(KEY_VERTICAL_APP_GESTURES, true)
+            editor.putBoolean(KEY_HIDE_ARROW_BUTTONS, true)
+            editor.putBoolean(KEY_INFINITE_SCROLL, false)
+        }
+        editor.putBoolean(KEY_DEFAULTS_SEEDED, true).apply()
+    }
+
     private fun boolPref(key: String, def: Boolean): Boolean = try {
         prefs.getBoolean(key, def)
     } catch (_: ClassCastException) {
@@ -503,6 +526,7 @@ class PrefsManager(context: Context) {
             "extra_left", "extra_center", "extra_right",
         )
 
+        private const val KEY_DEFAULTS_SEEDED = "defaults_seeded"
         private const val KEY_APP_ORDER = "app_order"
         private const val KEY_PINNED_SHORTCUTS = "pinned_shortcuts"
         private const val KEY_NOTIFICATION_INDICATORS = "notification_indicators"

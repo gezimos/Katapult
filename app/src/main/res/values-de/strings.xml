@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">Über die Seitennavigation und Wischgesten</string>
     <string name="gestures_readme_nav">Standardmäßig navigierst du Seiten horizontal oder mit den Pfeiltasten. Bei Bedarf kannst du die Gestenrichtung auf vertikal ändern und die Pfeile ausblenden.</string>
     <string name="gestures_readme_apps">Wischen für alle Apps ermöglicht das Öffnen der Alle-Apps-Seite durch Wischen nach oben oder links, je nach Gestenrichtung.</string>
+    <string name="search_settings">Einstellungen durchsuchen</string>
+    <string name="search_settings_desc">Eine Option in den Android-Systemeinstellungen finden</string>
+    <string name="check_updates">Nach Updates suchen</string>
+    <string name="check_updates_desc">Die neueste Version von GitHub herunterladen</string>
+    <string name="update_checking">Suche nach Updates…</string>
+    <string name="update_up_to_date">Du hast die neueste Version (v%1$s).</string>
+    <string name="update_available">Version %1$s ist verfügbar</string>
+    <string name="update_current_version">Installiert: v%1$s</string>
+    <string name="update_notes_title">Neuerungen</string>
+    <string name="update_download_install">Herunterladen</string>
+    <string name="update_downloading">Wird heruntergeladen… %1$d%%</string>
+    <string name="update_error">Suche nach Updates fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="update_ready_install">Heruntergeladen. Wenn Android fragt, erlaube Katapult das Installieren von Apps, komm zurück und tippe auf Installieren.</string>
+    <string name="update_install">Installieren</string>
+    <string name="update_download_failed">Download fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="lockscreen_music_widget">Musiksteuerung im Sperrbildschirm</string>
+    <string name="lockscreen_music_widget_desc">Mediensteuerung im Sperrbildschirm für andere Player als den von Mudita anzeigen</string>
+    <string name="screensaver_readme_accessibility">Mit Ein-/Aus-Taste öffnen erfordert den aktivierten Katapult Action Service.</string>
 </resources>

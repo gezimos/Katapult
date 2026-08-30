@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">À propos de la navigation entre pages et des gestes de balayage</string>
     <string name="gestures_readme_nav">Par défaut, vous naviguez entre les pages horizontalement ou avec les boutons fléchés. Si vous préférez, vous pouvez changer la direction des gestes en vertical et masquer les flèches.</string>
     <string name="gestures_readme_apps">Balayer pour toutes les apps vous permet de balayer vers le haut ou la gauche pour ouvrir la page Toutes les apps, selon la direction des gestes.</string>
+    <string name="search_settings">Rechercher dans les paramètres</string>
+    <string name="search_settings_desc">Trouver un réglage dans les paramètres système Android</string>
+    <string name="check_updates">Rechercher des mises à jour</string>
+    <string name="check_updates_desc">Télécharger la dernière version depuis GitHub</string>
+    <string name="update_checking">Recherche de mises à jour…</string>
+    <string name="update_up_to_date">Vous avez la dernière version (v%1$s).</string>
+    <string name="update_available">La version %1$s est disponible</string>
+    <string name="update_current_version">Installée : v%1$s</string>
+    <string name="update_notes_title">Nouveautés</string>
+    <string name="update_download_install">Télécharger</string>
+    <string name="update_downloading">Téléchargement… %1$d%%</string>
+    <string name="update_error">Impossible de rechercher des mises à jour. Vérifiez votre connexion et réessayez.</string>
+    <string name="update_ready_install">Téléchargée. Si Android le demande, autorisez Katapult à installer des applications, puis revenez et appuyez sur Installer.</string>
+    <string name="update_install">Installer</string>
+    <string name="update_download_failed">Échec du téléchargement. Vérifiez votre connexion et réessayez.</string>
+    <string name="retry">Réessayer</string>
+    <string name="lockscreen_music_widget">Contrôles musicaux sur l\'écran de verrouillage</string>
+    <string name="lockscreen_music_widget_desc">Afficher les contrôles multimédias sur l\'écran de verrouillage pour les lecteurs autres que celui de Mudita</string>
+    <string name="screensaver_readme_accessibility">L\'ouverture avec le bouton d\'alimentation nécessite le Katapult Action Service activé.</string>
 </resources>

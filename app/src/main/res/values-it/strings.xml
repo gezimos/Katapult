@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">Informazioni sulla navigazione tra le pagine e i gesti di scorrimento</string>
     <string name="gestures_readme_nav">Per impostazione predefinita navighi tra le pagine in orizzontale o con i pulsanti freccia. Se preferisci, puoi cambiare la direzione dei gesti in verticale e nascondere le frecce.</string>
     <string name="gestures_readme_apps">Scorri per tutte le app ti consente di scorrere verso l\'alto o a sinistra per aprire la pagina Tutte le app, a seconda della direzione dei gesti.</string>
+    <string name="search_settings">Cerca nelle impostazioni</string>
+    <string name="search_settings_desc">Trova un\'impostazione nelle impostazioni di sistema Android</string>
+    <string name="check_updates">Cerca aggiornamenti</string>
+    <string name="check_updates_desc">Scarica l\'ultima versione da GitHub</string>
+    <string name="update_checking">Ricerca aggiornamenti…</string>
+    <string name="update_up_to_date">Hai l\'ultima versione (v%1$s).</string>
+    <string name="update_available">È disponibile la versione %1$s</string>
+    <string name="update_current_version">Installata: v%1$s</string>
+    <string name="update_notes_title">Novità</string>
+    <string name="update_download_install">Scarica</string>
+    <string name="update_downloading">Download… %1$d%%</string>
+    <string name="update_error">Impossibile cercare aggiornamenti. Controlla la connessione e riprova.</string>
+    <string name="update_ready_install">Scaricata. Se Android lo chiede, consenti a Katapult di installare app, poi torna e tocca Installa.</string>
+    <string name="update_install">Installa</string>
+    <string name="update_download_failed">Download non riuscito. Controlla la connessione e riprova.</string>
+    <string name="retry">Riprova</string>
+    <string name="lockscreen_music_widget">Controlli musicali nella schermata di blocco</string>
+    <string name="lockscreen_music_widget_desc">Mostra i controlli multimediali nella schermata di blocco per lettori diversi da quello di Mudita</string>
+    <string name="screensaver_readme_accessibility">L\'apertura con il tasto di accensione richiede il Katapult Action Service attivo.</string>
 </resources>

@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">Over paginanavigatie en veeggebaren</string>
     <string name="gestures_readme_nav">Standaard navigeer je pagina\'s horizontaal of met de pijlknoppen. Als je wilt, kun je de gebaarrichting op verticaal zetten en de pijlen verbergen.</string>
     <string name="gestures_readme_apps">Vegen voor alle apps laat je omhoog of naar links vegen om de pagina Alle apps te openen, afhankelijk van de gebaarrichting.</string>
+    <string name="search_settings">Instellingen doorzoeken</string>
+    <string name="search_settings_desc">Zoek een instelling in de Android-systeeminstellingen</string>
+    <string name="check_updates">Controleren op updates</string>
+    <string name="check_updates_desc">Download de nieuwste versie van GitHub</string>
+    <string name="update_checking">Controleren op updates…</string>
+    <string name="update_up_to_date">Je hebt de nieuwste versie (v%1$s).</string>
+    <string name="update_available">Versie %1$s is beschikbaar</string>
+    <string name="update_current_version">Geïnstalleerd: v%1$s</string>
+    <string name="update_notes_title">Wat is er nieuw</string>
+    <string name="update_download_install">Downloaden</string>
+    <string name="update_downloading">Downloaden… %1$d%%</string>
+    <string name="update_error">Kan niet controleren op updates. Controleer je verbinding en probeer het opnieuw.</string>
+    <string name="update_ready_install">Gedownload. Als Android erom vraagt, geef Katapult toestemming om apps te installeren, kom terug en tik op Installeren.</string>
+    <string name="update_install">Installeren</string>
+    <string name="update_download_failed">Downloaden mislukt. Controleer je verbinding en probeer het opnieuw.</string>
+    <string name="retry">Opnieuw</string>
+    <string name="lockscreen_music_widget">Muziekbediening op het vergrendelscherm</string>
+    <string name="lockscreen_music_widget_desc">Toon mediabediening op het vergrendelscherm voor andere spelers dan die van Mudita</string>
+    <string name="screensaver_readme_accessibility">Openen met de aan-uitknop vereist dat de Katapult Action Service is ingeschakeld.</string>
 </resources>

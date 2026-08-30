@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">Sobre la navegación de páginas y los gestos de deslizamiento</string>
     <string name="gestures_readme_nav">De forma predeterminada navegas las páginas horizontalmente o con los botones de flecha. Si lo prefieres, puedes cambiar la dirección de los gestos a vertical y ocultar las flechas.</string>
     <string name="gestures_readme_apps">Deslizar para todas las apps te permite deslizar hacia arriba o a la izquierda para abrir la página de todas las apps, según la dirección de los gestos.</string>
+    <string name="search_settings">Buscar ajustes</string>
+    <string name="search_settings_desc">Encuentra un ajuste en los ajustes del sistema Android</string>
+    <string name="check_updates">Buscar actualizaciones</string>
+    <string name="check_updates_desc">Descarga la última versión desde GitHub</string>
+    <string name="update_checking">Buscando actualizaciones…</string>
+    <string name="update_up_to_date">Tienes la última versión (v%1$s).</string>
+    <string name="update_available">La versión %1$s está disponible</string>
+    <string name="update_current_version">Instalada: v%1$s</string>
+    <string name="update_notes_title">Novedades</string>
+    <string name="update_download_install">Descargar</string>
+    <string name="update_downloading">Descargando… %1$d%%</string>
+    <string name="update_error">No se pudo buscar actualizaciones. Comprueba tu conexión e inténtalo de nuevo.</string>
+    <string name="update_ready_install">Descargada. Si Android lo pide, permite que Katapult instale aplicaciones, vuelve y toca Instalar.</string>
+    <string name="update_install">Instalar</string>
+    <string name="update_download_failed">Error al descargar. Comprueba tu conexión e inténtalo de nuevo.</string>
+    <string name="retry">Reintentar</string>
+    <string name="lockscreen_music_widget">Controles de música en la pantalla de bloqueo</string>
+    <string name="lockscreen_music_widget_desc">Muestra los controles multimedia en la pantalla de bloqueo para reproductores distintos al de Mudita</string>
+    <string name="screensaver_readme_accessibility">Abrir con el botón de encendido requiere el Katapult Action Service activado.</string>
 </resources>

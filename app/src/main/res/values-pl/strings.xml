@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">O nawigacji między stronami i gestach przesuwania</string>
     <string name="gestures_readme_nav">Domyślnie poruszasz się między stronami poziomo lub za pomocą przycisków strzałek. Jeśli chcesz, możesz zmienić kierunek gestów na pionowy i ukryć strzałki.</string>
     <string name="gestures_readme_apps">Przesuń, aby otworzyć aplikacje pozwala przesunąć w górę lub w lewo, aby otworzyć stronę wszystkich aplikacji, zależnie od kierunku gestów.</string>
+    <string name="search_settings">Szukaj w ustawieniach</string>
+    <string name="search_settings_desc">Znajdź ustawienie w ustawieniach systemu Android</string>
+    <string name="check_updates">Sprawdź aktualizacje</string>
+    <string name="check_updates_desc">Pobierz najnowszą wersję z GitHuba</string>
+    <string name="update_checking">Sprawdzanie aktualizacji…</string>
+    <string name="update_up_to_date">Masz najnowszą wersję (v%1$s).</string>
+    <string name="update_available">Dostępna jest wersja %1$s</string>
+    <string name="update_current_version">Zainstalowana: v%1$s</string>
+    <string name="update_notes_title">Co nowego</string>
+    <string name="update_download_install">Pobierz</string>
+    <string name="update_downloading">Pobieranie… %1$d%%</string>
+    <string name="update_error">Nie udało się sprawdzić aktualizacji. Sprawdź połączenie i spróbuj ponownie.</string>
+    <string name="update_ready_install">Pobrano. Jeśli Android o to poprosi, zezwól Katapultowi na instalowanie aplikacji, wróć i naciśnij Zainstaluj.</string>
+    <string name="update_install">Zainstaluj</string>
+    <string name="update_download_failed">Pobieranie nie powiodło się. Sprawdź połączenie i spróbuj ponownie.</string>
+    <string name="retry">Ponów</string>
+    <string name="lockscreen_music_widget">Sterowanie muzyką na ekranie blokady</string>
+    <string name="lockscreen_music_widget_desc">Pokaż sterowanie multimediami na ekranie blokady dla odtwarzaczy innych niż Mudita</string>
+    <string name="screensaver_readme_accessibility">Otwieranie przyciskiem zasilania wymaga włączonej usługi Katapult Action Service.</string>
 </resources>

@@ -2,6 +2,20 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.5]
+
+### Added
+- **Lockscreen Music Controls** (Kompakt only): the stock MuditaOS lockscreen media widget only works with Mudita's own player, so anything else playing left the lock screen with no controls. Katapult now draws its own music widget in the same spot for those players, with the same outline as the notification widget. Off by default, needs the Katapult Action Service, and stays hidden for the Mudita player so the two never appear together. The home screen widget still works with every player, Mudita's included.
+- **Search Settings** in the System section: opens Android's settings search so you can find a system setting by name without digging through menus.
+
+### Changed
+- New installs from 1.5 onward start with the extra dock row on, vertical All Apps gestures, page arrows hidden, and infinite scroll off. Updating from an earlier version changes nothing: your settings are kept exactly as they are.
+- The home dock rows now sit on the same grid All Apps uses, so the rows line up when switching between the two screens. Holds whether app names and the status bar are shown or hidden, and the All Apps button lines up with the app icons beside it.
+- The album art placeholder in the music widget is now a black note on white instead of white on black, matching the rest of the widget.
+
+### Fixed
+- Czech, Dutch, French, German, Italian, Polish, Portuguese, and Spanish were missing 19 strings, including the whole Check for Updates flow, which rendered in English. All nine languages are complete again.
+
 ## [1.4]
 
 ### Added

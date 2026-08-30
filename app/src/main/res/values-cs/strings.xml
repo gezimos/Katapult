@@ -233,4 +233,23 @@
     <string name="gestures_readme_desc">O navigaci mezi stránkami a gestech přejetí</string>
     <string name="gestures_readme_nav">Ve výchozím nastavení se mezi stránkami pohybujete vodorovně nebo pomocí tlačítek se šipkami. Pokud chcete, můžete směr gest změnit na svislý a šipky skrýt.</string>
     <string name="gestures_readme_apps">Přejetí pro aplikace umožňuje přejetím nahoru nebo doleva otevřít stránku se všemi aplikacemi, podle směru gest.</string>
+    <string name="search_settings">Hledat v nastavení</string>
+    <string name="search_settings_desc">Najít položku v systémovém nastavení Androidu</string>
+    <string name="check_updates">Zkontrolovat aktualizace</string>
+    <string name="check_updates_desc">Stáhnout nejnovější verzi z GitHubu</string>
+    <string name="update_checking">Kontrola aktualizací…</string>
+    <string name="update_up_to_date">Máte nejnovější verzi (v%1$s).</string>
+    <string name="update_available">Je dostupná verze %1$s</string>
+    <string name="update_current_version">Nainstalováno: v%1$s</string>
+    <string name="update_notes_title">Novinky</string>
+    <string name="update_download_install">Stáhnout</string>
+    <string name="update_downloading">Stahování… %1$d%%</string>
+    <string name="update_error">Aktualizace se nepodařilo zkontrolovat. Zkontrolujte připojení a zkuste to znovu.</string>
+    <string name="update_ready_install">Staženo. Pokud se Android zeptá, povolte Katapultu instalovat aplikace, pak se vraťte a klepněte na Instalovat.</string>
+    <string name="update_install">Instalovat</string>
+    <string name="update_download_failed">Stahování selhalo. Zkontrolujte připojení a zkuste to znovu.</string>
+    <string name="retry">Zkusit znovu</string>
+    <string name="lockscreen_music_widget">Ovládání hudby na zamykací obrazovce</string>
+    <string name="lockscreen_music_widget_desc">Zobrazit ovládání přehrávání na zamykací obrazovce pro jiné přehrávače než Mudita</string>
+    <string name="screensaver_readme_accessibility">Otevření tlačítkem napájení vyžaduje zapnutou službu Katapult Action Service.</string>
 </resources>
