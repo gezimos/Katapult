@@ -252,4 +252,6 @@
     <string name="lockscreen_music_widget">Contrôles musicaux sur l\'écran de verrouillage</string>
     <string name="lockscreen_music_widget_desc">Afficher les contrôles multimédias sur l\'écran de verrouillage pour les lecteurs autres que celui de Mudita</string>
     <string name="screensaver_readme_accessibility">L\'ouverture avec le bouton d\'alimentation nécessite le Katapult Action Service activé.</string>
+    <string name="icon_size">Taille des icônes</string>
+    <string name="icon_size_value">%1$d x %2$d</string>
 </resources>

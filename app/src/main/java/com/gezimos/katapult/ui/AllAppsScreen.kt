@@ -221,7 +221,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                                 )
                             } else {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Box(Modifier.size(IconSize))
+                                    Box(Modifier.size(LocalIconSize.current))
                                     Spacer(Modifier.height(4.dp))
                                     Text("", fontSize = 18.sp)
                                 }
@@ -243,7 +243,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
         ) {
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(IconSize), contentAlignment = Alignment.CenterStart) {
+                    Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterStart) {
                         val canGoPrev = viewModel.currentPage > 0 || wrap
                         if (canGoPrev) {
                             ArrowButton(
@@ -317,7 +317,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
 
             Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(IconSize), contentAlignment = Alignment.CenterEnd) {
+                    Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterEnd) {
                         val canGoNext = viewModel.currentPage < viewModel.totalPages - 1 || wrap
                         if (canGoNext) {
                             ArrowButton(
@@ -595,8 +595,9 @@ private fun AppGridItem(
     onLongClick: () -> Unit,
 ) {
     val context = LocalContext.current
-    val sizePx = remember { (IconSize.value * context.resources.displayMetrics.density).toInt() }
-    val bitmap = remember(app.key, refresh) {
+    val iconSize = LocalIconSize.current
+    val sizePx = remember(iconSize) { (iconSize.value * context.resources.displayMetrics.density).toInt() }
+    val bitmap = remember(app.key, refresh, sizePx) {
         if (app.shortcutId.isNotEmpty()) {
             IconUtility.loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
         } else {
@@ -610,7 +611,7 @@ private fun AppGridItem(
         modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
     ) {
         Box(contentAlignment = Alignment.Center) {
-            AppIconCircle(bitmap = bitmap, size = IconSize)
+            AppIconCircle(bitmap = bitmap, size = iconSize)
             if (isHighlighted) {
                 Box(
                     modifier = Modifier

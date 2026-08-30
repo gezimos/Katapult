@@ -252,4 +252,6 @@
     <string name="lockscreen_music_widget">Muziekbediening op het vergrendelscherm</string>
     <string name="lockscreen_music_widget_desc">Toon mediabediening op het vergrendelscherm voor andere spelers dan die van Mudita</string>
     <string name="screensaver_readme_accessibility">Openen met de aan-uitknop vereist dat de Katapult Action Service is ingeschakeld.</string>
+    <string name="icon_size">Pictogramgrootte</string>
+    <string name="icon_size_value">%1$d x %2$d</string>
 </resources>

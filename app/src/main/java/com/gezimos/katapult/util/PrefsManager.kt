@@ -32,6 +32,7 @@ class PrefsManager(context: Context) {
             editor.putBoolean(KEY_VERTICAL_APP_GESTURES, true)
             editor.putBoolean(KEY_HIDE_ARROW_BUTTONS, true)
             editor.putBoolean(KEY_INFINITE_SCROLL, false)
+            editor.putInt(KEY_ICON_SIZE, ICON_SIZE_LARGE)
         }
         editor.putBoolean(KEY_DEFAULTS_SEEDED, true).apply()
     }
@@ -315,6 +316,10 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_LOCKSCREEN_WIDGET, false)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_WIDGET, value).apply()
 
+    var iconSize: Int
+        get() = intPref(KEY_ICON_SIZE, ICON_SIZE_SMALL)
+        set(value) = prefs.edit().putInt(KEY_ICON_SIZE, value).apply()
+
     var lockscreenMusicWidget: Boolean
         get() = boolPref(KEY_LOCKSCREEN_MUSIC_WIDGET, false)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_MUSIC_WIDGET, value).apply()
@@ -527,6 +532,10 @@ class PrefsManager(context: Context) {
         )
 
         private const val KEY_DEFAULTS_SEEDED = "defaults_seeded"
+        private const val KEY_ICON_SIZE = "icon_size"
+
+        const val ICON_SIZE_SMALL = 72
+        const val ICON_SIZE_LARGE = 80
         private const val KEY_APP_ORDER = "app_order"
         private const val KEY_PINNED_SHORTCUTS = "pinned_shortcuts"
         private const val KEY_NOTIFICATION_INDICATORS = "notification_indicators"

@@ -4,6 +4,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.unit.dp
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.Screen
 
@@ -19,6 +20,7 @@ fun App(
     val dark = viewModel.darkMode
     CompositionLocalProvider(
         androidx.compose.foundation.LocalIndication provides NoIndication,
+        LocalIconSize provides viewModel.iconSize.dp,
         LocalIconShape provides iconShape,
         LocalSmallIconShape provides smallShape,
         LocalBadgeShape provides badgeShape,

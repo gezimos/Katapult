@@ -252,4 +252,6 @@
     <string name="lockscreen_music_widget">Ovládání hudby na zamykací obrazovce</string>
     <string name="lockscreen_music_widget_desc">Zobrazit ovládání přehrávání na zamykací obrazovce pro jiné přehrávače než Mudita</string>
     <string name="screensaver_readme_accessibility">Otevření tlačítkem napájení vyžaduje zapnutou službu Katapult Action Service.</string>
+    <string name="icon_size">Velikost ikon</string>
+    <string name="icon_size_value">%1$d x %2$d</string>
 </resources>

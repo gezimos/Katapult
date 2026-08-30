@@ -81,6 +81,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var mediaInfo by mutableStateOf<AudioWidgetHelper.MediaInfo?>(null)
         private set
     var roundedIcons by mutableStateOf(prefs.roundedIcons)
+    var iconSize by mutableStateOf(prefs.iconSize)
     var darkMode by mutableStateOf(prefs.darkMode)
 
     var showLockscreenReEnable by mutableStateOf(false)
@@ -190,7 +191,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             AudioWidgetHelper.getInstance(ctx).state.collect { mediaInfo = it }
         }
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val sizePx = (IconSize.value * ctx.resources.displayMetrics.density).toInt()
+            val sizePx = (iconSize * ctx.resources.displayMetrics.density).toInt()
             for (slot in PrefsManager.HOME_SLOTS) {
                 val pkg = getShortcutPackage(slot) ?: continue
                 val shortcutId = prefs.loadSlotShortcutId(slot)

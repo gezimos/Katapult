@@ -47,6 +47,7 @@ val LatoFamily = FontFamily(
 )
 
 val IconSize = 72.dp
+val LocalIconSize = staticCompositionLocalOf { IconSize }
 val PagePadding = 8.dp
 val ArrowSize = 40.dp
 val AllAppsRowHeight = 120.dp

@@ -252,4 +252,6 @@
     <string name="lockscreen_music_widget">Musiksteuerung im Sperrbildschirm</string>
     <string name="lockscreen_music_widget_desc">Mediensteuerung im Sperrbildschirm für andere Player als den von Mudita anzeigen</string>
     <string name="screensaver_readme_accessibility">Mit Ein-/Aus-Taste öffnen erfordert den aktivierten Katapult Action Service.</string>
+    <string name="icon_size">Symbolgröße</string>
+    <string name="icon_size_value">%1$d x %2$d</string>
 </resources>

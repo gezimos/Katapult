@@ -252,4 +252,6 @@
     <string name="lockscreen_music_widget">Controlli musicali nella schermata di blocco</string>
     <string name="lockscreen_music_widget_desc">Mostra i controlli multimediali nella schermata di blocco per lettori diversi da quello di Mudita</string>
     <string name="screensaver_readme_accessibility">L\'apertura con il tasto di accensione richiede il Katapult Action Service attivo.</string>
+    <string name="icon_size">Dimensione icone</string>
+    <string name="icon_size_value">%1$d x %2$d</string>
 </resources>

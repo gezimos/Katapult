@@ -252,4 +252,6 @@
     <string name="lockscreen_music_widget">Controlos de música no ecrã de bloqueio</string>
     <string name="lockscreen_music_widget_desc">Mostrar controlos de multimédia no ecrã de bloqueio para leitores além do da Mudita</string>
     <string name="screensaver_readme_accessibility">Abrir com o botão de ligar requer o Katapult Action Service ativado.</string>
+    <string name="icon_size">Tamanho dos ícones</string>
+    <string name="icon_size_value">%1$d x %2$d</string>
 </resources>

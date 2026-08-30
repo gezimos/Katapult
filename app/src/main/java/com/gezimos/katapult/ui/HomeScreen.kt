@@ -250,7 +250,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         .padding(bottom = 8.dp),
                 ) {
                     val columnWidth = maxWidth / 3
-                    val iconPad = (columnWidth - IconSize) / 2
+                    val iconPad = (columnWidth - LocalIconSize.current) / 2
                     Box(Modifier.fillMaxWidth().padding(horizontal = iconPad)) {
                         viewModel.mediaInfo?.let { media ->
                             MusicWidget(
@@ -344,7 +344,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             val tileShape = if (isRounded) RoundedIconShape else CircleShape
                             Box(
                                 modifier = Modifier
-                                    .size(IconSize)
+                                    .size(LocalIconSize.current)
                                     .then(
                                         if (viewModel.prefs.homeIslands)
                                             Modifier
@@ -755,8 +755,9 @@ private fun ShortcutItem(
     val activityName = remember(refresh) { viewModel.getShortcutActivity(slot) }
     val slotShortcutId = remember(refresh) { viewModel.prefs.loadSlotShortcutId(slot) }
     val label = remember(refresh) { viewModel.getShortcutLabel(slot, defaultLabel) }
-    val sizePx = remember { (IconSize.value * context.resources.displayMetrics.density).toInt() }
-    val bitmap = remember(pkg, activityName, refresh) {
+    val iconSize = LocalIconSize.current
+    val sizePx = remember(iconSize) { (iconSize.value * context.resources.displayMetrics.density).toInt() }
+    val bitmap = remember(pkg, activityName, refresh, sizePx) {
         when {
             pkg == null -> null
             slotShortcutId != null -> IconUtility.loadShortcutIcon(context, pkg, slotShortcutId, sizePx)
@@ -772,7 +773,7 @@ private fun ShortcutItem(
         modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
     ) {
         Box {
-            AppIconCircle(bitmap = bitmap, size = IconSize)
+            AppIconCircle(bitmap = bitmap, size = iconSize)
             if (notificationCount > 0) {
                 NotificationBadge(
                     count = notificationCount,

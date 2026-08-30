@@ -122,6 +122,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var dateFormat by remember { mutableStateOf(prefs.dateFormat) }
     var showBattery by remember { mutableStateOf(prefs.showBattery) }
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
+    var iconSize by remember { mutableIntStateOf(prefs.iconSize) }
     var darkMode by remember { mutableStateOf(prefs.darkMode) }
     var hideStatusBar by remember { mutableStateOf(prefs.hideStatusBar) }
     var hideStatusBarClock by remember { mutableStateOf(prefs.hideStatusBarClock) }
@@ -314,6 +315,18 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         roundedIcons = !roundedIcons
                         prefs.roundedIcons = roundedIcons
                         viewModel.roundedIcons = roundedIcons
+                    },
+                )
+            }
+            add {
+                SettingsCycleRow(
+                    title = stringResource(R.string.icon_size),
+                    description = stringResource(R.string.icon_size_value, iconSize, iconSize),
+                    onClick = {
+                        iconSize = if (iconSize == PrefsManager.ICON_SIZE_SMALL)
+                            PrefsManager.ICON_SIZE_LARGE else PrefsManager.ICON_SIZE_SMALL
+                        prefs.iconSize = iconSize
+                        viewModel.iconSize = iconSize
                     },
                 )
             }
