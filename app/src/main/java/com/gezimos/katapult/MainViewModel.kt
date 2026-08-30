@@ -14,6 +14,7 @@ import androidx.core.graphics.createBitmap
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.database.ContentObserver
 import android.net.Uri
 import android.os.BatteryManager
 import android.os.SystemClock
@@ -249,7 +250,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private var weatherObserverOn = false
+
+    private val weatherObserver = object : ContentObserver(clockHandler) {
+        override fun onChange(selfChange: Boolean) {
+            weatherCheckedAt = SystemClock.elapsedRealtime()
+            viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val result = WeatherHelper.read(ctx)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    weather = result
+                }
+            }
+        }
+    }
+
+    private fun syncWeatherObserver() {
+        val want = prefs.showWeather
+        if (want == weatherObserverOn) return
+        try {
+            if (want) {
+                ctx.contentResolver.registerContentObserver(
+                    WeatherHelper.WidgetUri, false, weatherObserver,
+                )
+            } else {
+                ctx.contentResolver.unregisterContentObserver(weatherObserver)
+            }
+            weatherObserverOn = want
+        } catch (_: Exception) {
+        }
+    }
+
     fun refreshWeather() {
+        syncWeatherObserver()
         weatherCheckedAt = SystemClock.elapsedRealtime()
         if (!prefs.showWeather) {
             weather = null
@@ -779,5 +811,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         stopClock()
         stopNotificationListener()
         try { ctx.unregisterReceiver(powerReceiver) } catch (_: Exception) {}
+        try { ctx.contentResolver.unregisterContentObserver(weatherObserver) } catch (_: Exception) {}
     }
 }

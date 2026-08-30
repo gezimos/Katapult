@@ -19,7 +19,7 @@ object WeatherHelper {
 
     const val PACKAGE = "com.mudita.weather"
 
-    private val WidgetUri: Uri = Uri.parse("content://$PACKAGE/widget_weather")
+    val WidgetUri: Uri = Uri.parse("content://$PACKAGE/widget_weather")
 
     fun openApp(context: Context) {
         val intent = context.packageManager.getLaunchIntentForPackage(PACKAGE)
