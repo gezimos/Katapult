@@ -506,7 +506,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
             app = app,
             onDismiss = { changeIconApp = null },
             onImportClick = {
-                viewModel.iconOverrideTarget = app.key
+                viewModel.beginIconImport(app.key)
                 iconPicker.launch(arrayOf("image/png", "image/svg+xml"))
                 changeIconApp = null
             },

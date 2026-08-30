@@ -75,6 +75,7 @@
     <string name="katapult_icons">Katapult Icons</string>
     <string name="material_icons">Material Icons</string>
     <string name="choose_png">Import icon (png, svg)</string>
+    <string name="icon_import_failed">Could not import that icon. Try again.</string>
     <string name="reset_icon">Reset to Default</string>
     <string name="notification_indicators">Notification Indicators</string>
     <string name="notification_indicators_desc">Show notification badges on app icons</string>

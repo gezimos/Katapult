@@ -63,6 +63,7 @@
     <string name="katapult_icons">Ikony Katapult</string>
     <string name="material_icons">Ikony Material</string>
     <string name="choose_png">Importuj ikonę (png, svg)</string>
+    <string name="icon_import_failed">Nie udało się zaimportować ikony. Spróbuj ponownie.</string>
     <string name="reset_icon">Przywróć domyślną</string>
     <string name="notification_indicators">Wskaźniki powiadomień</string>
     <string name="notification_indicators_desc">Pokaż znaczniki powiadomień na ikonach</string>

@@ -63,6 +63,7 @@
     <string name="katapult_icons">Katapult-Symbole</string>
     <string name="material_icons">Material-Icons</string>
     <string name="choose_png">Symbol importieren (png, svg)</string>
+    <string name="icon_import_failed">Symbol konnte nicht importiert werden. Bitte erneut versuchen.</string>
     <string name="reset_icon">Auf Standard zurücksetzen</string>
     <string name="notification_indicators">Benachrichtigungsanzeigen</string>
     <string name="notification_indicators_desc">Benachrichtigungsbadges auf App-Symbolen anzeigen</string>

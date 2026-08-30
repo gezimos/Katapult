@@ -63,6 +63,7 @@
     <string name="katapult_icons">Ikony Katapult</string>
     <string name="material_icons">Ikony Material</string>
     <string name="choose_png">Importovat ikonu (png, svg)</string>
+    <string name="icon_import_failed">Ikonu se nepodařilo importovat. Zkuste to znovu.</string>
     <string name="reset_icon">Obnovit výchozí</string>
     <string name="notification_indicators">Indikátory oznámení</string>
     <string name="notification_indicators_desc">Zobrazit odznaky oznámení na ikonách aplikací</string>

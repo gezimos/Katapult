@@ -233,6 +233,13 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_SHOW_BATTERY, false)
         set(value) = prefs.edit().putBoolean(KEY_SHOW_BATTERY, value).apply()
 
+    var pendingIconTarget: String?
+        get() = strPref(KEY_PENDING_ICON_TARGET, null)
+        set(value) {
+            if (value == null) prefs.edit().remove(KEY_PENDING_ICON_TARGET).apply()
+            else prefs.edit().putString(KEY_PENDING_ICON_TARGET, value).apply()
+        }
+
     var showAlarm: Boolean
         get() = boolPref(KEY_SHOW_ALARM, true)
         set(value) = prefs.edit().putBoolean(KEY_SHOW_ALARM, value).apply()
@@ -551,6 +558,7 @@ class PrefsManager(context: Context) {
         private const val KEY_DATE_FORMAT = "date_format"
         private const val KEY_SHOW_BATTERY = "show_battery"
         private const val KEY_SHOW_ALARM = "show_alarm"
+        private const val KEY_PENDING_ICON_TARGET = "pending_icon_target"
         private const val KEY_SHOW_WEATHER = "show_weather"
         private const val KEY_ROUNDED_ICONS = "rounded_icons"
         private const val KEY_DARK_MODE = "dark_mode"

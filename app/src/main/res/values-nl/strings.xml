@@ -63,6 +63,7 @@
     <string name="katapult_icons">Katapult-pictogrammen</string>
     <string name="material_icons">Material-iconen</string>
     <string name="choose_png">Pictogram importeren (png, svg)</string>
+    <string name="icon_import_failed">Kan dat pictogram niet importeren. Probeer het opnieuw.</string>
     <string name="reset_icon">Standaard herstellen</string>
     <string name="notification_indicators">Meldingsindicatoren</string>
     <string name="notification_indicators_desc">Toon meldingsbadges op app-pictogrammen</string>

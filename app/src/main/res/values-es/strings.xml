@@ -63,6 +63,7 @@
     <string name="katapult_icons">Iconos Katapult</string>
     <string name="material_icons">Iconos Material</string>
     <string name="choose_png">Importar icono (png, svg)</string>
+    <string name="icon_import_failed">No se pudo importar el icono. Inténtalo de nuevo.</string>
     <string name="reset_icon">Restablecer predeterminado</string>
     <string name="notification_indicators">Indicadores de notificaciones</string>
     <string name="notification_indicators_desc">Mostrar insignias de notificaciones en los iconos</string>

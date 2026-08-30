@@ -59,6 +59,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var reorderMode by mutableStateOf(false)
     var reorderHighlightIndex by mutableIntStateOf(-1)
     var iconOverrideTarget by mutableStateOf<String?>(null)
+    var iconImportError by mutableStateOf(false)
     var sheetDismissSignal by mutableIntStateOf(0)
         private set
     var orderedApps by mutableStateOf(listOf<AppModel>())
@@ -703,9 +704,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun beginIconImport(key: String) {
+        iconOverrideTarget = key
+        prefs.pendingIconTarget = key
+    }
+
     fun saveImportedIcon(context: Context, uri: Uri) {
-        val key = iconOverrideTarget ?: return
+        val key = iconOverrideTarget ?: prefs.pendingIconTarget
         iconOverrideTarget = null
+        prefs.pendingIconTarget = null
+        if (key == null) {
+            iconImportError = true
+            return
+        }
 
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
@@ -721,7 +732,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     decodeSampled(context, uri, targetPx * 2)?.let { fitToIcon(it, targetPx) }
                 }
-                if (bitmap == null) return@launch
+                if (bitmap == null) {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        iconImportError = true
+                    }
+                    return@launch
+                }
 
                 val file = iconFile(key)
                 file.outputStream().use { out ->
@@ -731,8 +747,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 IconUtility.clearCacheFor(key)
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     shortcutRefresh++
+                    loadApps()
                 }
-            } catch (_: Exception) {}
+            } catch (_: Throwable) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    iconImportError = true
+                }
+            }
         }
     }
 
@@ -760,6 +781,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cancelIconImport() {
         iconOverrideTarget = null
+        prefs.pendingIconTarget = null
     }
 
     fun setBundledIcon(key: String, resName: String) {
