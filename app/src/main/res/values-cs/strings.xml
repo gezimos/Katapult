@@ -21,9 +21,11 @@
     <string name="donate_label">buymeacoffee.com/gezimos</string>
     <string name="no_media">Žádné médium</string>
     <string name="battery_percent">%1$d%%</string>
+    <string name="weather_temp">%1$d\u00B0%2$s</string>
 
     <string name="cd_alarm">Budík</string>
     <string name="cd_battery">Baterie</string>
+    <string name="cd_weather">Počasí</string>
     <string name="cd_album_art">Obal alba</string>
     <string name="cd_music">Hudba</string>
     <string name="cd_previous">Předchozí</string>
@@ -86,6 +88,10 @@
     <string name="date_format">Formát data</string>
     <string name="show_battery">Zobrazit baterii %%</string>
     <string name="show_battery_desc">Zobrazit %% baterie nad hodinami</string>
+    <string name="show_alarm">Zobrazit budík</string>
+    <string name="show_alarm_desc">Zobrazit nejbližší budík nad hodinami</string>
+    <string name="show_weather">Zobrazit počasí</string>
+    <string name="show_weather_desc">Zobrazit widget počasí nad hodinami</string>
     <string name="show_katapult_icon">Zobrazit ikonu Katapult</string>
     <string name="show_katapult_icon_desc">Zobrazit Katapult v seznamu aplikací</string>
     <string name="hide_app_names">Skrýt názvy aplikací</string>

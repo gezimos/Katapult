@@ -92,6 +92,7 @@ import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.BrightnessHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
+import com.gezimos.katapult.util.WeatherHelper
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -205,6 +206,8 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     batteryPercent = viewModel.batteryPercent,
                     isCharging = viewModel.isCharging,
                     showBattery = viewModel.prefs.showBattery,
+                    showAlarm = viewModel.prefs.showAlarm,
+                    weather = viewModel.weather,
                     islandsActive = viewModel.prefs.homeIslands,
                     topSpacing = if (viewModel.prefs.hideStatusBar) 32.dp else 8.dp,
                     onClockClick = {
@@ -225,6 +228,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         }
                     },
                     onDateLongClick = { handleSlotLongPress("calendar") },
+                    onWeatherClick = { WeatherHelper.openApp(context) },
                     onBatteryClick = {
                         val intent = Intent(Intent.ACTION_POWER_USAGE_SUMMARY)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

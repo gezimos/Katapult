@@ -8,11 +8,14 @@ All notable changes to Katapult are documented here.
 - **Lockscreen Music Controls** (Kompakt only): the stock MuditaOS lockscreen media widget only works with Mudita's own player, so anything else playing left the lock screen with no controls. Katapult now draws its own music widget in the same spot for those players, with the same outline as the notification widget. Off by default, needs the Katapult Action Service, and stays hidden for the Mudita player so the two never appear together. The home screen widget still works with every player, Mudita's included.
 - **Search Settings** in the System section: opens Android's settings search so you can find a system setting by name without digging through menus.
 - **Icon Size** in Appearance: switch app icons between 72 x 72 and 80 x 80 on both the home screen and All Apps. Row and column spacing stays the same, so only the icons grow.
+- **Show Weather** (Kompakt only): Shows emperature above the clock, beside the alarm and battery, on the home screen and the screensaver. Syncs with the weather app on the device.
+- **Show Alarm** toggle: hide the next-alarm row above the clock.
 
 ### Changed
 - New installs from 1.5 onward start with the extra dock row on, vertical All Apps gestures, page arrows hidden, infinite scroll off, and 80 x 80 icons. Updating from an earlier version changes nothing: your settings are kept exactly as they are, icons included.
 - The home dock rows now sit on the same grid All Apps uses, so the rows line up when switching between the two screens. Holds whether app names and the status bar are shown or hidden, and the All Apps button lines up with the app icons beside it.
 - The album art placeholder in the music widget is now a black note on white instead of white on black, matching the rest of the widget.
+- Hide App Names moved from the Home Screen section to Appearance, since it affects labels on both the home screen and All Apps.
 
 ### Fixed
 - Czech, Dutch, French, German, Italian, Polish, Portuguese, and Spanish were missing 19 strings, including the whole Check for Updates flow, which rendered in English. All nine languages are complete again.

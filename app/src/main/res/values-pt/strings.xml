@@ -21,9 +21,11 @@
     <string name="donate_label">buymeacoffee.com/gezimos</string>
     <string name="no_media">Sem multimédia</string>
     <string name="battery_percent">%1$d%%</string>
+    <string name="weather_temp">%1$d\u00B0%2$s</string>
 
     <string name="cd_alarm">Alarme</string>
     <string name="cd_battery">Bateria</string>
+    <string name="cd_weather">Meteorologia</string>
     <string name="cd_album_art">Capa do álbum</string>
     <string name="cd_music">Música</string>
     <string name="cd_previous">Anterior</string>
@@ -84,6 +86,10 @@
     <string name="date_format">Formato da Data</string>
     <string name="show_battery">Mostrar bateria %%</string>
     <string name="show_battery_desc">Mostrar bateria %% acima do relógio</string>
+    <string name="show_alarm">Mostrar alarme</string>
+    <string name="show_alarm_desc">Mostrar o próximo alarme acima do relógio</string>
+    <string name="show_weather">Mostrar meteorologia</string>
+    <string name="show_weather_desc">Mostrar o widget de meteorologia acima do relógio</string>
     <string name="show_katapult_icon">Mostrar ícone Katapult</string>
     <string name="show_katapult_icon_desc">Mostrar Katapult na lista de apps</string>
     <string name="hide_app_names">Ocultar nomes das apps</string>

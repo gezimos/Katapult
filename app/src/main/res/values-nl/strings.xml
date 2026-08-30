@@ -21,9 +21,11 @@
     <string name="donate_label">buymeacoffee.com/gezimos</string>
     <string name="no_media">Geen media</string>
     <string name="battery_percent">%1$d%%</string>
+    <string name="weather_temp">%1$d\u00B0%2$s</string>
 
     <string name="cd_alarm">Wekker</string>
     <string name="cd_battery">Batterij</string>
+    <string name="cd_weather">Weer</string>
     <string name="cd_album_art">Albumhoes</string>
     <string name="cd_music">Muziek</string>
     <string name="cd_previous">Vorige</string>
@@ -84,6 +86,10 @@
     <string name="date_format">Datumformaat</string>
     <string name="show_battery">Batterij %% tonen</string>
     <string name="show_battery_desc">Toon batterij %% boven de klok</string>
+    <string name="show_alarm">Wekker tonen</string>
+    <string name="show_alarm_desc">Toon het eerstvolgende alarm boven de klok</string>
+    <string name="show_weather">Weer tonen</string>
+    <string name="show_weather_desc">Weerwidget boven de klok tonen</string>
     <string name="show_katapult_icon">Katapult-pictogram tonen</string>
     <string name="show_katapult_icon_desc">Toon Katapult in de app-lijst</string>
     <string name="hide_app_names">App-namen verbergen</string>

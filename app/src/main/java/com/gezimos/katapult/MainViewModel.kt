@@ -16,6 +16,7 @@ import android.content.BroadcastReceiver
 import android.content.IntentFilter
 import android.net.Uri
 import android.os.BatteryManager
+import android.os.SystemClock
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
@@ -24,6 +25,7 @@ import android.view.WindowInsetsController
 import java.text.SimpleDateFormat
 import java.util.Locale
 import com.gezimos.katapult.util.AudioWidgetHelper
+import com.gezimos.katapult.util.WeatherHelper
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -80,6 +82,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var mediaInfo by mutableStateOf<AudioWidgetHelper.MediaInfo?>(null)
         private set
+    var weather by mutableStateOf<WeatherHelper.Weather?>(null)
+        private set
+    private val weatherRefreshMs = 10 * 60 * 1000L
+    private var weatherCheckedAt = -weatherRefreshMs
     var roundedIcons by mutableStateOf(prefs.roundedIcons)
     var iconSize by mutableStateOf(prefs.iconSize)
     var darkMode by mutableStateOf(prefs.darkMode)
@@ -234,6 +240,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             batteryPercent = (level * 100) / scale
             val status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
             isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+        }
+
+        if (!prefs.showWeather) {
+            weather = null
+        } else if (SystemClock.elapsedRealtime() - weatherCheckedAt >= weatherRefreshMs) {
+            refreshWeather()
+        }
+    }
+
+    fun refreshWeather() {
+        weatherCheckedAt = SystemClock.elapsedRealtime()
+        if (!prefs.showWeather) {
+            weather = null
+            return
+        }
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val result = WeatherHelper.read(ctx)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                weather = result
+            }
         }
     }
 

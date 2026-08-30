@@ -121,6 +121,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var clockFormat by remember { mutableStateOf(prefs.clockFormat) }
     var dateFormat by remember { mutableStateOf(prefs.dateFormat) }
     var showBattery by remember { mutableStateOf(prefs.showBattery) }
+    var showAlarm by remember { mutableStateOf(prefs.showAlarm) }
+    var showWeather by remember { mutableStateOf(prefs.showWeather) }
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
     var iconSize by remember { mutableIntStateOf(prefs.iconSize) }
     var darkMode by remember { mutableStateOf(prefs.darkMode) }
@@ -377,6 +379,18 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
 
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.hide_app_names),
+                    description = stringResource(R.string.hide_app_names_desc),
+                    checked = hideAppNames,
+                    onCheckedChange = {
+                        hideAppNames = it
+                        prefs.hideAppNames = it
+                    },
+                )
+            }
+
             // --- Home Screen ---
             addHeader(R.string.section_home)
             add {
@@ -403,6 +417,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             add {
                 SettingsToggleRow(
+                    title = stringResource(R.string.show_alarm),
+                    description = stringResource(R.string.show_alarm_desc),
+                    checked = showAlarm,
+                    onCheckedChange = {
+                        showAlarm = it
+                        prefs.showAlarm = it
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
                     title = stringResource(R.string.show_battery),
                     description = stringResource(R.string.show_battery_desc),
                     checked = showBattery,
@@ -411,6 +436,20 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         prefs.showBattery = it
                     },
                 )
+            }
+            if (isMudita) {
+                add {
+                    SettingsToggleRow(
+                        title = stringResource(R.string.show_weather),
+                        description = stringResource(R.string.show_weather_desc),
+                        checked = showWeather,
+                        onCheckedChange = {
+                            showWeather = it
+                            prefs.showWeather = it
+                            viewModel.refreshWeather()
+                        },
+                    )
+                }
             }
             add {
                 SettingsToggleRow(
@@ -442,17 +481,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     onCheckedChange = {
                         disableMusicWidget = it
                         prefs.disableMusicWidget = it
-                    },
-                )
-            }
-            add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.hide_app_names),
-                    description = stringResource(R.string.hide_app_names_desc),
-                    checked = hideAppNames,
-                    onCheckedChange = {
-                        hideAppNames = it
-                        prefs.hideAppNames = it
                     },
                 )
             }
