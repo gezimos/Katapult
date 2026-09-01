@@ -34,6 +34,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.CheckBox
+import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DoneAll
@@ -44,6 +46,8 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.RemoveDone
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Upload
@@ -97,11 +101,6 @@ import kotlin.math.abs
 private val ClockFormats = listOf("system", "HH:mm", "hh:mm a", "h:mm a", "h:mm")
 private val DateFormats = listOf("system", "EEE, MMM d", "EEEE, MMMM d", "MMMM d, yyyy", "M/d/yyyy", "yyyy-MM-dd")
 
-private fun nextOf(options: List<String>, current: String): String {
-    val i = options.indexOf(current)
-    return options[(i + 1) % options.size]
-}
-
 private fun formatLabel(pattern: String): String =
     if (pattern == "system") "System"
     else java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault()).format(java.util.Date())
@@ -138,7 +137,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var showKatapultIcon by remember { mutableStateOf(prefs.showKatapultIcon) }
     var hideAppNames by remember { mutableStateOf(prefs.hideAppNames) }
     var hideArrowButtons by remember { mutableStateOf(prefs.hideArrowButtons) }
-    var disableHomeEditing by remember { mutableStateOf(prefs.disableHomeEditing) }
+    var homeLongPress by remember { mutableIntStateOf(prefs.homeLongPressAction) }
+    var showLongPressSheet by remember { mutableStateOf(false) }
+    var showClockFormatSheet by remember { mutableStateOf(false) }
+    var showDateFormatSheet by remember { mutableStateOf(false) }
+    var showDoubleTapSheet by remember { mutableStateOf(false) }
+    var showEinkModeSheet by remember { mutableStateOf(false) }
+    var showScreensaverModeSheet by remember { mutableStateOf(false) }
+    var showScreensaverCustomSheet by remember { mutableStateOf(false) }
     var hideAllAppsButton by remember { mutableStateOf(prefs.hideAllAppsButton) }
     var swipeUpAllApps by remember { mutableStateOf(prefs.swipeUpAllApps) }
     var homeIslands by remember { mutableStateOf(prefs.homeIslands) }
@@ -209,7 +215,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var screensaverDoubleTapBrightness by remember { mutableStateOf(prefs.screensaverDoubleTapBrightness) }
     var screensaverUpdateMode by remember { mutableIntStateOf(prefs.screensaverUpdateMode) }
     var screensaverUpdateMinutes by remember { mutableIntStateOf(prefs.screensaverUpdateMinutes) }
-    var showScreensaverInterval by remember { mutableStateOf(false) }
     var screensaverEinkRefresh by remember { mutableStateOf(prefs.screensaverEinkRefresh) }
     var screensaverOnPower by remember { mutableStateOf(prefs.screensaverOnPower) }
 
@@ -397,22 +402,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 SettingsCycleRow(
                     title = stringResource(R.string.clock_format),
                     description = formatLabel(clockFormat),
-                    onClick = {
-                        clockFormat = nextOf(ClockFormats, clockFormat)
-                        prefs.clockFormat = clockFormat
-                        viewModel.updateClock()
-                    },
+                    onClick = { showClockFormatSheet = true },
                 )
             }
             add {
                 SettingsCycleRow(
                     title = stringResource(R.string.date_format),
                     description = formatLabel(dateFormat),
-                    onClick = {
-                        dateFormat = nextOf(DateFormats, dateFormat)
-                        prefs.dateFormat = dateFormat
-                        viewModel.updateClock()
-                    },
+                    onClick = { showDateFormatSheet = true },
                 )
             }
             add {
@@ -485,14 +482,22 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.disable_home_editing),
-                    description = stringResource(R.string.disable_home_editing_desc),
-                    checked = disableHomeEditing,
-                    onCheckedChange = {
-                        disableHomeEditing = it
-                        prefs.disableHomeEditing = it
-                    },
+                val longPressLabel = when (homeLongPress) {
+                    PrefsManager.HOME_LONG_PRESS_NONE ->
+                        stringResource(R.string.home_long_press_none)
+                    PrefsManager.HOME_LONG_PRESS_APP_INFO ->
+                        stringResource(R.string.home_long_press_app_info)
+                    PrefsManager.HOME_LONG_PRESS_MENU ->
+                        stringResource(R.string.home_long_press_menu)
+                    PrefsManager.HOME_LONG_PRESS_CLEAR ->
+                        stringResource(R.string.home_long_press_clear)
+                    else -> stringResource(R.string.home_long_press_edit)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.home_long_press),
+                    description = stringResource(R.string.home_long_press_desc),
+                    value = longPressLabel,
+                    onClick = { showLongPressSheet = true },
                 )
             }
 
@@ -584,16 +589,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 SettingsCycleRow(
                     title = stringResource(R.string.double_tap_action),
                     description = actionLabel,
-                    onClick = {
-                        val next = (doubleTapAction + 1) % 3
-                        doubleTapAction = next
-                        prefs.doubleTapAction = next
-                        if (next == PrefsManager.DOUBLE_TAP_LOCK && !LockscreenWidgetService.isEnabled(context)) {
-                            try {
-                                context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                            } catch (_: Exception) {}
-                        }
-                    },
+                    onClick = { showDoubleTapSheet = true },
                 )
             }
 
@@ -682,12 +678,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     SettingsCycleRow(
                         title = stringResource(R.string.eink_auto_mode),
                         description = EinkHelper.modeName(einkHelperMode),
-                        onClick = {
-                            val next = EinkHelper.nextMode(einkHelperMode)
-                            einkHelperMode = next
-                            prefs.einkHelperMode = next
-                            (context as? MainActivity)?.setMeinkMode(next)
-                        },
+                        onClick = { showEinkModeSheet = true },
                     )
                 }
             }
@@ -934,36 +925,20 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     )
                 }
                 add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_show_clock),
-                        description = stringResource(R.string.screensaver_show_clock_desc),
-                        checked = screensaverShowClock,
-                        onCheckedChange = {
-                            screensaverShowClock = it
-                            prefs.screensaverShowClock = it
-                        },
+                    val enabled = listOfNotNull(
+                        stringResource(R.string.screensaver_show_clock).takeIf { screensaverShowClock },
+                        stringResource(R.string.screensaver_show_notifications)
+                            .takeIf { screensaverShowNotifications },
+                        stringResource(R.string.home_islands).takeIf { screensaverIslands },
                     )
-                }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_show_notifications),
-                        description = stringResource(R.string.screensaver_show_notifications_desc),
-                        checked = screensaverShowNotifications,
-                        onCheckedChange = {
-                            screensaverShowNotifications = it
-                            prefs.screensaverShowNotifications = it
+                    SettingsActionRow(
+                        title = stringResource(R.string.screensaver_customization),
+                        description = if (enabled.isEmpty()) {
+                            stringResource(R.string.double_tap_off)
+                        } else {
+                            enabled.joinToString(", ")
                         },
-                    )
-                }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_islands),
-                        description = stringResource(R.string.home_islands_desc),
-                        checked = screensaverIslands,
-                        onCheckedChange = {
-                            screensaverIslands = it
-                            prefs.screensaverIslands = it
-                        },
+                        onClick = { showScreensaverCustomSheet = true },
                     )
                 }
                 add {
@@ -1016,20 +991,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     SettingsCycleRow(
                         title = stringResource(R.string.screensaver_update_mode),
                         description = modeLabel,
-                        onClick = {
-                            screensaverUpdateMode = (screensaverUpdateMode + 1) % 3
-                            prefs.screensaverUpdateMode = screensaverUpdateMode
-                        },
+                        onClick = { showScreensaverModeSheet = true },
                     )
-                }
-                if (screensaverUpdateMode == PrefsManager.SCREENSAVER_MODE_INTERVAL) {
-                    add {
-                        SettingsActionRow(
-                            title = stringResource(R.string.screensaver_update_interval),
-                            description = stringResource(R.string.screensaver_minutes, screensaverUpdateMinutes),
-                            onClick = { showScreensaverInterval = true },
-                        )
-                    }
                 }
                 add {
                     SettingsToggleRow(
@@ -1297,23 +1260,199 @@ fun SettingsScreen(viewModel: MainViewModel) {
         }
     }
 
-    if (showScreensaverInterval) {
-        ScreensaverIntervalDialog(
-            current = screensaverUpdateMinutes,
-            onDismiss = { showScreensaverInterval = false },
-            onConfirm = {
-                screensaverUpdateMinutes = it
-                prefs.screensaverUpdateMinutes = it
-                showScreensaverInterval = false
-            },
-        )
-    }
-
     if (showUpdateSheet) {
         UpdateDialog(
             viewModel = viewModel,
             currentVersion = versionName,
             onDismiss = { showUpdateSheet = false },
+        )
+    }
+
+    if (showLongPressSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.home_long_press),
+            options = listOf(
+                PrefsManager.HOME_LONG_PRESS_APP_INFO to stringResource(R.string.home_long_press_app_info),
+                PrefsManager.HOME_LONG_PRESS_MENU to stringResource(R.string.home_long_press_menu),
+                PrefsManager.HOME_LONG_PRESS_CLEAR to stringResource(R.string.home_long_press_clear),
+                PrefsManager.HOME_LONG_PRESS_EDIT to stringResource(R.string.home_long_press_edit),
+                PrefsManager.HOME_LONG_PRESS_NONE to stringResource(R.string.home_long_press_none),
+            ),
+            selected = homeLongPress,
+            onSelect = {
+                homeLongPress = it
+                prefs.homeLongPressAction = it
+            },
+            onDismiss = { showLongPressSheet = false },
+        )
+    }
+
+    if (showEinkModeSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.eink_auto_mode),
+            options = listOf(
+                EinkHelper.MEINK_MODE_DISABLED,
+                EinkHelper.MEINK_MODE_CLEAR,
+                EinkHelper.MEINK_MODE_CONTRAST,
+                EinkHelper.MEINK_MODE_READING,
+            ).map { it to EinkHelper.modeName(it) },
+            selected = einkHelperMode,
+            onSelect = {
+                einkHelperMode = it
+                prefs.einkHelperMode = it
+                (context as? MainActivity)?.setMeinkMode(it)
+            },
+            onDismiss = { showEinkModeSheet = false },
+        )
+    }
+
+    if (showScreensaverModeSheet) {
+        var minutesText by remember {
+            mutableStateOf(
+                androidx.compose.ui.text.input.TextFieldValue(
+                    text = screensaverUpdateMinutes.toString(),
+                    selection = androidx.compose.ui.text.TextRange(
+                        screensaverUpdateMinutes.toString().length,
+                    ),
+                ),
+            )
+        }
+        BottomSheet(onDismiss = { showScreensaverModeSheet = false }, imePadding = true) {
+            Text(
+                text = stringResource(R.string.screensaver_update_mode),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            listOf(
+                PrefsManager.SCREENSAVER_MODE_AUTO to stringResource(R.string.screensaver_mode_auto),
+                PrefsManager.SCREENSAVER_MODE_INTERVAL to stringResource(R.string.screensaver_mode_interval),
+                PrefsManager.SCREENSAVER_MODE_STATIC to stringResource(R.string.screensaver_mode_static),
+            ).forEach { (mode, label) ->
+                BottomSheetOption(
+                    text = label,
+                    icon = if (screensaverUpdateMode == mode) Icons.Rounded.RadioButtonChecked
+                    else Icons.Rounded.RadioButtonUnchecked,
+                ) {
+                    screensaverUpdateMode = mode
+                    prefs.screensaverUpdateMode = mode
+                    if (mode != PrefsManager.SCREENSAVER_MODE_INTERVAL) {
+                        showScreensaverModeSheet = false
+                    }
+                }
+            }
+            if (screensaverUpdateMode == PrefsManager.SCREENSAVER_MODE_INTERVAL) {
+                Text(
+                    text = stringResource(R.string.screensaver_update_interval),
+                    fontSize = 14.sp,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                )
+                BasicTextField(
+                    value = minutesText,
+                    onValueChange = { v ->
+                        val digits = v.text.filter { it.isDigit() }.take(2)
+                        minutesText = v.copy(text = digits)
+                        val parsed = digits.toIntOrNull()
+                        if (parsed != null && parsed > 0) {
+                            screensaverUpdateMinutes = parsed
+                            prefs.screensaverUpdateMinutes = parsed
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                    ),
+                    cursorBrush = SolidColor(LocalInk.current),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(2.5.dp, LocalInk.current)
+                        .padding(12.dp),
+                )
+            }
+        }
+    }
+
+    if (showScreensaverCustomSheet) {
+        MultiChoiceSheet(
+            title = stringResource(R.string.screensaver_customization),
+            options = listOf(
+                Triple(
+                    stringResource(R.string.screensaver_show_clock),
+                    screensaverShowClock,
+                    { v: Boolean -> screensaverShowClock = v; prefs.screensaverShowClock = v },
+                ),
+                Triple(
+                    stringResource(R.string.screensaver_show_notifications),
+                    screensaverShowNotifications,
+                    { v: Boolean ->
+                        screensaverShowNotifications = v
+                        prefs.screensaverShowNotifications = v
+                    },
+                ),
+                Triple(
+                    stringResource(R.string.home_islands),
+                    screensaverIslands,
+                    { v: Boolean -> screensaverIslands = v; prefs.screensaverIslands = v },
+                ),
+            ),
+            onDismiss = { showScreensaverCustomSheet = false },
+        )
+    }
+
+    if (showDoubleTapSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.double_tap_action),
+            options = listOf(
+                PrefsManager.DOUBLE_TAP_OFF to stringResource(R.string.double_tap_off),
+                PrefsManager.DOUBLE_TAP_BRIGHTNESS to stringResource(R.string.double_tap_brightness),
+                PrefsManager.DOUBLE_TAP_LOCK to stringResource(R.string.double_tap_lock),
+            ),
+            selected = doubleTapAction,
+            onSelect = {
+                doubleTapAction = it
+                prefs.doubleTapAction = it
+                if (it == PrefsManager.DOUBLE_TAP_LOCK && !LockscreenWidgetService.isEnabled(context)) {
+                    try {
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    } catch (_: Exception) {}
+                }
+            },
+            onDismiss = { showDoubleTapSheet = false },
+        )
+    }
+
+    if (showClockFormatSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.clock_format),
+            options = ClockFormats.map { it to formatLabel(it) },
+            selected = clockFormat,
+            onSelect = {
+                clockFormat = it
+                prefs.clockFormat = it
+                viewModel.updateClock()
+            },
+            onDismiss = { showClockFormatSheet = false },
+        )
+    }
+
+    if (showDateFormatSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.date_format),
+            options = DateFormats.map { it to formatLabel(it) },
+            selected = dateFormat,
+            onSelect = {
+                dateFormat = it
+                prefs.dateFormat = it
+                viewModel.updateClock()
+            },
+            onDismiss = { showDateFormatSheet = false },
         )
     }
 
@@ -1592,73 +1731,6 @@ private fun UpdateDialog(
     }
 }
 
-@Composable
-private fun ScreensaverIntervalDialog(
-    current: Int,
-    onDismiss: () -> Unit,
-    onConfirm: (Int) -> Unit,
-) {
-    var text by remember {
-        mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(
-            text = current.toString(),
-            selection = androidx.compose.ui.text.TextRange(current.toString().length),
-        ))
-    }
-    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
-
-    BottomSheet(onDismiss = onDismiss, imePadding = true) {
-        Text(
-            text = stringResource(R.string.screensaver_update_interval),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
-            color = LocalInk.current,
-            modifier = Modifier.padding(bottom = 12.dp),
-        )
-        BasicTextField(
-            value = text,
-            onValueChange = { v -> text = v.copy(text = v.text.filter { it.isDigit() }.take(2)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            textStyle = TextStyle(
-                fontSize = 18.sp,
-                fontFamily = LatoFamily,
-                color = LocalInk.current,
-            ),
-            cursorBrush = SolidColor(LocalInk.current),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(2.5.dp, LocalInk.current)
-                .padding(12.dp)
-                .focusRequester(focusRequester),
-        )
-        Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Text(
-                text = stringResource(R.string.cancel),
-                fontSize = 18.sp,
-                fontFamily = LatoFamily,
-                color = LocalInk.current,
-                modifier = Modifier
-                    .clickable { onDismiss() }
-                    .padding(12.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = stringResource(R.string.save),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
-                color = LocalInk.current,
-                modifier = Modifier
-                    .clickable { onConfirm(text.text.toIntOrNull()?.coerceIn(1, 60) ?: 5) }
-                    .padding(12.dp),
-            )
-        }
-    }
-
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
-}
 
 /**
  * Allowlist for the experimental lockscreen widget: checked apps appear on it.
@@ -2260,9 +2332,67 @@ fun SettingsActionRow(
 }
 
 @Composable
+private fun MultiChoiceSheet(
+    title: String,
+    options: List<Triple<String, Boolean, (Boolean) -> Unit>>,
+    onDismiss: () -> Unit,
+) {
+    BottomSheet(onDismiss = onDismiss) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        options.forEach { (label, checked, onToggle) ->
+            BottomSheetOption(
+                text = label,
+                icon = if (checked) Icons.Rounded.CheckBox
+                else Icons.Rounded.CheckBoxOutlineBlank,
+            ) {
+                onToggle(!checked)
+            }
+        }
+    }
+}
+
+@Composable
+private fun <T> ChoiceSheet(
+    title: String,
+    options: List<Pair<T, String>>,
+    selected: T,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    BottomSheet(onDismiss = onDismiss) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        options.forEach { (value, label) ->
+            BottomSheetOption(
+                text = label,
+                icon = if (value == selected) Icons.Rounded.RadioButtonChecked
+                else Icons.Rounded.RadioButtonUnchecked,
+            ) {
+                onSelect(value)
+                onDismiss()
+            }
+        }
+    }
+}
+
+@Composable
 private fun SettingsCycleRow(
     title: String,
     description: String,
+    value: String = description,
     onClick: () -> Unit,
 ) {
     Row(
@@ -2295,7 +2425,7 @@ private fun SettingsCycleRow(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = description,
+                text = value,
                 fontSize = 14.sp,
                 fontFamily = LatoFamily,
                 fontWeight = FontWeight.Bold,

@@ -307,9 +307,13 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_HIDE_ARROW_BUTTONS, false)
         set(value) = prefs.edit().putBoolean(KEY_HIDE_ARROW_BUTTONS, value).apply()
 
-    var disableHomeEditing: Boolean
-        get() = boolPref(KEY_DISABLE_HOME_EDITING, false)
-        set(value) = prefs.edit().putBoolean(KEY_DISABLE_HOME_EDITING, value).apply()
+    var homeLongPressAction: Int
+        get() = intPref(
+            KEY_HOME_LONG_PRESS,
+            if (boolPref(KEY_DISABLE_HOME_EDITING, false)) HOME_LONG_PRESS_APP_INFO
+            else HOME_LONG_PRESS_EDIT,
+        )
+        set(value) = prefs.edit().putInt(KEY_HOME_LONG_PRESS, value).apply()
 
     var hideAllAppsButton: Boolean
         get() = boolPref(KEY_HIDE_ALL_APPS_BUTTON, false)
@@ -580,6 +584,7 @@ class PrefsManager(context: Context) {
         private const val KEY_HIDE_APP_NAMES = "hide_app_names"
         private const val KEY_HIDE_ARROW_BUTTONS = "hide_arrow_buttons"
         private const val KEY_DISABLE_HOME_EDITING = "disable_home_editing"
+        private const val KEY_HOME_LONG_PRESS = "home_long_press"
         private const val KEY_HIDE_ALL_APPS_BUTTON = "hide_all_apps_button"
         private const val KEY_SWIPE_UP_ALL_APPS = "swipe_up_all_apps"
         private const val KEY_HOME_ISLANDS = "home_islands"
@@ -605,6 +610,12 @@ class PrefsManager(context: Context) {
         const val SCREENSAVER_MODE_AUTO = 0
         const val SCREENSAVER_MODE_INTERVAL = 1
         const val SCREENSAVER_MODE_STATIC = 2
+
+        const val HOME_LONG_PRESS_APP_INFO = 0
+        const val HOME_LONG_PRESS_MENU = 1
+        const val HOME_LONG_PRESS_CLEAR = 2
+        const val HOME_LONG_PRESS_EDIT = 3
+        const val HOME_LONG_PRESS_NONE = 4
 
         const val DOUBLE_TAP_OFF = 0
         const val DOUBLE_TAP_BRIGHTNESS = 1

@@ -7,6 +7,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.gezimos.katapult.util.EinkRefreshHelper
@@ -55,7 +56,9 @@ class ScreensaverActivity : ComponentActivity() {
         }
 
         if (!fromPower) {
-            LockscreenWidgetService.lockScreen()
+            window.decorView.doOnPreDraw {
+                window.decorView.post { LockscreenWidgetService.lockScreen() }
+            }
         }
     }
 

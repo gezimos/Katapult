@@ -111,8 +111,13 @@
     <string name="hide_app_names_desc">Hide labels under app icons</string>
     <string name="hide_arrow_buttons">Hide Arrow Buttons</string>
     <string name="hide_arrow_buttons_desc">Hide page arrows and dots in All Apps</string>
-    <string name="disable_home_editing">Disable Home Editing</string>
-    <string name="disable_home_editing_desc">Long-press shortcuts opens app info</string>
+    <string name="home_long_press">Long-press app in home</string>
+    <string name="home_long_press_desc">What happens when you longpress an app in home</string>
+    <string name="home_long_press_app_info">App Info</string>
+    <string name="home_long_press_menu">Context</string>
+    <string name="home_long_press_clear">Clear Notifications</string>
+    <string name="home_long_press_edit">Edit Shortcut</string>
+    <string name="home_long_press_none">Disabled</string>
     <string name="hide_all_apps_button">Hide All Apps Button</string>
     <string name="hide_all_apps_button_desc">Replace the All Apps button with a shortcut</string>
     <string name="swipe_up_all_apps">Swipe for All Apps</string>
@@ -201,6 +206,7 @@
     <string name="screensaver_wallpaper">Screensaver Background</string>
     <string name="screensaver_wallpaper_desc">Show a background image behind the screensaver</string>
     <string name="section_screensaver">Screensaver</string>
+    <string name="screensaver_customization">Customization</string>
     <string name="screensaver_show_clock">Show Clock</string>
     <string name="screensaver_show_clock_desc">Show the clock, date, alarm and battery</string>
     <string name="screensaver_show_notifications">Show Notifications</string>

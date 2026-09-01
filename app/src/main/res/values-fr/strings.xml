@@ -97,8 +97,13 @@
     <string name="hide_app_names_desc">Masquer les libellés sous les icônes</string>
     <string name="hide_arrow_buttons">Masquer les flèches</string>
     <string name="hide_arrow_buttons_desc">Masquer les flèches et points de pagination dans Toutes les apps</string>
-    <string name="disable_home_editing">Désactiver l\'édition de l\'accueil</string>
-    <string name="disable_home_editing_desc">Un appui long sur un raccourci ouvre les infos de l\'application</string>
+    <string name="home_long_press">Appui long sur une app à l\'accueil</string>
+    <string name="home_long_press_desc">Ce qui se passe lors d\'un appui long sur une app à l\'accueil</string>
+    <string name="home_long_press_app_info">Infos sur l\'appli</string>
+    <string name="home_long_press_menu">Contexte</string>
+    <string name="home_long_press_clear">Effacer les notifications</string>
+    <string name="home_long_press_edit">Modifier le raccourci</string>
+    <string name="home_long_press_none">Désactivé</string>
     <string name="hide_all_apps_button">Masquer le bouton Toutes les apps</string>
     <string name="hide_all_apps_button_desc">Remplacer le bouton Toutes les apps par un raccourci</string>
     <string name="contacts">Contacts</string>
@@ -181,6 +186,7 @@
     <string name="screensaver_wallpaper">Fond de l\'économiseur</string>
     <string name="screensaver_wallpaper_desc">Afficher une image de fond derrière l\'économiseur</string>
     <string name="section_screensaver">Économiseur d\'écran (Expérimental)</string>
+    <string name="screensaver_customization">Personnalisation</string>
     <string name="screensaver_show_clock">Afficher l\'horloge</string>
     <string name="screensaver_show_clock_desc">Afficher l\'horloge, la date, l\'alarme et la batterie</string>
     <string name="screensaver_show_notifications">Afficher les notifications</string>

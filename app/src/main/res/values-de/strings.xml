@@ -97,8 +97,13 @@
     <string name="hide_app_names_desc">Beschriftungen unter App-Symbolen ausblenden</string>
     <string name="hide_arrow_buttons">Pfeiltasten ausblenden</string>
     <string name="hide_arrow_buttons_desc">Seitenpfeile und Punkte in Alle Apps ausblenden</string>
-    <string name="disable_home_editing">Startseite-Bearbeitung deaktivieren</string>
-    <string name="disable_home_editing_desc">Langes Drücken auf Verknüpfungen öffnet App-Info</string>
+    <string name="home_long_press">App auf Startseite lange drücken</string>
+    <string name="home_long_press_desc">Was beim langen Drücken einer App auf der Startseite passiert</string>
+    <string name="home_long_press_app_info">App-Info</string>
+    <string name="home_long_press_menu">Kontext</string>
+    <string name="home_long_press_clear">Mitteilungen löschen</string>
+    <string name="home_long_press_edit">Verknüpfung bearbeiten</string>
+    <string name="home_long_press_none">Deaktiviert</string>
     <string name="hide_all_apps_button">Alle-Apps-Schaltfläche ausblenden</string>
     <string name="hide_all_apps_button_desc">Alle-Apps-Schaltfläche durch eine Verknüpfung ersetzen</string>
     <string name="contacts">Kontakte</string>
@@ -181,6 +186,7 @@
     <string name="screensaver_wallpaper">Bildschirmschoner-Hintergrund</string>
     <string name="screensaver_wallpaper_desc">Ein Hintergrundbild hinter dem Bildschirmschoner anzeigen</string>
     <string name="section_screensaver">Bildschirmschoner (Experimentell)</string>
+    <string name="screensaver_customization">Anpassung</string>
     <string name="screensaver_show_clock">Uhr anzeigen</string>
     <string name="screensaver_show_clock_desc">Uhr, Datum, Wecker und Akku anzeigen</string>
     <string name="screensaver_show_notifications">Benachrichtigungen anzeigen</string>

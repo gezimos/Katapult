@@ -97,8 +97,13 @@
     <string name="hide_app_names_desc">Verberg labels onder app-pictogrammen</string>
     <string name="hide_arrow_buttons">Pijltoetsen verbergen</string>
     <string name="hide_arrow_buttons_desc">Verberg paginapijlen en puntjes in Alle apps</string>
-    <string name="disable_home_editing">Bewerken startscherm uitschakelen</string>
-    <string name="disable_home_editing_desc">Lang indrukken van snelkoppelingen opent app-info</string>
+    <string name="home_long_press">Lang indrukken op app in start</string>
+    <string name="home_long_press_desc">Wat er gebeurt bij lang indrukken van een app op het startscherm</string>
+    <string name="home_long_press_app_info">App-info</string>
+    <string name="home_long_press_menu">Context</string>
+    <string name="home_long_press_clear">Meldingen wissen</string>
+    <string name="home_long_press_edit">Snelkoppeling bewerken</string>
+    <string name="home_long_press_none">Uitgeschakeld</string>
     <string name="hide_all_apps_button">Knop Alle apps verbergen</string>
     <string name="hide_all_apps_button_desc">Vervang de knop Alle apps door een snelkoppeling</string>
     <string name="contacts">Contacten</string>
@@ -181,6 +186,7 @@
     <string name="screensaver_wallpaper">Schermbeveiligingsachtergrond</string>
     <string name="screensaver_wallpaper_desc">Een achtergrondafbeelding achter de schermbeveiliging tonen</string>
     <string name="section_screensaver">Schermbeveiliging (Experimenteel)</string>
+    <string name="screensaver_customization">Aanpassing</string>
     <string name="screensaver_show_clock">Klok tonen</string>
     <string name="screensaver_show_clock_desc">Toon klok, datum, wekker en batterij</string>
     <string name="screensaver_show_notifications">Meldingen tonen</string>

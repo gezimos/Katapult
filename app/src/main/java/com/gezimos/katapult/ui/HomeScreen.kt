@@ -2,7 +2,9 @@ package com.gezimos.katapult.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -88,6 +90,9 @@ import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.Screen
 import com.gezimos.katapult.lockscreen.LockscreenWidgetService
+import com.gezimos.katapult.model.AppModel
+import com.gezimos.katapult.service.DirectBadgeHelper
+import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.BrightnessHelper
 import com.gezimos.katapult.util.IconUtility
@@ -96,25 +101,60 @@ import com.gezimos.katapult.util.WeatherHelper
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<String>) {
+fun HomeScreen(
+    viewModel: MainViewModel,
+    imagePicker: ActivityResultLauncher<String>,
+    iconPicker: ActivityResultLauncher<Array<String>>,
+) {
     val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
     var pickerSlot by remember { mutableStateOf<String?>(null) }
     var showHiddenApps by remember { mutableStateOf(false) }
 
-    val handleSlotLongPress: (String) -> Unit = { slot ->
-        if (viewModel.prefs.disableHomeEditing) {
-            val pkg = viewModel.getShortcutPackage(slot)
-            if (pkg != null) {
-                viewModel.launchIntent(
-                    context,
-                    Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.parse("package:$pkg")
-                    },
-                )
+    val callLogPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) viewModel.clearMissedCalls() }
+
+    val slotAsApp: (String) -> AppModel? = { slot ->
+        val pkg = viewModel.getShortcutPackage(slot)
+        if (pkg == null) null else AppModel(
+            packageName = pkg,
+            label = viewModel.getShortcutLabel(slot, pkg),
+            activityName = viewModel.getShortcutActivity(slot),
+            shortcutId = viewModel.prefs.loadSlotShortcutId(slot) ?: "",
+        )
+    }
+
+    val clearNotificationsFor: (String) -> Unit = { pkg ->
+        val isMuditaDial = DeviceHelper.isMuditaKompakt() &&
+            pkg == DirectBadgeHelper.MUDITA_DIAL
+        if (isMuditaDial) {
+            if (viewModel.canWriteCallLog()) {
+                viewModel.clearMissedCalls()
+            } else {
+                callLogPermissionLauncher.launch(android.Manifest.permission.WRITE_CALL_LOG)
             }
         } else {
+            viewModel.clearNotificationsFor(pkg)
+        }
+    }
+
+    val handleSlotLongPress: (String) -> Unit = { slot ->
+        val pkg = viewModel.getShortcutPackage(slot)
+        if (pkg == null) {
             pickerSlot = slot
+        } else when (viewModel.prefs.homeLongPressAction) {
+            PrefsManager.HOME_LONG_PRESS_EDIT -> pickerSlot = slot
+            PrefsManager.HOME_LONG_PRESS_APP_INFO -> viewModel.launchIntent(
+                context,
+                Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$pkg")
+                },
+            )
+            PrefsManager.HOME_LONG_PRESS_MENU ->
+                viewModel.contextMenuApp = slotAsApp(slot)
+            PrefsManager.HOME_LONG_PRESS_CLEAR -> clearNotificationsFor(pkg)
+            else -> {}
         }
     }
 
@@ -214,7 +254,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         val saved = viewModel.prefs.loadShortcut("clock")
                         if (saved != null) {
                             viewModel.launchShortcut(context, "clock")
-                        } else if (!viewModel.prefs.disableHomeEditing) {
+                        } else {
                             pickerSlot = "clock"
                         }
                     },
@@ -223,7 +263,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         val saved = viewModel.prefs.loadShortcut("calendar")
                         if (saved != null) {
                             viewModel.launchShortcut(context, "calendar")
-                        } else if (!viewModel.prefs.disableHomeEditing) {
+                        } else {
                             pickerSlot = "calendar"
                         }
                     },
@@ -469,6 +509,20 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
         HiddenAppsDialog(
             viewModel = viewModel,
             onDismiss = { showHiddenApps = false },
+        )
+    }
+
+    viewModel.contextMenuApp?.let { menuApp ->
+        AppContextMenu(
+            viewModel = viewModel,
+            app = menuApp,
+            iconPicker = iconPicker,
+            showReorder = false,
+            showHide = false,
+            onDismiss = {
+                viewModel.contextMenuApp = null
+                viewModel.shortcutRefresh++
+            },
         )
     }
 }

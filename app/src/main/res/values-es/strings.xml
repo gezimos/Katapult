@@ -97,8 +97,13 @@
     <string name="hide_app_names_desc">Ocultar etiquetas bajo los iconos</string>
     <string name="hide_arrow_buttons">Ocultar flechas</string>
     <string name="hide_arrow_buttons_desc">Ocultar flechas y puntos de página en Todas las apps</string>
-    <string name="disable_home_editing">Desactivar edición del inicio</string>
-    <string name="disable_home_editing_desc">Mantener pulsado un acceso directo abre la info de la app</string>
+    <string name="home_long_press">Mantener pulsada la app en inicio</string>
+    <string name="home_long_press_desc">Qué ocurre al mantener pulsada una app en el inicio</string>
+    <string name="home_long_press_app_info">Info de la app</string>
+    <string name="home_long_press_menu">Contexto</string>
+    <string name="home_long_press_clear">Borrar notificaciones</string>
+    <string name="home_long_press_edit">Editar acceso directo</string>
+    <string name="home_long_press_none">Desactivado</string>
     <string name="hide_all_apps_button">Ocultar botón Todas las apps</string>
     <string name="hide_all_apps_button_desc">Reemplazar el botón Todas las apps por un acceso directo</string>
     <string name="contacts">Contactos</string>
@@ -181,6 +186,7 @@
     <string name="screensaver_wallpaper">Fondo del salvapantallas</string>
     <string name="screensaver_wallpaper_desc">Mostrar una imagen de fondo detrás del salvapantallas</string>
     <string name="section_screensaver">Salvapantallas (Experimental)</string>
+    <string name="screensaver_customization">Personalización</string>
     <string name="screensaver_show_clock">Mostrar reloj</string>
     <string name="screensaver_show_clock_desc">Mostrar reloj, fecha, alarma y batería</string>
     <string name="screensaver_show_notifications">Mostrar notificaciones</string>

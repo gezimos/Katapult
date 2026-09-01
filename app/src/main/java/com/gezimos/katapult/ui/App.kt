@@ -35,7 +35,7 @@ fun App(
     ) {
         when (viewModel.screen) {
             Screen.ONBOARDING -> OnboardingScreen(viewModel)
-            Screen.HOME -> HomeScreen(viewModel, imagePicker)
+            Screen.HOME -> HomeScreen(viewModel, imagePicker, iconPicker)
             Screen.ALL_APPS -> AllAppsScreen(viewModel, iconPicker)
             Screen.SETTINGS -> SettingsScreen(viewModel)
         }

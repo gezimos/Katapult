@@ -97,8 +97,13 @@
     <string name="hide_app_names_desc">Ukryj etykiety pod ikonami aplikacji</string>
     <string name="hide_arrow_buttons">Ukryj strzałki</string>
     <string name="hide_arrow_buttons_desc">Ukryj strzałki stron i kropki w Wszystkie aplikacje</string>
-    <string name="disable_home_editing">Wyłącz edycję ekranu głównego</string>
-    <string name="disable_home_editing_desc">Długie naciśnięcie skrótu otwiera informacje o aplikacji</string>
+    <string name="home_long_press">Długie naciśnięcie aplikacji na ekranie głównym</string>
+    <string name="home_long_press_desc">Co się dzieje po długim naciśnięciu aplikacji na ekranie głównym</string>
+    <string name="home_long_press_app_info">Informacje o aplikacji</string>
+    <string name="home_long_press_menu">Kontekst</string>
+    <string name="home_long_press_clear">Wyczyść powiadomienia</string>
+    <string name="home_long_press_edit">Edytuj skrót</string>
+    <string name="home_long_press_none">Wyłączone</string>
     <string name="hide_all_apps_button">Ukryj przycisk Wszystkie aplikacje</string>
     <string name="hide_all_apps_button_desc">Zastąp przycisk Wszystkie aplikacje skrótem</string>
     <string name="contacts">Kontakty</string>
@@ -181,6 +186,7 @@
     <string name="screensaver_wallpaper">Tło wygaszacza</string>
     <string name="screensaver_wallpaper_desc">Pokaż obraz tła za wygaszaczem</string>
     <string name="section_screensaver">Wygaszacz ekranu (Eksperymentalne)</string>
+    <string name="screensaver_customization">Dostosowanie</string>
     <string name="screensaver_show_clock">Pokaż zegar</string>
     <string name="screensaver_show_clock_desc">Pokaż zegar, datę, alarm i baterię</string>
     <string name="screensaver_show_notifications">Pokaż powiadomienia</string>
