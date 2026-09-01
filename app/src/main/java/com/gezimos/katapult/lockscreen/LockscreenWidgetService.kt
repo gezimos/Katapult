@@ -134,10 +134,21 @@ class LockscreenWidgetService :
          */
         fun onLauncherForeground(foreground: Boolean) {
             launcherForeground = foreground
-            instance?.let { s -> s.mainHandler.post { s.applyClockCover(foreground) } }
+            refreshClockCover()
+        }
+
+        fun onScreensaverVisible(visible: Boolean) {
+            screensaverForeground = visible
+            refreshClockCover()
+        }
+
+        private fun refreshClockCover() {
+            val show = launcherForeground || screensaverForeground
+            instance?.let { s -> s.mainHandler.post { s.applyClockCover(show) } }
         }
 
         private var launcherForeground = false
+        private var screensaverForeground = false
 
         private const val MUDITA_AUDIO_PLAYER = "com.mudita.audio.player"
         // The stock MuditaOS widget measures 332dp wide with its top edge at 220dp. dp()
@@ -226,7 +237,7 @@ class LockscreenWidgetService :
             }
         }
         NotificationListener.onCountsChangedExtra = { mainHandler.post { evaluate() } }
-        applyClockCover(launcherForeground)
+        applyClockCover(launcherForeground || screensaverForeground)
         evaluate()
     }
 
