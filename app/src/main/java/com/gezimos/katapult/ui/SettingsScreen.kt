@@ -152,6 +152,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var lockscreenWidget by remember { mutableStateOf(prefs.lockscreenWidget) }
     var lockscreenMusicWidget by remember { mutableStateOf(prefs.lockscreenMusicWidget) }
     var actionServiceEnabled by remember { mutableStateOf(LockscreenWidgetService.isEnabled(context)) }
+    val pendingServiceToggles = remember { androidx.compose.runtime.mutableStateListOf<String>() }
     var showLockscreenApps by remember { mutableStateOf(false) }
     var showLockscreenReadMe by remember { mutableStateOf(false) }
     var showNotificationsReadMe by remember { mutableStateOf(false) }
@@ -159,6 +160,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var showEinkReadMe by remember { mutableStateOf(false) }
     var showGesturesReadMe by remember { mutableStateOf(false) }
     var showUpdateSheet by remember { mutableStateOf(false) }
+    var showPermissionsSheet by remember { mutableStateOf(false) }
     var showConfigSheet by remember { mutableStateOf(false) }
     var showClearConfirm by remember { mutableStateOf(false) }
     val configExporter = rememberLauncherForActivityResult(
@@ -230,6 +232,30 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             val serviceOn = LockscreenWidgetService.isEnabled(context)
             if (actionServiceEnabled != serviceOn) actionServiceEnabled = serviceOn
+            if (serviceOn && pendingServiceToggles.isNotEmpty()) {
+                for (pending in pendingServiceToggles.toList()) {
+                    when (pending) {
+                        "clockCover" -> {
+                            hideStatusBarClock = true
+                            prefs.hideStatusBarClock = true
+                            LockscreenWidgetService.onLauncherForeground(true)
+                        }
+                        "widget" -> {
+                            lockscreenWidget = true
+                            prefs.lockscreenWidget = true
+                        }
+                        "music" -> {
+                            lockscreenMusicWidget = true
+                            prefs.lockscreenMusicWidget = true
+                        }
+                        "power" -> {
+                            screensaverOnPower = true
+                            prefs.screensaverOnPower = true
+                        }
+                    }
+                }
+                pendingServiceToggles.clear()
+            }
         }
     }
 
@@ -363,7 +389,10 @@ fun SettingsScreen(viewModel: MainViewModel) {
                             hideStatusBarClock = value
                             prefs.hideStatusBarClock = value
                             if (requested && !serviceOn) {
+                                if ("clockCover" !in pendingServiceToggles) pendingServiceToggles.add("clockCover")
                                 showClockCoverSheet = true
+                            } else {
+                                pendingServiceToggles.remove("clockCover")
                             }
                             LockscreenWidgetService.onLauncherForeground(true)
                         },
@@ -722,6 +751,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             add {
                 SettingsActionRow(
+                    title = stringResource(R.string.permissions),
+                    description = stringResource(R.string.permissions_desc),
+                    onClick = { showPermissionsSheet = true },
+                )
+            }
+            add {
+                SettingsActionRow(
                     title = stringResource(R.string.config_backup),
                     description = stringResource(R.string.config_backup_desc),
                     onClick = { showConfigSheet = true },
@@ -849,9 +885,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         lockscreenWidget = value
                         prefs.lockscreenWidget = value
                         if (requested && !serviceOn) {
+                            if ("widget" !in pendingServiceToggles) pendingServiceToggles.add("widget")
                             try {
                                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                             } catch (_: Exception) {}
+                        } else {
+                            pendingServiceToggles.remove("widget")
                         }
                     },
                 )
@@ -868,9 +907,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         lockscreenMusicWidget = value
                         prefs.lockscreenMusicWidget = value
                         if (requested && !serviceOn) {
+                            if ("music" !in pendingServiceToggles) pendingServiceToggles.add("music")
                             try {
                                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                             } catch (_: Exception) {}
+                        } else {
+                            pendingServiceToggles.remove("music")
                         }
                     },
                 )
@@ -1017,9 +1059,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
                             screensaverOnPower = value
                             prefs.screensaverOnPower = value
                             if (requested && !serviceOn) {
+                                if ("power" !in pendingServiceToggles) pendingServiceToggles.add("power")
                                 try {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 } catch (_: Exception) {}
+                            } else {
+                                pendingServiceToggles.remove("power")
                             }
                         },
                     )
@@ -1266,6 +1311,99 @@ fun SettingsScreen(viewModel: MainViewModel) {
             currentVersion = versionName,
             onDismiss = { showUpdateSheet = false },
         )
+    }
+
+    if (showPermissionsSheet) {
+        var permTick by remember { mutableIntStateOf(0) }
+        LaunchedEffect(Unit) {
+            while (true) {
+                kotlinx.coroutines.delay(1000)
+                permTick++
+            }
+        }
+        val notifAccess = remember(permTick) {
+            NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+        }
+        val serviceOn = remember(permTick) { LockscreenWidgetService.isEnabled(context) }
+        val callLog = remember(permTick) {
+            context.checkSelfPermission(android.Manifest.permission.READ_CALL_LOG) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        val sms = remember(permTick) {
+            context.checkSelfPermission(android.Manifest.permission.READ_SMS) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        val writeSettings = remember(permTick) { Settings.System.canWrite(context) }
+        val installApps = remember(permTick) { context.packageManager.canRequestPackageInstalls() }
+        val openAppDetails = {
+            try {
+                context.startActivity(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + context.packageName))
+                )
+            } catch (_: Exception) {}
+        }
+        BottomSheet(onDismiss = { showPermissionsSheet = false }) {
+            Text(
+                text = stringResource(R.string.permissions),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            PermissionRow(
+                title = stringResource(R.string.perm_notification_access),
+                description = stringResource(R.string.perm_notification_access_desc),
+                checked = notifAccess,
+            ) {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                } catch (_: Exception) {}
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_action_service),
+                description = stringResource(R.string.perm_action_service_desc),
+                checked = serviceOn,
+            ) {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                } catch (_: Exception) {}
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_call_log),
+                description = stringResource(R.string.perm_call_log_desc),
+                checked = callLog,
+                onClick = openAppDetails,
+            )
+            PermissionRow(
+                title = stringResource(R.string.perm_sms),
+                description = stringResource(R.string.perm_sms_desc),
+                checked = sms,
+                onClick = openAppDetails,
+            )
+            PermissionRow(
+                title = stringResource(R.string.perm_write_settings),
+                description = stringResource(R.string.perm_write_settings_desc),
+                checked = writeSettings,
+            ) {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + context.packageName))
+                    )
+                } catch (_: Exception) {}
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_install_apps),
+                description = stringResource(R.string.perm_install_apps_desc),
+                checked = installApps,
+            ) {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + context.packageName))
+                    )
+                } catch (_: Exception) {}
+            }
+        }
     }
 
     if (showLongPressSheet) {
@@ -2328,6 +2466,45 @@ fun SettingsActionRow(
             fontSize = 24.sp,
             color = LocalInk.current,
         )
+    }
+}
+
+@Composable
+private fun PermissionRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = if (checked) Icons.Rounded.CheckBox
+            else Icons.Rounded.CheckBoxOutlineBlank,
+            contentDescription = null,
+            tint = LocalInk.current,
+            modifier = Modifier.size(22.dp),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+            )
+            Text(
+                text = description,
+                fontSize = 13.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+            )
+        }
     }
 }
 
