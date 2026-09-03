@@ -264,6 +264,13 @@
     <string name="perm_sms_desc">Messaggi non letti nel badge Messaggi</string>
     <string name="perm_write_settings_desc">Controllo della luminosità</string>
     <string name="perm_install_apps_desc">Aggiornamenti in-app</string>
+    <string name="app_sort_order">Ordina app</string>
+    <string name="app_sort_order_desc">A-Z, Più recenti, Più usate</string>
+    <string name="app_sort_alphabetical">Alfabetico</string>
+    <string name="app_sort_recent">Più recenti</string>
+    <string name="app_sort_used">Più usate</string>
+    <string name="perm_usage_access">Accesso all\'utilizzo</string>
+    <string name="perm_usage_access_desc">Ordinare le app per più recenti o più usate</string>
     <string name="update_checking">Ricerca aggiornamenti…</string>
     <string name="update_up_to_date">Hai l\'ultima versione (v%1$s).</string>
     <string name="update_available">È disponibile la versione %1$s</string>

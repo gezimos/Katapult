@@ -264,6 +264,13 @@
     <string name="perm_sms_desc">Nepřečtené zprávy v odznaku Zpráv</string>
     <string name="perm_write_settings_desc">Ovládání jasu</string>
     <string name="perm_install_apps_desc">Aktualizace v aplikaci</string>
+    <string name="app_sort_order">Řazení aplikací</string>
+    <string name="app_sort_order_desc">A-Z, Naposledy použité, Nejpoužívanější</string>
+    <string name="app_sort_alphabetical">Abecedně</string>
+    <string name="app_sort_recent">Naposledy použité</string>
+    <string name="app_sort_used">Nejpoužívanější</string>
+    <string name="perm_usage_access">Přístup k využití</string>
+    <string name="perm_usage_access_desc">Řazení aplikací podle posledního použití nebo nejpoužívanějších</string>
     <string name="update_checking">Kontrola aktualizací…</string>
     <string name="update_up_to_date">Máte nejnovější verzi (v%1$s).</string>
     <string name="update_available">Je dostupná verze %1$s</string>

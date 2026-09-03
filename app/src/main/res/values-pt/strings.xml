@@ -264,6 +264,13 @@
     <string name="perm_sms_desc">Mensagens por ler no distintivo das Mensagens</string>
     <string name="perm_write_settings_desc">Controlo do brilho</string>
     <string name="perm_install_apps_desc">Atualizações na app</string>
+    <string name="app_sort_order">Ordenar apps</string>
+    <string name="app_sort_order_desc">A-Z, Mais recentes, Mais usadas</string>
+    <string name="app_sort_alphabetical">Alfabética</string>
+    <string name="app_sort_recent">Mais recentes</string>
+    <string name="app_sort_used">Mais usadas</string>
+    <string name="perm_usage_access">Acesso à utilização</string>
+    <string name="perm_usage_access_desc">Ordenar apps por mais recentes ou mais usadas</string>
     <string name="update_checking">A procurar atualizações…</string>
     <string name="update_up_to_date">Tem a versão mais recente (v%1$s).</string>
     <string name="update_available">A versão %1$s está disponível</string>

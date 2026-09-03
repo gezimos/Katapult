@@ -43,6 +43,7 @@ import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.ShortcutHelper
+import com.gezimos.katapult.util.UsageHelper
 import java.io.File
 import java.util.Date
 
@@ -313,6 +314,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val renamed = visible.map { app ->
             val customName = prefs.getAppRename(app.key)
             if (customName != null) app.copy(label = customName) else app
+        }
+        val sortMode = prefs.appSortMode
+        if (sortMode != PrefsManager.APP_SORT_MANUAL && UsageHelper.hasPermission(ctx)) {
+            val stats = UsageHelper.stats(ctx)
+            val ignored = UsageHelper.ignoredPackages(ctx)
+            orderedApps = renamed.sortedWith(
+                compareByDescending<AppModel> { app ->
+                    val s = if (app.packageName in ignored) null else stats[app.packageName]
+                    if (s == null) 0L
+                    else if (sortMode == PrefsManager.APP_SORT_RECENT) s.lastTimeUsed
+                    else s.totalTimeInForeground
+                }.thenBy { it.label.lowercase() }
+            )
+            return
         }
         val savedOrder = prefs.loadAppOrder()
         orderedApps = if (savedOrder != null) {

@@ -315,6 +315,10 @@ class PrefsManager(context: Context) {
         )
         set(value) = prefs.edit().putInt(KEY_HOME_LONG_PRESS, value).apply()
 
+    var appSortMode: Int
+        get() = intPref(KEY_APP_SORT_MODE, APP_SORT_MANUAL)
+        set(value) = prefs.edit().putInt(KEY_APP_SORT_MODE, value).apply()
+
     var hideAllAppsButton: Boolean
         get() = boolPref(KEY_HIDE_ALL_APPS_BUTTON, false)
         set(value) = prefs.edit().putBoolean(KEY_HIDE_ALL_APPS_BUTTON, value).apply()
@@ -620,6 +624,11 @@ class PrefsManager(context: Context) {
         const val DOUBLE_TAP_OFF = 0
         const val DOUBLE_TAP_BRIGHTNESS = 1
         const val DOUBLE_TAP_LOCK = 2
+
+        private const val KEY_APP_SORT_MODE = "app_sort_mode"
+        const val APP_SORT_MANUAL = 0
+        const val APP_SORT_RECENT = 1
+        const val APP_SORT_USED = 2
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
     }
 }

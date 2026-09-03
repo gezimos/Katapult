@@ -11,6 +11,7 @@ All notable changes to Katapult are documented here.
 - **Show Weather** (Kompakt only): Shows temperature above the clock, beside the alarm and battery, on the home screen and the screensaver. Syncs with the weather app on the device.
 - **Show Alarm** toggle: hide the next-alarm row above the clock.
 - **Permissions** in the System section: lists what Katapult can access and links to the right settings screen for each.
+- **Order Apps** in the All Apps section: sort the app list alphabetically, by most recent, or by most used. Recency and usage come from Android's usage access, asked for when you pick one of those. Alphabetical keeps your manual reorder.
 
 ### Changed
 - New installs from 1.5 onward start with the extra dock row on, vertical All Apps gestures, page arrows hidden, infinite scroll off, and 80 x 80 icons. Updating from an earlier version changes nothing: your settings are kept exactly as they are, icons included.

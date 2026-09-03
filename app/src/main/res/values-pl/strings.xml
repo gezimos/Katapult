@@ -264,6 +264,13 @@
     <string name="perm_sms_desc">Nieprzeczytane wiadomości w odznace Wiadomości</string>
     <string name="perm_write_settings_desc">Sterowanie jasnością</string>
     <string name="perm_install_apps_desc">Aktualizacje w aplikacji</string>
+    <string name="app_sort_order">Sortowanie aplikacji</string>
+    <string name="app_sort_order_desc">A-Z, Ostatnio używane, Najczęściej używane</string>
+    <string name="app_sort_alphabetical">Alfabetycznie</string>
+    <string name="app_sort_recent">Ostatnio używane</string>
+    <string name="app_sort_used">Najczęściej używane</string>
+    <string name="perm_usage_access">Dostęp do użycia</string>
+    <string name="perm_usage_access_desc">Sortowanie aplikacji według ostatnio lub najczęściej używanych</string>
     <string name="update_checking">Sprawdzanie aktualizacji…</string>
     <string name="update_up_to_date">Masz najnowszą wersję (v%1$s).</string>
     <string name="update_available">Dostępna jest wersja %1$s</string>

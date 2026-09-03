@@ -264,6 +264,13 @@
     <string name="perm_sms_desc">Ongelezen berichten in de Berichten-badge</string>
     <string name="perm_write_settings_desc">Helderheidsregeling</string>
     <string name="perm_install_apps_desc">Updates in de app</string>
+    <string name="app_sort_order">Apps sorteren</string>
+    <string name="app_sort_order_desc">A-Z, Meest recent, Meest gebruikt</string>
+    <string name="app_sort_alphabetical">Alfabetisch</string>
+    <string name="app_sort_recent">Meest recent</string>
+    <string name="app_sort_used">Meest gebruikt</string>
+    <string name="perm_usage_access">Gebruikstoegang</string>
+    <string name="perm_usage_access_desc">Apps sorteren op meest recent of meest gebruikt</string>
     <string name="update_checking">Controleren op updates…</string>
     <string name="update_up_to_date">Je hebt de nieuwste versie (v%1$s).</string>
     <string name="update_available">Versie %1$s is beschikbaar</string>

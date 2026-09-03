@@ -95,6 +95,7 @@ import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.ShortcutHelper
 import com.gezimos.katapult.util.UpdateChecker
+import com.gezimos.katapult.util.UsageHelper
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -139,6 +140,9 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var hideArrowButtons by remember { mutableStateOf(prefs.hideArrowButtons) }
     var homeLongPress by remember { mutableIntStateOf(prefs.homeLongPressAction) }
     var showLongPressSheet by remember { mutableStateOf(false) }
+    var appSortMode by remember { mutableIntStateOf(prefs.appSortMode) }
+    var showSortSheet by remember { mutableStateOf(false) }
+    var pendingSortMode by remember { mutableStateOf<Int?>(null) }
     var showClockFormatSheet by remember { mutableStateOf(false) }
     var showDateFormatSheet by remember { mutableStateOf(false) }
     var showDoubleTapSheet by remember { mutableStateOf(false) }
@@ -255,6 +259,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     }
                 }
                 pendingServiceToggles.clear()
+            }
+            val sortPending = pendingSortMode
+            if (sortPending != null && UsageHelper.hasPermission(context)) {
+                appSortMode = sortPending
+                prefs.appSortMode = sortPending
+                pendingSortMode = null
+                viewModel.loadApps()
             }
         }
     }
@@ -532,6 +543,19 @@ fun SettingsScreen(viewModel: MainViewModel) {
 
             // --- All Apps ---
             addHeader(R.string.section_all_apps)
+            add {
+                val sortLabel = when (appSortMode) {
+                    PrefsManager.APP_SORT_RECENT -> stringResource(R.string.app_sort_recent)
+                    PrefsManager.APP_SORT_USED -> stringResource(R.string.app_sort_used)
+                    else -> stringResource(R.string.app_sort_alphabetical)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.app_sort_order),
+                    description = stringResource(R.string.app_sort_order_desc),
+                    value = sortLabel,
+                    onClick = { showSortSheet = true },
+                )
+            }
             add {
                 SettingsToggleRow(
                     title = stringResource(R.string.show_katapult_icon),
@@ -1335,6 +1359,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
         }
         val writeSettings = remember(permTick) { Settings.System.canWrite(context) }
         val installApps = remember(permTick) { context.packageManager.canRequestPackageInstalls() }
+        val usageAccess = remember(permTick) { UsageHelper.hasPermission(context) }
         val openAppDetails = {
             try {
                 context.startActivity(
@@ -1393,6 +1418,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 } catch (_: Exception) {}
             }
             PermissionRow(
+                title = stringResource(R.string.perm_usage_access),
+                description = stringResource(R.string.perm_usage_access_desc),
+                checked = usageAccess,
+            ) {
+                UsageHelper.openSettings(context)
+            }
+            PermissionRow(
                 title = stringResource(R.string.perm_install_apps),
                 description = stringResource(R.string.perm_install_apps_desc),
                 checked = installApps,
@@ -1404,6 +1436,30 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 } catch (_: Exception) {}
             }
         }
+    }
+
+    if (showSortSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.app_sort_order),
+            options = listOf(
+                PrefsManager.APP_SORT_MANUAL to stringResource(R.string.app_sort_alphabetical),
+                PrefsManager.APP_SORT_RECENT to stringResource(R.string.app_sort_recent),
+                PrefsManager.APP_SORT_USED to stringResource(R.string.app_sort_used),
+            ),
+            selected = appSortMode,
+            onSelect = { mode ->
+                if (mode == PrefsManager.APP_SORT_MANUAL || UsageHelper.hasPermission(context)) {
+                    pendingSortMode = null
+                    appSortMode = mode
+                    prefs.appSortMode = mode
+                    viewModel.loadApps()
+                } else {
+                    pendingSortMode = mode
+                    UsageHelper.openSettings(context)
+                }
+            },
+            onDismiss = { showSortSheet = false },
+        )
     }
 
     if (showLongPressSheet) {

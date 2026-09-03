@@ -168,6 +168,13 @@
     <string name="perm_sms_desc">Unread messages in the Messages badge</string>
     <string name="perm_write_settings_desc">Brightness control</string>
     <string name="perm_install_apps_desc">In-app updates</string>
+    <string name="app_sort_order">Order Apps</string>
+    <string name="app_sort_order_desc">A-Z, Most recent, Most used</string>
+    <string name="app_sort_alphabetical">Alphabetical</string>
+    <string name="app_sort_recent">Most Recent</string>
+    <string name="app_sort_used">Most Used</string>
+    <string name="perm_usage_access">Usage Access</string>
+    <string name="perm_usage_access_desc">Sorting apps by most recent or most used</string>
     <string name="update_checking">Checking for updates…</string>
     <string name="update_up_to_date">You\'re on the latest version (v%1$s).</string>
     <string name="update_available">Version %1$s is available</string>

@@ -73,6 +73,7 @@ import com.gezimos.katapult.model.AppModel
 import com.gezimos.katapult.service.DirectBadgeHelper
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
+import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.ShortcutHelper
 import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Size
@@ -360,7 +361,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
             viewModel = viewModel,
             app = menuApp,
             iconPicker = iconPicker,
-            showReorder = true,
+            showReorder = viewModel.prefs.appSortMode == PrefsManager.APP_SORT_MANUAL,
             showHide = true,
             onDismiss = { viewModel.contextMenuApp = null },
         )

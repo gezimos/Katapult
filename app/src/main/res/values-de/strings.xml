@@ -264,6 +264,13 @@
     <string name="perm_sms_desc">Ungelesene Nachrichten im Nachrichten-Badge</string>
     <string name="perm_write_settings_desc">Helligkeitssteuerung</string>
     <string name="perm_install_apps_desc">Updates in der App</string>
+    <string name="app_sort_order">Apps sortieren</string>
+    <string name="app_sort_order_desc">A-Z, Zuletzt verwendet, Meistgenutzt</string>
+    <string name="app_sort_alphabetical">Alphabetisch</string>
+    <string name="app_sort_recent">Zuletzt verwendet</string>
+    <string name="app_sort_used">Meistgenutzt</string>
+    <string name="perm_usage_access">Nutzungszugriff</string>
+    <string name="perm_usage_access_desc">Apps nach zuletzt verwendet oder meistgenutzt sortieren</string>
     <string name="update_checking">Suche nach Updates…</string>
     <string name="update_up_to_date">Du hast die neueste Version (v%1$s).</string>
     <string name="update_available">Version %1$s ist verfügbar</string>
