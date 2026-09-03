@@ -289,7 +289,7 @@ class LockscreenWidgetService :
             format = PixelFormat.OPAQUE
             flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-            width = (resources.displayMetrics.widthPixels * 0.45f).toInt()
+            width = (resources.displayMetrics.widthPixels * 0.28f).toInt()
             height = statusBarHeightPx()
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             y = 0
