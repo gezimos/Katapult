@@ -112,6 +112,8 @@
     <string name="app_notifications_desc">Benachrichtigungseinstellungen verwalten</string>
     <string name="notification_log">Benachrichtigungsprotokoll</string>
     <string name="notification_log_desc">Benachrichtigungsverlauf anzeigen</string>
+    <string name="notification_history">Benachrichtigungsverlauf</string>
+    <string name="notification_history_desc">Androids Benachrichtigungsverlauf</string>
     <string name="set_default_launcher">Als Standard-Launcher festlegen</string>
     <string name="set_default_launcher_desc">Katapult als Startbildschirm wählen</string>
     <string name="config_backup">Einstellungen exportieren/importieren</string>

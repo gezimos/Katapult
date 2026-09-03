@@ -133,6 +133,8 @@
     <string name="app_notifications_desc">Manage app notification settings</string>
     <string name="notification_log">Notification Log</string>
     <string name="notification_log_desc">View notification history</string>
+    <string name="notification_history">Notification History</string>
+    <string name="notification_history_desc">Android\'s notification history</string>
     <string name="set_default_launcher">Set as Default Launcher</string>
     <string name="set_default_launcher_desc">Choose Katapult as your home</string>
     <string name="search_settings">Search Settings</string>

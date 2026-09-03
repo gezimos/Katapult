@@ -112,6 +112,8 @@
     <string name="app_notifications_desc">Gestisci impostazioni notifiche app</string>
     <string name="notification_log">Registro notifiche</string>
     <string name="notification_log_desc">Visualizza cronologia notifiche</string>
+    <string name="notification_history">Cronologia notifiche</string>
+    <string name="notification_history_desc">La cronologia notifiche di Android</string>
     <string name="set_default_launcher">Imposta come launcher predefinito</string>
     <string name="set_default_launcher_desc">Scegli Katapult come schermata iniziale</string>
     <string name="config_backup">Esporta/importa configurazione</string>

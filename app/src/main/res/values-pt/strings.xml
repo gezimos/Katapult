@@ -112,6 +112,8 @@
     <string name="app_notifications_desc">Gerir definições de notificações</string>
     <string name="notification_log">Registo de notificações</string>
     <string name="notification_log_desc">Ver histórico de notificações</string>
+    <string name="notification_history">Histórico de notificações</string>
+    <string name="notification_history_desc">Histórico de notificações do Android</string>
     <string name="set_default_launcher">Definir como launcher predefinido</string>
     <string name="set_default_launcher_desc">Escolher Katapult como ecrã inicial</string>
     <string name="config_backup">Exportar/importar configuração</string>

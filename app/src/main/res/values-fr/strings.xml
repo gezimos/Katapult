@@ -112,6 +112,8 @@
     <string name="app_notifications_desc">Gérer les paramètres de notifications</string>
     <string name="notification_log">Journal des notifications</string>
     <string name="notification_log_desc">Consulter l\'historique des notifications</string>
+    <string name="notification_history">Historique des notifications</string>
+    <string name="notification_history_desc">L\'historique des notifications d\'Android</string>
     <string name="set_default_launcher">Définir comme lanceur par défaut</string>
     <string name="set_default_launcher_desc">Choisir Katapult comme écran d\'accueil</string>
     <string name="config_backup">Exporter/importer la configuration</string>

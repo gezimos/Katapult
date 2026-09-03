@@ -112,6 +112,8 @@
     <string name="app_notifications_desc">Zarządzaj ustawieniami powiadomień</string>
     <string name="notification_log">Dziennik powiadomień</string>
     <string name="notification_log_desc">Wyświetl historię powiadomień</string>
+    <string name="notification_history">Historia powiadomień</string>
+    <string name="notification_history_desc">Historia powiadomień Androida</string>
     <string name="set_default_launcher">Ustaw jako domyślny launcher</string>
     <string name="set_default_launcher_desc">Wybierz Katapult jako ekran główny</string>
     <string name="config_backup">Eksport/import konfiguracji</string>

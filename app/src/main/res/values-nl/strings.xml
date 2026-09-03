@@ -112,6 +112,8 @@
     <string name="app_notifications_desc">Beheer app-meldingsinstellingen</string>
     <string name="notification_log">Meldingenlogboek</string>
     <string name="notification_log_desc">Bekijk meldingsgeschiedenis</string>
+    <string name="notification_history">Meldingsgeschiedenis</string>
+    <string name="notification_history_desc">Androids meldingsgeschiedenis</string>
     <string name="set_default_launcher">Als standaard launcher instellen</string>
     <string name="set_default_launcher_desc">Kies Katapult als je startscherm</string>
     <string name="config_backup">Configuratie exporteren/importeren</string>

@@ -32,6 +32,8 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.CheckBox
@@ -299,15 +301,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (selectedCategory != null) {
-                Text(
-                    text = "‹",
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = LatoFamily,
-                    color = LocalInk.current,
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                    contentDescription = null,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .clickable { selectedCategory = null }
-                        .padding(end = 12.dp),
+                        .padding(end = 8.dp)
+                        .size(30.dp),
                 )
             }
             Text(
@@ -521,26 +522,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     },
                 )
             }
-            add {
-                val longPressLabel = when (homeLongPress) {
-                    PrefsManager.HOME_LONG_PRESS_NONE ->
-                        stringResource(R.string.home_long_press_none)
-                    PrefsManager.HOME_LONG_PRESS_APP_INFO ->
-                        stringResource(R.string.home_long_press_app_info)
-                    PrefsManager.HOME_LONG_PRESS_MENU ->
-                        stringResource(R.string.home_long_press_menu)
-                    PrefsManager.HOME_LONG_PRESS_CLEAR ->
-                        stringResource(R.string.home_long_press_clear)
-                    else -> stringResource(R.string.home_long_press_edit)
-                }
-                SettingsCycleRow(
-                    title = stringResource(R.string.home_long_press),
-                    description = stringResource(R.string.home_long_press_desc),
-                    value = longPressLabel,
-                    onClick = { showLongPressSheet = true },
-                )
-            }
-
             // --- All Apps ---
             addHeader(R.string.section_all_apps)
             add {
@@ -645,6 +626,25 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     onClick = { showDoubleTapSheet = true },
                 )
             }
+            add {
+                val longPressLabel = when (homeLongPress) {
+                    PrefsManager.HOME_LONG_PRESS_NONE ->
+                        stringResource(R.string.home_long_press_none)
+                    PrefsManager.HOME_LONG_PRESS_APP_INFO ->
+                        stringResource(R.string.home_long_press_app_info)
+                    PrefsManager.HOME_LONG_PRESS_MENU ->
+                        stringResource(R.string.home_long_press_menu)
+                    PrefsManager.HOME_LONG_PRESS_CLEAR ->
+                        stringResource(R.string.home_long_press_clear)
+                    else -> stringResource(R.string.home_long_press_edit)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.home_long_press),
+                    description = stringResource(R.string.home_long_press_desc),
+                    value = longPressLabel,
+                    onClick = { showLongPressSheet = true },
+                )
+            }
 
             // --- Notifications ---
             addHeader(R.string.section_notifications)
@@ -712,6 +712,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
                                     "com.android.settings.Settings\$NotificationStationActivity"
                                 )
                             })
+                        } catch (_: Exception) {}
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.notification_history),
+                    description = stringResource(R.string.notification_history_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent("android.settings.NOTIFICATION_HISTORY"))
                         } catch (_: Exception) {}
                     },
                 )
@@ -996,6 +1007,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         stringResource(R.string.screensaver_show_notifications)
                             .takeIf { screensaverShowNotifications },
                         stringResource(R.string.home_islands).takeIf { screensaverIslands },
+                        stringResource(R.string.screensaver_eink_refresh)
+                            .takeIf { screensaverEinkRefresh },
                     )
                     SettingsActionRow(
                         title = stringResource(R.string.screensaver_customization),
@@ -1058,17 +1071,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         title = stringResource(R.string.screensaver_update_mode),
                         description = modeLabel,
                         onClick = { showScreensaverModeSheet = true },
-                    )
-                }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_eink_refresh),
-                        description = stringResource(R.string.screensaver_eink_refresh_desc),
-                        checked = screensaverEinkRefresh,
-                        onCheckedChange = {
-                            screensaverEinkRefresh = it
-                            prefs.screensaverEinkRefresh = it
-                        },
                     )
                 }
                 add {
@@ -1594,6 +1596,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     stringResource(R.string.home_islands),
                     screensaverIslands,
                     { v: Boolean -> screensaverIslands = v; prefs.screensaverIslands = v },
+                ),
+                Triple(
+                    stringResource(R.string.screensaver_eink_refresh),
+                    screensaverEinkRefresh,
+                    { v: Boolean ->
+                        screensaverEinkRefresh = v
+                        prefs.screensaverEinkRefresh = v
+                    },
                 ),
             ),
             onDismiss = { showScreensaverCustomSheet = false },
@@ -2517,10 +2527,11 @@ fun SettingsActionRow(
                 color = LocalInk.current,
             )
         }
-        Text(
-            text = "\u203A",
-            fontSize = 24.sp,
-            color = LocalInk.current,
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+            contentDescription = null,
+            tint = LocalInk.current,
+            modifier = Modifier.size(24.dp),
         )
     }
 }

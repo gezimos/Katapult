@@ -23,7 +23,6 @@ import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.text.TextUtils
-import android.util.Log
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
@@ -374,7 +373,6 @@ class LockscreenWidgetService :
     private fun islandStrokeDp(): Dp = (dp(2.5f) / resources.displayMetrics.density).dp
 
     private fun removeMusicOverlay() {
-        if (musicOverlay != null) Log.w("KatapultLS", "music removed")
         musicOverlay?.let {
             try { getSystemService(WindowManager::class.java).removeView(it) } catch (_: Exception) {}
             try { it.disposeComposition() } catch (_: Exception) {}
@@ -423,8 +421,6 @@ class LockscreenWidgetService :
             !ScreensaverActivity.isShowing &&
             !inCall() &&
             !pinShowing()
-        Log.w("KatapultLS", "eval kg=${keyguard.isKeyguardLocked} lock=$onLockscreen " +
-            "island=${overlay != null} music=${musicOverlay != null} counts=${counts.size}")
         applyMusicWidget(onLockscreen)
         val shouldShow = prefs.lockscreenWidget && onLockscreen && counts.isNotEmpty()
         if (!shouldShow) {
@@ -525,7 +521,6 @@ class LockscreenWidgetService :
     }
 
     private fun removeOverlay() {
-        if (overlay != null) Log.w("KatapultLS", "island removed")
         mainHandler.removeCallbacks(editTimeout)
         editing = false
         overlay?.let {

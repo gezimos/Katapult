@@ -121,6 +121,8 @@
     <string name="app_notifications_desc">Spravovat nastavení oznámení aplikací</string>
     <string name="notification_log">Protokol oznámení</string>
     <string name="notification_log_desc">Zobrazit historii oznámení</string>
+    <string name="notification_history">Historie oznámení</string>
+    <string name="notification_history_desc">Historie oznámení Androidu</string>
     <string name="set_default_launcher">Nastavit jako výchozí launcher</string>
     <string name="set_default_launcher_desc">Zvolte Katapult jako domovskou obrazovku</string>
     <string name="config_backup">Export/import nastavení</string>
