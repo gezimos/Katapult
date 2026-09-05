@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -234,6 +235,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
     val ink = LocalInk.current
     val surface = LocalSurface.current
     val shape = RoundedCornerShape(14.dp)
+    val strokeWidth = with(LocalDensity.current) { 2.5.dp.toPx().toInt().toDp() }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -244,7 +246,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(surface, shape)
-                .border(2.5.dp, ink, shape)
+                .border(strokeWidth, ink, shape)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             rows.forEach { row ->
@@ -285,7 +287,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
                     .align(Alignment.TopEnd)
                     .offset(x = (-16).dp, y = 12.dp)
                     .background(surface, RoundedCornerShape(8.dp))
-                    .border(2.5.dp, ink, RoundedCornerShape(8.dp))
+                    .border(strokeWidth, ink, RoundedCornerShape(8.dp))
                     .padding(horizontal = 8.dp, vertical = 2.dp),
             )
         }
