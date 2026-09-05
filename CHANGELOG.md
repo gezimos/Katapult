@@ -2,6 +2,30 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.5]
+
+### Added
+- **Lockscreen Music Controls** (Kompakt only): the stock MuditaOS lockscreen media widget only works with Mudita's own player, so anything else playing left the lock screen with no controls. Katapult now draws its own music widget in the same spot for those players, with the same outline as the notification widget. Off by default, needs the Katapult Action Service, and stays hidden for the Mudita player so the two never appear together. The home screen widget still works with every player, Mudita's included.
+- **Search Settings** in the System section: opens Android's settings search so you can find a system setting by name without digging through menus.
+- **Icon Size** in Appearance: switch app icons between 72 x 72 and 80 x 80 on both the home screen and All Apps. Row and column spacing stays the same, so only the icons grow.
+- **Show Weather** (Kompakt only): Shows temperature above the clock, beside the alarm and battery, on the home screen and the screensaver. Syncs with the weather app on the device.
+- **Permissions** in the System section: lists what Katapult can access and links to the right settings screen for each.
+- **Order Apps** in the All Apps section: sort the app list alphabetically, by most recent, or by most used. Recency and usage come from Android's usage access, asked for when you pick one of those. Alphabetical keeps your manual reorder.
+
+### Changed
+- New installs from 1.5 onward start with the extra dock row on, vertical All Apps gestures, page arrows hidden, infinite scroll off, and 80 x 80 icons. Updating from an earlier version changes nothing: your settings are kept exactly as they are, icons included.
+- The home dock rows now sit on the same grid All Apps uses, so the rows line up when switching between the two screens. Holds whether app names and the status bar are shown or hidden, and the All Apps button lines up with the app icons beside it.
+- The album art placeholder in the music widget is now a black note on white instead of white on black, matching the rest of the widget.
+- Hide App Names moved from the Home Screen section to Appearance, since it affects labels on both the home screen and All Apps.
+- **Disable Home Editing** is now **Long-press app in home**, with a choice of App Info, Context Menu, Clear Notifications, Edit Shortcut or Disabled. Context Menu opens the same menu as All Apps. Your existing setting carries over.
+- Settings that used to cycle through their values on each tap now open a list you pick from: Long-press app in home, Clock Format, Date Format, Double tap in home, E-Ink Mode and Screensaver Update. Date Format in particular has six values, so finding one no longer means tapping past the rest. The two-value settings still toggle in place.
+- The screensaver's Show Clock, Show Notifications and Text Backgrounds toggles are now one **Customization** entry listing what is on, and the update interval moved inside the Screensaver Update list, so choosing Interval and setting the minutes happens in one place instead of two.
+
+### Fixed
+- Turning on a setting that needs the Katapult Action Service now completes by itself once you enable the service, instead of needing a second tap.
+- Importing a custom icon could silently do nothing and drop you back on the home screen, if Android reclaimed the launcher's memory while the file picker was open. Imports now survive that, and a failed one says so.
+- Czech, Dutch, French, German, Italian, Polish, Portuguese, and Spanish were missing 19 strings, including the whole Check for Updates flow, which rendered in English. All nine languages are complete again.
+
 ## [1.4]
 
 ### Added

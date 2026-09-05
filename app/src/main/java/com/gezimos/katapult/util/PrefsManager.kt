@@ -13,6 +13,30 @@ class PrefsManager(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
 
+    init { seedDefaultsOnce() }
+
+    /**
+     * Defaults that ship on from 1.5, applied to fresh installs only. Existing users keep
+     * whatever they have: a pref reads its default whenever the key is absent, which is just
+     * as true for an upgrader who never touched that setting, so the defaults themselves are
+     * deliberately left alone and explicit values are written instead. Empty prefs mean a
+     * first launch rather than an upgrade, since a user who finished onboarding always has
+     * onboarding_complete and notification_indicators written. Clear All Data wipes the file,
+     * so it re-seeds, which is the intended behaviour.
+     */
+    private fun seedDefaultsOnce() {
+        if (prefs.contains(KEY_DEFAULTS_SEEDED)) return
+        val editor = prefs.edit()
+        if (prefs.all.isEmpty()) {
+            editor.putBoolean(KEY_HOME_EXTRA_ROW, true)
+            editor.putBoolean(KEY_VERTICAL_APP_GESTURES, true)
+            editor.putBoolean(KEY_HIDE_ARROW_BUTTONS, true)
+            editor.putBoolean(KEY_INFINITE_SCROLL, false)
+            editor.putInt(KEY_ICON_SIZE, ICON_SIZE_LARGE)
+        }
+        editor.putBoolean(KEY_DEFAULTS_SEEDED, true).apply()
+    }
+
     private fun boolPref(key: String, def: Boolean): Boolean = try {
         prefs.getBoolean(key, def)
     } catch (_: ClassCastException) {
@@ -209,6 +233,21 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_SHOW_BATTERY, false)
         set(value) = prefs.edit().putBoolean(KEY_SHOW_BATTERY, value).apply()
 
+    var pendingIconTarget: String?
+        get() = strPref(KEY_PENDING_ICON_TARGET, null)
+        set(value) {
+            if (value == null) prefs.edit().remove(KEY_PENDING_ICON_TARGET).apply()
+            else prefs.edit().putString(KEY_PENDING_ICON_TARGET, value).apply()
+        }
+
+    var showAlarm: Boolean
+        get() = boolPref(KEY_SHOW_ALARM, true)
+        set(value) = prefs.edit().putBoolean(KEY_SHOW_ALARM, value).apply()
+
+    var showWeather: Boolean
+        get() = boolPref(KEY_SHOW_WEATHER, false)
+        set(value) = prefs.edit().putBoolean(KEY_SHOW_WEATHER, value).apply()
+
     var roundedIcons: Boolean
         get() = boolPref(KEY_ROUNDED_ICONS, false)
         set(value) = prefs.edit().putBoolean(KEY_ROUNDED_ICONS, value).apply()
@@ -268,9 +307,17 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_HIDE_ARROW_BUTTONS, false)
         set(value) = prefs.edit().putBoolean(KEY_HIDE_ARROW_BUTTONS, value).apply()
 
-    var disableHomeEditing: Boolean
-        get() = boolPref(KEY_DISABLE_HOME_EDITING, false)
-        set(value) = prefs.edit().putBoolean(KEY_DISABLE_HOME_EDITING, value).apply()
+    var homeLongPressAction: Int
+        get() = intPref(
+            KEY_HOME_LONG_PRESS,
+            if (boolPref(KEY_DISABLE_HOME_EDITING, false)) HOME_LONG_PRESS_APP_INFO
+            else HOME_LONG_PRESS_EDIT,
+        )
+        set(value) = prefs.edit().putInt(KEY_HOME_LONG_PRESS, value).apply()
+
+    var appSortMode: Int
+        get() = intPref(KEY_APP_SORT_MODE, APP_SORT_MANUAL)
+        set(value) = prefs.edit().putInt(KEY_APP_SORT_MODE, value).apply()
 
     var hideAllAppsButton: Boolean
         get() = boolPref(KEY_HIDE_ALL_APPS_BUTTON, false)
@@ -291,6 +338,14 @@ class PrefsManager(context: Context) {
     var lockscreenWidget: Boolean
         get() = boolPref(KEY_LOCKSCREEN_WIDGET, false)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_WIDGET, value).apply()
+
+    var iconSize: Int
+        get() = intPref(KEY_ICON_SIZE, ICON_SIZE_SMALL)
+        set(value) = prefs.edit().putInt(KEY_ICON_SIZE, value).apply()
+
+    var lockscreenMusicWidget: Boolean
+        get() = boolPref(KEY_LOCKSCREEN_MUSIC_WIDGET, false)
+        set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_MUSIC_WIDGET, value).apply()
 
     var lockscreenWidgetY: Int
         get() = intPref(KEY_LOCKSCREEN_WIDGET_Y, -1)
@@ -499,12 +554,20 @@ class PrefsManager(context: Context) {
             "extra_left", "extra_center", "extra_right",
         )
 
+        private const val KEY_DEFAULTS_SEEDED = "defaults_seeded"
+        private const val KEY_ICON_SIZE = "icon_size"
+
+        const val ICON_SIZE_SMALL = 72
+        const val ICON_SIZE_LARGE = 80
         private const val KEY_APP_ORDER = "app_order"
         private const val KEY_PINNED_SHORTCUTS = "pinned_shortcuts"
         private const val KEY_NOTIFICATION_INDICATORS = "notification_indicators"
         private const val KEY_CLOCK_FORMAT = "clock_format"
         private const val KEY_DATE_FORMAT = "date_format"
         private const val KEY_SHOW_BATTERY = "show_battery"
+        private const val KEY_SHOW_ALARM = "show_alarm"
+        private const val KEY_PENDING_ICON_TARGET = "pending_icon_target"
+        private const val KEY_SHOW_WEATHER = "show_weather"
         private const val KEY_ROUNDED_ICONS = "rounded_icons"
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_HIDE_STATUS_BAR = "hide_status_bar"
@@ -525,11 +588,13 @@ class PrefsManager(context: Context) {
         private const val KEY_HIDE_APP_NAMES = "hide_app_names"
         private const val KEY_HIDE_ARROW_BUTTONS = "hide_arrow_buttons"
         private const val KEY_DISABLE_HOME_EDITING = "disable_home_editing"
+        private const val KEY_HOME_LONG_PRESS = "home_long_press"
         private const val KEY_HIDE_ALL_APPS_BUTTON = "hide_all_apps_button"
         private const val KEY_SWIPE_UP_ALL_APPS = "swipe_up_all_apps"
         private const val KEY_HOME_ISLANDS = "home_islands"
         private const val KEY_VERTICAL_APP_GESTURES = "vertical_app_gestures"
         private const val KEY_LOCKSCREEN_WIDGET = "lockscreen_widget"
+        private const val KEY_LOCKSCREEN_MUSIC_WIDGET = "lockscreen_music_widget"
         private const val KEY_LOCKSCREEN_WIDGET_Y = "lockscreen_widget_y"
         private const val KEY_LOCKSCREEN_WIDGET_ROWS = "lockscreen_widget_rows"
         private const val KEY_LOCKSCREEN_WIDGET_EXCLUDED = "lockscreen_widget_excluded"
@@ -550,9 +615,20 @@ class PrefsManager(context: Context) {
         const val SCREENSAVER_MODE_INTERVAL = 1
         const val SCREENSAVER_MODE_STATIC = 2
 
+        const val HOME_LONG_PRESS_APP_INFO = 0
+        const val HOME_LONG_PRESS_MENU = 1
+        const val HOME_LONG_PRESS_CLEAR = 2
+        const val HOME_LONG_PRESS_EDIT = 3
+        const val HOME_LONG_PRESS_NONE = 4
+
         const val DOUBLE_TAP_OFF = 0
         const val DOUBLE_TAP_BRIGHTNESS = 1
         const val DOUBLE_TAP_LOCK = 2
+
+        private const val KEY_APP_SORT_MODE = "app_sort_mode"
+        const val APP_SORT_MANUAL = 0
+        const val APP_SORT_RECENT = 1
+        const val APP_SORT_USED = 2
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
     }
 }

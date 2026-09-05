@@ -2,7 +2,9 @@ package com.gezimos.katapult.ui
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -88,31 +90,71 @@ import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.Screen
 import com.gezimos.katapult.lockscreen.LockscreenWidgetService
+import com.gezimos.katapult.model.AppModel
+import com.gezimos.katapult.service.DirectBadgeHelper
+import com.gezimos.katapult.util.DeviceHelper
+import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.BrightnessHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
+import com.gezimos.katapult.util.WeatherHelper
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<String>) {
+fun HomeScreen(
+    viewModel: MainViewModel,
+    imagePicker: ActivityResultLauncher<String>,
+    iconPicker: ActivityResultLauncher<Array<String>>,
+) {
     val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
     var pickerSlot by remember { mutableStateOf<String?>(null) }
     var showHiddenApps by remember { mutableStateOf(false) }
 
-    val handleSlotLongPress: (String) -> Unit = { slot ->
-        if (viewModel.prefs.disableHomeEditing) {
-            val pkg = viewModel.getShortcutPackage(slot)
-            if (pkg != null) {
-                viewModel.launchIntent(
-                    context,
-                    Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                        data = Uri.parse("package:$pkg")
-                    },
-                )
+    val callLogPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted -> if (granted) viewModel.clearMissedCalls() }
+
+    val slotAsApp: (String) -> AppModel? = { slot ->
+        val pkg = viewModel.getShortcutPackage(slot)
+        if (pkg == null) null else AppModel(
+            packageName = pkg,
+            label = viewModel.getShortcutLabel(slot, pkg),
+            activityName = viewModel.getShortcutActivity(slot),
+            shortcutId = viewModel.prefs.loadSlotShortcutId(slot) ?: "",
+        )
+    }
+
+    val clearNotificationsFor: (String) -> Unit = { pkg ->
+        val isMuditaDial = DeviceHelper.isMuditaKompakt() &&
+            pkg == DirectBadgeHelper.MUDITA_DIAL
+        if (isMuditaDial) {
+            if (viewModel.canWriteCallLog()) {
+                viewModel.clearMissedCalls()
+            } else {
+                callLogPermissionLauncher.launch(android.Manifest.permission.WRITE_CALL_LOG)
             }
         } else {
+            viewModel.clearNotificationsFor(pkg)
+        }
+    }
+
+    val handleSlotLongPress: (String) -> Unit = { slot ->
+        val pkg = viewModel.getShortcutPackage(slot)
+        if (pkg == null) {
             pickerSlot = slot
+        } else when (viewModel.prefs.homeLongPressAction) {
+            PrefsManager.HOME_LONG_PRESS_EDIT -> pickerSlot = slot
+            PrefsManager.HOME_LONG_PRESS_APP_INFO -> viewModel.launchIntent(
+                context,
+                Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$pkg")
+                },
+            )
+            PrefsManager.HOME_LONG_PRESS_MENU ->
+                viewModel.contextMenuApp = slotAsApp(slot)
+            PrefsManager.HOME_LONG_PRESS_CLEAR -> clearNotificationsFor(pkg)
+            else -> {}
         }
     }
 
@@ -164,13 +206,19 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             )
         }
 
-        Column(
+        androidx.compose.foundation.layout.BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
                 .then(if (!viewModel.prefs.hideStatusBar) Modifier.statusBarsPadding() else Modifier)
                 .navigationBarsPadding()
                 .padding(PagePadding),
         ) {
+        val gridRowHeight = if (viewModel.prefs.hideAppNames) AllAppsRowHeightNoLabels else AllAppsRowHeight
+        val gridRows = (maxHeight / gridRowHeight).toInt().coerceAtLeast(1)
+        val dockRows = if (viewModel.prefs.homeExtraRow) 2 else 1
+        val topWeight = (gridRows - dockRows).coerceAtLeast(1).toFloat()
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxWidth().weight(topWeight)) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -198,12 +246,15 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     batteryPercent = viewModel.batteryPercent,
                     isCharging = viewModel.isCharging,
                     showBattery = viewModel.prefs.showBattery,
+                    showAlarm = viewModel.prefs.showAlarm,
+                    weather = viewModel.weather,
                     islandsActive = viewModel.prefs.homeIslands,
+                    topSpacing = if (viewModel.prefs.hideStatusBar) 32.dp else 8.dp,
                     onClockClick = {
                         val saved = viewModel.prefs.loadShortcut("clock")
                         if (saved != null) {
                             viewModel.launchShortcut(context, "clock")
-                        } else if (!viewModel.prefs.disableHomeEditing) {
+                        } else {
                             pickerSlot = "clock"
                         }
                     },
@@ -212,11 +263,12 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                         val saved = viewModel.prefs.loadShortcut("calendar")
                         if (saved != null) {
                             viewModel.launchShortcut(context, "calendar")
-                        } else if (!viewModel.prefs.disableHomeEditing) {
+                        } else {
                             pickerSlot = "calendar"
                         }
                     },
                     onDateLongClick = { handleSlotLongPress("calendar") },
+                    onWeatherClick = { WeatherHelper.openApp(context) },
                     onBatteryClick = {
                         val intent = Intent(Intent.ACTION_POWER_USAGE_SUMMARY)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -239,21 +291,32 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                 androidx.compose.foundation.layout.BoxWithConstraints(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .padding(bottom = 8.dp),
                 ) {
                     val columnWidth = maxWidth / 3
-                    val iconPad = (columnWidth - IconSize) / 2
+                    val iconPad = (columnWidth - LocalIconSize.current) / 2
                     Box(Modifier.fillMaxWidth().padding(horizontal = iconPad)) {
-                        MusicWidget(viewModel)
+                        viewModel.mediaInfo?.let { media ->
+                            MusicWidget(
+                                info = media,
+                                onOpenApp = { viewModel.mediaOpenApp(context) },
+                                onPrevious = { viewModel.mediaPrevious() },
+                                onPlayPause = { viewModel.mediaPlayPause() },
+                                onNext = { viewModel.mediaNext() },
+                                onStop = { viewModel.mediaStop() },
+                            )
+                        }
                     }
                 }
+            }
             }
 
             if (viewModel.prefs.homeExtraRow) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                         ShortcutItem(
@@ -291,7 +354,8 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .weight(1f),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     ShortcutItem(
@@ -324,7 +388,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                             val tileShape = if (isRounded) RoundedIconShape else CircleShape
                             Box(
                                 modifier = Modifier
-                                    .size(IconSize)
+                                    .size(LocalIconSize.current)
                                     .then(
                                         if (viewModel.prefs.homeIslands)
                                             Modifier
@@ -348,6 +412,15 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                                     }
                                 }
                             }
+                            if (!viewModel.prefs.hideAppNames) {
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = "",
+                                    fontSize = 18.sp,
+                                    fontFamily = LatoFamily,
+                                    color = LocalInk.current,
+                                )
+                            }
                         }
                     }
                 }
@@ -363,6 +436,7 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
                     )
                 }
             }
+        }
         }
     }
 
@@ -435,6 +509,20 @@ fun HomeScreen(viewModel: MainViewModel, imagePicker: ActivityResultLauncher<Str
         HiddenAppsDialog(
             viewModel = viewModel,
             onDismiss = { showHiddenApps = false },
+        )
+    }
+
+    viewModel.contextMenuApp?.let { menuApp ->
+        AppContextMenu(
+            viewModel = viewModel,
+            app = menuApp,
+            iconPicker = iconPicker,
+            showReorder = false,
+            showHide = false,
+            onDismiss = {
+                viewModel.contextMenuApp = null
+                viewModel.shortcutRefresh++
+            },
         )
     }
 }
@@ -560,10 +648,17 @@ private fun AppPickerDialog(
 }
 
 @Composable
-private fun MusicWidget(viewModel: MainViewModel) {
-    val info = viewModel.mediaInfo ?: return
-    val context = LocalContext.current
-    val widgetShape = RoundedIconShape
+internal fun MusicWidget(
+    info: AudioWidgetHelper.MediaInfo,
+    onOpenApp: () -> Unit,
+    onPrevious: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    onStop: () -> Unit,
+    cornerRadius: Dp = 19.dp,
+    borderWidth: Dp = 2.5.dp,
+) {
+    val widgetShape = RoundedCornerShape(cornerRadius)
 
     val albumArt = remember(info.controller.metadata) {
         try {
@@ -585,14 +680,14 @@ private fun MusicWidget(viewModel: MainViewModel) {
             .height(90.dp)
             .clip(widgetShape)
             .background(LocalSurface.current)
-            .border(2.5.dp, LocalInk.current, widgetShape),
+            .border(borderWidth, LocalInk.current, widgetShape),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1.4f)
                 .padding(horizontal = 12.dp)
-                .clickable { viewModel.mediaOpenApp(context) },
+                .clickable { onOpenApp() },
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -618,7 +713,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                 .weight(2f),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            val artCorner = 19.dp
+            val artCorner = cornerRadius
             val artShape = RoundedCornerShape(
                 topStart = 0.dp,
                 topEnd = 0.dp,
@@ -630,8 +725,8 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     .fillMaxHeight()
                     .aspectRatio(1f)
                     .clip(artShape)
-                    .background(LocalInk.current)
-                    .clickable { viewModel.mediaOpenApp(context) }
+                    .background(if (albumArt != null) LocalInk.current else LocalSurface.current)
+                    .clickable { onOpenApp() }
                     .padding(bottom = 3.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -646,7 +741,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     Icon(
                         imageVector = Icons.Rounded.MusicNote,
                         contentDescription = stringResource(R.string.cd_music),
-                        tint = LocalSurface.current,
+                        tint = LocalInk.current,
                         modifier = Modifier.size(28.dp),
                     )
                 }
@@ -669,7 +764,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { viewModel.mediaPrevious() },
+                        .clickable { onPrevious() },
                 )
 
                 Icon(
@@ -678,7 +773,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(42.dp)
-                        .clickable { viewModel.mediaPlayPause() },
+                        .clickable { onPlayPause() },
                 )
 
                 Icon(
@@ -687,7 +782,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { viewModel.mediaNext() },
+                        .clickable { onNext() },
                 )
 
                 Icon(
@@ -696,7 +791,7 @@ private fun MusicWidget(viewModel: MainViewModel) {
                     tint = LocalInk.current,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { viewModel.mediaStop() },
+                        .clickable { onStop() },
                 )
             }
         }
@@ -718,8 +813,9 @@ private fun ShortcutItem(
     val activityName = remember(refresh) { viewModel.getShortcutActivity(slot) }
     val slotShortcutId = remember(refresh) { viewModel.prefs.loadSlotShortcutId(slot) }
     val label = remember(refresh) { viewModel.getShortcutLabel(slot, defaultLabel) }
-    val sizePx = remember { (IconSize.value * context.resources.displayMetrics.density).toInt() }
-    val bitmap = remember(pkg, activityName, refresh) {
+    val iconSize = LocalIconSize.current
+    val sizePx = remember(iconSize) { (iconSize.value * context.resources.displayMetrics.density).toInt() }
+    val bitmap = remember(pkg, activityName, refresh, sizePx) {
         when {
             pkg == null -> null
             slotShortcutId != null -> IconUtility.loadShortcutIcon(context, pkg, slotShortcutId, sizePx)
@@ -735,7 +831,7 @@ private fun ShortcutItem(
         modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick),
     ) {
         Box {
-            AppIconCircle(bitmap = bitmap, size = IconSize)
+            AppIconCircle(bitmap = bitmap, size = iconSize)
             if (notificationCount > 0) {
                 NotificationBadge(
                     count = notificationCount,

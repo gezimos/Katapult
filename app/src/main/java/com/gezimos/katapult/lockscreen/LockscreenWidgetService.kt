@@ -34,7 +34,33 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.SavedStateRegistry
+import androidx.savedstate.SavedStateRegistryController
+import androidx.savedstate.SavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.gezimos.katapult.ui.LocalInk
+import com.gezimos.katapult.ui.LocalSurface
+import com.gezimos.katapult.ui.MusicWidget
+import com.gezimos.katapult.ui.NoIndication
+import com.gezimos.katapult.util.AudioWidgetHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import com.gezimos.katapult.R
 import com.gezimos.katapult.service.DirectBadgeHelper
 import com.gezimos.katapult.service.NotificationListener
@@ -66,7 +92,19 @@ import kotlin.math.roundToInt
  * the lockscreenWidget prefs in PrefsManager, the onCountsChangedExtra hook in
  * NotificationListener, and the lockscreen_widget and section_experimental strings.
  */
-class LockscreenWidgetService : AccessibilityService() {
+class LockscreenWidgetService :
+    AccessibilityService(), LifecycleOwner, ViewModelStoreOwner, SavedStateRegistryOwner {
+
+    private val lifecycleRegistry = LifecycleRegistry(this)
+    private val viewModelStoreInstance = ViewModelStore()
+    private val savedStateController = SavedStateRegistryController.create(this)
+    override val lifecycle: Lifecycle get() = lifecycleRegistry
+    override val viewModelStore: ViewModelStore get() = viewModelStoreInstance
+    override val savedStateRegistry: SavedStateRegistry get() = savedStateController.savedStateRegistry
+
+    private var musicOverlay: ComposeView? = null
+    private var mediaScope: CoroutineScope? = null
+    private val musicState = mutableStateOf<AudioWidgetHelper.MediaInfo?>(null)
 
     companion object {
         private const val MIN_ROWS = 1
@@ -95,10 +133,31 @@ class LockscreenWidgetService : AccessibilityService() {
          */
         fun onLauncherForeground(foreground: Boolean) {
             launcherForeground = foreground
-            instance?.let { s -> s.mainHandler.post { s.applyClockCover(foreground) } }
+            refreshClockCover()
+        }
+
+        fun onScreensaverVisible(visible: Boolean) {
+            screensaverForeground = visible
+            refreshClockCover()
+        }
+
+        private fun refreshClockCover() {
+            val show = launcherForeground || screensaverForeground
+            instance?.let { s -> s.mainHandler.post { s.applyClockCover(show) } }
         }
 
         private var launcherForeground = false
+        private var screensaverForeground = false
+
+        private const val MUDITA_AUDIO_PLAYER = "com.mudita.audio.player"
+        // The stock MuditaOS widget measures 332dp wide with its top edge at 220dp. dp()
+        // truncates, so 332dp lands on 441px and leaves the stock widget's last column
+        // showing when it sits underneath ours. 334dp covers it with a pixel to spare.
+        private const val MUSIC_WIDGET_WIDTH_DP = 334f
+        private const val MUSIC_WIDGET_TOP_DP = 220f
+        // Same corner as the notification island (widgetBackground uses dp(14)).
+        private const val MUSIC_WIDGET_CORNER_DP = 14
+        private const val KEYGUARD_RECHECK_MS = 120L
 
         /** Whether the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {
@@ -155,6 +214,16 @@ class LockscreenWidgetService : AccessibilityService() {
     override fun onServiceConnected() {
         instance = this
         prefs = PrefsManager(this)
+        savedStateController.performRestore(null)
+        lifecycleRegistry.currentState = Lifecycle.State.RESUMED
+        mediaScope = CoroutineScope(Dispatchers.Main + SupervisorJob()).also { scope ->
+            scope.launch {
+                AudioWidgetHelper.getInstance(this@LockscreenWidgetService).state.collect { info ->
+                    musicState.value = info
+                    evaluate()
+                }
+            }
+        }
         registerReceiver(screenReceiver, IntentFilter().apply {
             addAction(Intent.ACTION_SCREEN_ON)
             addAction(Intent.ACTION_SCREEN_OFF)
@@ -167,7 +236,7 @@ class LockscreenWidgetService : AccessibilityService() {
             }
         }
         NotificationListener.onCountsChangedExtra = { mainHandler.post { evaluate() } }
-        applyClockCover(launcherForeground)
+        applyClockCover(launcherForeground || screensaverForeground)
         evaluate()
     }
 
@@ -179,6 +248,12 @@ class LockscreenWidgetService : AccessibilityService() {
 
     override fun onDestroy() {
         if (instance === this) instance = null
+        mainHandler.removeCallbacks(keyguardRecheck)
+        mediaScope?.cancel()
+        mediaScope = null
+        removeMusicOverlay()
+        lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
+        viewModelStoreInstance.clear()
         NotificationListener.onCountsChangedExtra = null
         directBadges?.let {
             it.onCountsChanged = null
@@ -214,7 +289,7 @@ class LockscreenWidgetService : AccessibilityService() {
             format = PixelFormat.OPAQUE
             flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                 WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-            width = (resources.displayMetrics.widthPixels * 0.45f).toInt()
+            width = (resources.displayMetrics.widthPixels * 0.28f).toInt()
             height = statusBarHeightPx()
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
             y = 0
@@ -224,6 +299,101 @@ class LockscreenWidgetService : AccessibilityService() {
             clockCover = view
         } catch (_: Exception) {
             clockCover = null
+        }
+    }
+
+    /**
+     * The stock MuditaOS lockscreen media widget is wired to its own player, so anything else
+     * playing leaves the lock screen with no transport controls. Draw Katapult's widget in the
+     * same place for those sessions only, so we never double up with the stock one.
+     */
+    private fun applyMusicWidget(onLockscreen: Boolean) {
+        if (!::prefs.isInitialized) return
+        val info = musicState.value
+        val want = onLockscreen &&
+            prefs.lockscreenMusicWidget &&
+            info != null &&
+            info.packageName != MUDITA_AUDIO_PLAYER
+        if (!want) {
+            removeMusicOverlay()
+            return
+        }
+        if (musicOverlay != null) return
+
+        val helper = AudioWidgetHelper.getInstance(this)
+        val view = ComposeView(this).apply {
+            setViewTreeLifecycleOwner(this@LockscreenWidgetService)
+            setViewTreeViewModelStoreOwner(this@LockscreenWidgetService)
+            setViewTreeSavedStateRegistryOwner(this@LockscreenWidgetService)
+            setContent {
+                val media = musicState.value ?: return@setContent
+                val dark = prefs.darkMode
+                CompositionLocalProvider(
+                    androidx.compose.foundation.LocalIndication provides NoIndication,
+                    LocalInk provides if (dark) androidx.compose.ui.graphics.Color.White
+                        else androidx.compose.ui.graphics.Color.Black,
+                    LocalSurface provides if (dark) androidx.compose.ui.graphics.Color.Black
+                        else androidx.compose.ui.graphics.Color.White,
+                ) {
+                    MusicWidget(
+                        info = media,
+                        onOpenApp = { helper.openApp() },
+                        onPrevious = { helper.skipPrevious() },
+                        onPlayPause = { helper.playPause() },
+                        onNext = { helper.skipNext() },
+                        onStop = { helper.stop() },
+                        cornerRadius = MUSIC_WIDGET_CORNER_DP.dp,
+                        borderWidth = islandStrokeDp(),
+                    )
+                }
+            }
+        }
+        val params = WindowManager.LayoutParams().apply {
+            type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            format = PixelFormat.TRANSLUCENT
+            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+            width = dp(MUSIC_WIDGET_WIDTH_DP)
+            height = WindowManager.LayoutParams.WRAP_CONTENT
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            y = dp(MUSIC_WIDGET_TOP_DP)
+        }
+        try {
+            getSystemService(WindowManager::class.java).addView(view, params)
+            musicOverlay = view
+        } catch (_: Exception) {
+            musicOverlay = null
+        }
+    }
+
+    /**
+     * The island strokes with dp(2.5f), and dp() truncates to whole pixels, so it lands on 3px
+     * here. Compose's border() does not truncate, so a literal 2.5.dp draws wider and reads
+     * heavier beside it. Convert the island's real pixel stroke back to Dp so both match.
+     */
+    private fun islandStrokeDp(): Dp = (dp(2.5f) / resources.displayMetrics.density).dp
+
+    private fun removeMusicOverlay() {
+        musicOverlay?.let {
+            try { getSystemService(WindowManager::class.java).removeView(it) } catch (_: Exception) {}
+            try { it.disposeComposition() } catch (_: Exception) {}
+        }
+        musicOverlay = null
+    }
+
+    /**
+     * lockscreen_widget_service.xml limits events to com.android.systemui, which is what keeps
+     * this service blind to other apps. The cost is that on unlock the last event we get is the
+     * keyguard dismissing, while isKeyguardLocked is still true mid-animation, so evaluate()
+     * keeps the overlays up. Home then draws under a different package and no further event
+     * arrives to re-run evaluate(), leaving them stranded on top of home. Re-check on a short
+     * tick, scheduled only while something is shown so it stops itself once they come down.
+     */
+    private val keyguardRecheck = Runnable { evaluate() }
+
+    private fun scheduleKeyguardRecheck() {
+        mainHandler.removeCallbacks(keyguardRecheck)
+        if (overlay != null || musicOverlay != null) {
+            mainHandler.postDelayed(keyguardRecheck, KEYGUARD_RECHECK_MS)
         }
     }
 
@@ -245,25 +415,33 @@ class LockscreenWidgetService : AccessibilityService() {
         val keyguard = getSystemService(KeyguardManager::class.java)
         val power = getSystemService(PowerManager::class.java)
         val counts = currentCounts()
-        val shouldShow = prefs.lockscreenWidget &&
-            keyguard.isKeyguardLocked &&
+        val onLockscreen = keyguard.isKeyguardLocked &&
             power.isInteractive &&
-            counts.isNotEmpty() &&
             !KatapultDreamService.isDreaming &&
             !ScreensaverActivity.isShowing &&
             !inCall() &&
             !pinShowing()
+        applyMusicWidget(onLockscreen)
+        val shouldShow = prefs.lockscreenWidget && onLockscreen && counts.isNotEmpty()
         if (!shouldShow) {
             removeOverlay()
+            scheduleKeyguardRecheck()
             return
         }
         // Don't rebuild under the user's fingers while they're adjusting the widget.
-        if (editing) return
+        if (editing) {
+            scheduleKeyguardRecheck()
+            return
+        }
         // Skip redraws when nothing changed — every rebuild flashes the e-ink panel.
         val rows = orderedRows(counts)
-        if (overlay != null && rows == shownRows) return
+        if (overlay != null && rows == shownRows) {
+            scheduleKeyguardRecheck()
+            return
+        }
         removeOverlay()
         addOverlay(rows, counts.size)
+        scheduleKeyguardRecheck()
     }
 
     /**

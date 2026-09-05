@@ -4,6 +4,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.gezimos.katapult.R
+import androidx.compose.ui.unit.dp
 import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.Screen
 
@@ -13,19 +18,13 @@ fun App(
     imagePicker: ActivityResultLauncher<String>,
     iconPicker: ActivityResultLauncher<Array<String>>,
 ) {
-    val noIndication = object : androidx.compose.foundation.IndicationNodeFactory {
-        override fun create(interactionSource: androidx.compose.foundation.interaction.InteractionSource): androidx.compose.ui.Modifier.Node {
-            return object : androidx.compose.ui.Modifier.Node() {}
-        }
-        override fun hashCode() = 0
-        override fun equals(other: Any?) = other === this
-    }
     val iconShape = if (viewModel.roundedIcons) RoundedIconShape else CircleShape
     val smallShape = if (viewModel.roundedIcons) RoundedSmallShape else CircleShape
     val badgeShape = if (viewModel.roundedIcons) RoundedBadgeShape else CircleShape
     val dark = viewModel.darkMode
     CompositionLocalProvider(
-        androidx.compose.foundation.LocalIndication provides noIndication,
+        androidx.compose.foundation.LocalIndication provides NoIndication,
+        LocalIconSize provides viewModel.iconSize.dp,
         LocalIconShape provides iconShape,
         LocalSmallIconShape provides smallShape,
         LocalBadgeShape provides badgeShape,
@@ -36,10 +35,20 @@ fun App(
     ) {
         when (viewModel.screen) {
             Screen.ONBOARDING -> OnboardingScreen(viewModel)
-            Screen.HOME -> HomeScreen(viewModel, imagePicker)
+            Screen.HOME -> HomeScreen(viewModel, imagePicker, iconPicker)
             Screen.ALL_APPS -> AllAppsScreen(viewModel, iconPicker)
             Screen.SETTINGS -> SettingsScreen(viewModel)
         }
         com.gezimos.katapult.lockscreen.LockscreenReEnableSheet(viewModel)
+        if (viewModel.iconImportError) {
+            val context = LocalContext.current
+            val message = stringResource(R.string.icon_import_failed)
+            LaunchedEffect(Unit) {
+                android.widget.Toast.makeText(
+                    context, message, android.widget.Toast.LENGTH_LONG,
+                ).show()
+                viewModel.iconImportError = false
+            }
+        }
     }
 }

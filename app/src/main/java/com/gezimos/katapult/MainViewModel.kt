@@ -14,8 +14,10 @@ import androidx.core.graphics.createBitmap
 import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import android.database.ContentObserver
 import android.net.Uri
 import android.os.BatteryManager
+import android.os.SystemClock
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
@@ -24,6 +26,7 @@ import android.view.WindowInsetsController
 import java.text.SimpleDateFormat
 import java.util.Locale
 import com.gezimos.katapult.util.AudioWidgetHelper
+import com.gezimos.katapult.util.WeatherHelper
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -40,6 +43,7 @@ import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.ShortcutHelper
+import com.gezimos.katapult.util.UsageHelper
 import java.io.File
 import java.util.Date
 
@@ -56,6 +60,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var reorderMode by mutableStateOf(false)
     var reorderHighlightIndex by mutableIntStateOf(-1)
     var iconOverrideTarget by mutableStateOf<String?>(null)
+    var iconImportError by mutableStateOf(false)
     var sheetDismissSignal by mutableIntStateOf(0)
         private set
     var orderedApps by mutableStateOf(listOf<AppModel>())
@@ -80,7 +85,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var mediaInfo by mutableStateOf<AudioWidgetHelper.MediaInfo?>(null)
         private set
+    var weather by mutableStateOf<WeatherHelper.Weather?>(null)
+        private set
+    private val weatherRefreshMs = 10 * 60 * 1000L
+    private var weatherCheckedAt = -weatherRefreshMs
     var roundedIcons by mutableStateOf(prefs.roundedIcons)
+    var iconSize by mutableStateOf(prefs.iconSize)
     var darkMode by mutableStateOf(prefs.darkMode)
 
     var showLockscreenReEnable by mutableStateOf(false)
@@ -190,7 +200,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             AudioWidgetHelper.getInstance(ctx).state.collect { mediaInfo = it }
         }
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val sizePx = (IconSize.value * ctx.resources.displayMetrics.density).toInt()
+            val sizePx = (iconSize * ctx.resources.displayMetrics.density).toInt()
             for (slot in PrefsManager.HOME_SLOTS) {
                 val pkg = getShortcutPackage(slot) ?: continue
                 val shortcutId = prefs.loadSlotShortcutId(slot)
@@ -234,6 +244,57 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val status = batteryIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
             isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
         }
+
+        if (!prefs.showWeather) {
+            weather = null
+        } else if (SystemClock.elapsedRealtime() - weatherCheckedAt >= weatherRefreshMs) {
+            refreshWeather()
+        }
+    }
+
+    private var weatherObserverOn = false
+
+    private val weatherObserver = object : ContentObserver(clockHandler) {
+        override fun onChange(selfChange: Boolean) {
+            weatherCheckedAt = SystemClock.elapsedRealtime()
+            viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val result = WeatherHelper.read(ctx)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    weather = result
+                }
+            }
+        }
+    }
+
+    private fun syncWeatherObserver() {
+        val want = prefs.showWeather
+        if (want == weatherObserverOn) return
+        try {
+            if (want) {
+                ctx.contentResolver.registerContentObserver(
+                    WeatherHelper.WidgetUri, false, weatherObserver,
+                )
+            } else {
+                ctx.contentResolver.unregisterContentObserver(weatherObserver)
+            }
+            weatherObserverOn = want
+        } catch (_: Exception) {
+        }
+    }
+
+    fun refreshWeather() {
+        syncWeatherObserver()
+        weatherCheckedAt = SystemClock.elapsedRealtime()
+        if (!prefs.showWeather) {
+            weather = null
+            return
+        }
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val result = WeatherHelper.read(ctx)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                weather = result
+            }
+        }
     }
 
     fun startClock() {
@@ -253,6 +314,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val renamed = visible.map { app ->
             val customName = prefs.getAppRename(app.key)
             if (customName != null) app.copy(label = customName) else app
+        }
+        val sortMode = prefs.appSortMode
+        if (sortMode != PrefsManager.APP_SORT_MANUAL && UsageHelper.hasPermission(ctx)) {
+            val stats = UsageHelper.stats(ctx)
+            val ignored = UsageHelper.ignoredPackages(ctx)
+            orderedApps = renamed.sortedWith(
+                compareByDescending<AppModel> { app ->
+                    val s = if (app.packageName in ignored) null else stats[app.packageName]
+                    if (s == null) 0L
+                    else if (sortMode == PrefsManager.APP_SORT_RECENT) s.lastTimeUsed
+                    else s.totalTimeInForeground
+                }.thenBy { it.label.lowercase() }
+            )
+            return
         }
         val savedOrder = prefs.loadAppOrder()
         orderedApps = if (savedOrder != null) {
@@ -644,9 +719,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun beginIconImport(key: String) {
+        iconOverrideTarget = key
+        prefs.pendingIconTarget = key
+    }
+
     fun saveImportedIcon(context: Context, uri: Uri) {
-        val key = iconOverrideTarget ?: return
+        val key = iconOverrideTarget ?: prefs.pendingIconTarget
         iconOverrideTarget = null
+        prefs.pendingIconTarget = null
+        if (key == null) {
+            iconImportError = true
+            return
+        }
 
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
@@ -662,7 +747,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 } else {
                     decodeSampled(context, uri, targetPx * 2)?.let { fitToIcon(it, targetPx) }
                 }
-                if (bitmap == null) return@launch
+                if (bitmap == null) {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        iconImportError = true
+                    }
+                    return@launch
+                }
 
                 val file = iconFile(key)
                 file.outputStream().use { out ->
@@ -672,8 +762,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 IconUtility.clearCacheFor(key)
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
                     shortcutRefresh++
+                    loadApps()
                 }
-            } catch (_: Exception) {}
+            } catch (_: Throwable) {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    iconImportError = true
+                }
+            }
         }
     }
 
@@ -701,6 +796,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun cancelIconImport() {
         iconOverrideTarget = null
+        prefs.pendingIconTarget = null
     }
 
     fun setBundledIcon(key: String, resName: String) {
@@ -752,5 +848,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         stopClock()
         stopNotificationListener()
         try { ctx.unregisterReceiver(powerReceiver) } catch (_: Exception) {}
+        try { ctx.contentResolver.unregisterContentObserver(weatherObserver) } catch (_: Exception) {}
     }
 }

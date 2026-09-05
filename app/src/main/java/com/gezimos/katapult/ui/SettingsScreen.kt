@@ -32,8 +32,12 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Bedtime
+import androidx.compose.material.icons.rounded.CheckBox
+import androidx.compose.material.icons.rounded.CheckBoxOutlineBlank
 import androidx.compose.material.icons.rounded.Contrast
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.DoneAll
@@ -44,6 +48,8 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.RadioButtonChecked
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.RemoveDone
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Upload
@@ -91,16 +97,12 @@ import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.ShortcutHelper
 import com.gezimos.katapult.util.UpdateChecker
+import com.gezimos.katapult.util.UsageHelper
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 private val ClockFormats = listOf("system", "HH:mm", "hh:mm a", "h:mm a", "h:mm")
 private val DateFormats = listOf("system", "EEE, MMM d", "EEEE, MMMM d", "MMMM d, yyyy", "M/d/yyyy", "yyyy-MM-dd")
-
-private fun nextOf(options: List<String>, current: String): String {
-    val i = options.indexOf(current)
-    return options[(i + 1) % options.size]
-}
 
 private fun formatLabel(pattern: String): String =
     if (pattern == "system") "System"
@@ -121,7 +123,10 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var clockFormat by remember { mutableStateOf(prefs.clockFormat) }
     var dateFormat by remember { mutableStateOf(prefs.dateFormat) }
     var showBattery by remember { mutableStateOf(prefs.showBattery) }
+    var showAlarm by remember { mutableStateOf(prefs.showAlarm) }
+    var showWeather by remember { mutableStateOf(prefs.showWeather) }
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
+    var iconSize by remember { mutableIntStateOf(prefs.iconSize) }
     var darkMode by remember { mutableStateOf(prefs.darkMode) }
     var hideStatusBar by remember { mutableStateOf(prefs.hideStatusBar) }
     var hideStatusBarClock by remember { mutableStateOf(prefs.hideStatusBarClock) }
@@ -135,13 +140,25 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var showKatapultIcon by remember { mutableStateOf(prefs.showKatapultIcon) }
     var hideAppNames by remember { mutableStateOf(prefs.hideAppNames) }
     var hideArrowButtons by remember { mutableStateOf(prefs.hideArrowButtons) }
-    var disableHomeEditing by remember { mutableStateOf(prefs.disableHomeEditing) }
+    var homeLongPress by remember { mutableIntStateOf(prefs.homeLongPressAction) }
+    var showLongPressSheet by remember { mutableStateOf(false) }
+    var appSortMode by remember { mutableIntStateOf(prefs.appSortMode) }
+    var showSortSheet by remember { mutableStateOf(false) }
+    var pendingSortMode by remember { mutableStateOf<Int?>(null) }
+    var showClockFormatSheet by remember { mutableStateOf(false) }
+    var showDateFormatSheet by remember { mutableStateOf(false) }
+    var showDoubleTapSheet by remember { mutableStateOf(false) }
+    var showEinkModeSheet by remember { mutableStateOf(false) }
+    var showScreensaverModeSheet by remember { mutableStateOf(false) }
+    var showScreensaverCustomSheet by remember { mutableStateOf(false) }
     var hideAllAppsButton by remember { mutableStateOf(prefs.hideAllAppsButton) }
     var swipeUpAllApps by remember { mutableStateOf(prefs.swipeUpAllApps) }
     var homeIslands by remember { mutableStateOf(prefs.homeIslands) }
     var verticalAppGestures by remember { mutableStateOf(prefs.verticalAppGestures) }
     var lockscreenWidget by remember { mutableStateOf(prefs.lockscreenWidget) }
+    var lockscreenMusicWidget by remember { mutableStateOf(prefs.lockscreenMusicWidget) }
     var actionServiceEnabled by remember { mutableStateOf(LockscreenWidgetService.isEnabled(context)) }
+    val pendingServiceToggles = remember { androidx.compose.runtime.mutableStateListOf<String>() }
     var showLockscreenApps by remember { mutableStateOf(false) }
     var showLockscreenReadMe by remember { mutableStateOf(false) }
     var showNotificationsReadMe by remember { mutableStateOf(false) }
@@ -149,6 +166,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var showEinkReadMe by remember { mutableStateOf(false) }
     var showGesturesReadMe by remember { mutableStateOf(false) }
     var showUpdateSheet by remember { mutableStateOf(false) }
+    var showPermissionsSheet by remember { mutableStateOf(false) }
     var showConfigSheet by remember { mutableStateOf(false) }
     var showClearConfirm by remember { mutableStateOf(false) }
     val configExporter = rememberLauncherForActivityResult(
@@ -205,7 +223,6 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var screensaverDoubleTapBrightness by remember { mutableStateOf(prefs.screensaverDoubleTapBrightness) }
     var screensaverUpdateMode by remember { mutableIntStateOf(prefs.screensaverUpdateMode) }
     var screensaverUpdateMinutes by remember { mutableIntStateOf(prefs.screensaverUpdateMinutes) }
-    var showScreensaverInterval by remember { mutableStateOf(false) }
     var screensaverEinkRefresh by remember { mutableStateOf(prefs.screensaverEinkRefresh) }
     var screensaverOnPower by remember { mutableStateOf(prefs.screensaverOnPower) }
 
@@ -221,6 +238,37 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             val serviceOn = LockscreenWidgetService.isEnabled(context)
             if (actionServiceEnabled != serviceOn) actionServiceEnabled = serviceOn
+            if (serviceOn && pendingServiceToggles.isNotEmpty()) {
+                for (pending in pendingServiceToggles.toList()) {
+                    when (pending) {
+                        "clockCover" -> {
+                            hideStatusBarClock = true
+                            prefs.hideStatusBarClock = true
+                            LockscreenWidgetService.onLauncherForeground(true)
+                        }
+                        "widget" -> {
+                            lockscreenWidget = true
+                            prefs.lockscreenWidget = true
+                        }
+                        "music" -> {
+                            lockscreenMusicWidget = true
+                            prefs.lockscreenMusicWidget = true
+                        }
+                        "power" -> {
+                            screensaverOnPower = true
+                            prefs.screensaverOnPower = true
+                        }
+                    }
+                }
+                pendingServiceToggles.clear()
+            }
+            val sortPending = pendingSortMode
+            if (sortPending != null && UsageHelper.hasPermission(context)) {
+                appSortMode = sortPending
+                prefs.appSortMode = sortPending
+                pendingSortMode = null
+                viewModel.loadApps()
+            }
         }
     }
 
@@ -253,15 +301,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             if (selectedCategory != null) {
-                Text(
-                    text = "‹",
-                    fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = LatoFamily,
-                    color = LocalInk.current,
+                Icon(
+                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                    contentDescription = null,
+                    tint = LocalInk.current,
                     modifier = Modifier
                         .clickable { selectedCategory = null }
-                        .padding(end = 12.dp),
+                        .padding(end = 8.dp)
+                        .size(30.dp),
                 )
             }
             Text(
@@ -317,6 +364,18 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             add {
+                SettingsCycleRow(
+                    title = stringResource(R.string.icon_size),
+                    description = stringResource(R.string.icon_size_value, iconSize, iconSize),
+                    onClick = {
+                        iconSize = if (iconSize == PrefsManager.ICON_SIZE_SMALL)
+                            PrefsManager.ICON_SIZE_LARGE else PrefsManager.ICON_SIZE_SMALL
+                        prefs.iconSize = iconSize
+                        viewModel.iconSize = iconSize
+                    },
+                )
+            }
+            add {
                 SettingsToggleRow(
                     title = stringResource(R.string.dark_mode),
                     description = stringResource(R.string.dark_mode_desc),
@@ -342,7 +401,10 @@ fun SettingsScreen(viewModel: MainViewModel) {
                             hideStatusBarClock = value
                             prefs.hideStatusBarClock = value
                             if (requested && !serviceOn) {
+                                if ("clockCover" !in pendingServiceToggles) pendingServiceToggles.add("clockCover")
                                 showClockCoverSheet = true
+                            } else {
+                                pendingServiceToggles.remove("clockCover")
                             }
                             LockscreenWidgetService.onLauncherForeground(true)
                         },
@@ -363,27 +425,42 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
 
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.hide_app_names),
+                    description = stringResource(R.string.hide_app_names_desc),
+                    checked = hideAppNames,
+                    onCheckedChange = {
+                        hideAppNames = it
+                        prefs.hideAppNames = it
+                    },
+                )
+            }
+
             // --- Home Screen ---
             addHeader(R.string.section_home)
             add {
                 SettingsCycleRow(
                     title = stringResource(R.string.clock_format),
                     description = formatLabel(clockFormat),
-                    onClick = {
-                        clockFormat = nextOf(ClockFormats, clockFormat)
-                        prefs.clockFormat = clockFormat
-                        viewModel.updateClock()
-                    },
+                    onClick = { showClockFormatSheet = true },
                 )
             }
             add {
                 SettingsCycleRow(
                     title = stringResource(R.string.date_format),
                     description = formatLabel(dateFormat),
-                    onClick = {
-                        dateFormat = nextOf(DateFormats, dateFormat)
-                        prefs.dateFormat = dateFormat
-                        viewModel.updateClock()
+                    onClick = { showDateFormatSheet = true },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.show_alarm),
+                    description = stringResource(R.string.show_alarm_desc),
+                    checked = showAlarm,
+                    onCheckedChange = {
+                        showAlarm = it
+                        prefs.showAlarm = it
                     },
                 )
             }
@@ -397,6 +474,20 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         prefs.showBattery = it
                     },
                 )
+            }
+            if (isMudita) {
+                add {
+                    SettingsToggleRow(
+                        title = stringResource(R.string.show_weather),
+                        description = stringResource(R.string.show_weather_desc),
+                        checked = showWeather,
+                        onCheckedChange = {
+                            showWeather = it
+                            prefs.showWeather = it
+                            viewModel.refreshWeather()
+                        },
+                    )
+                }
             }
             add {
                 SettingsToggleRow(
@@ -431,31 +522,21 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     },
                 )
             }
-            add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.hide_app_names),
-                    description = stringResource(R.string.hide_app_names_desc),
-                    checked = hideAppNames,
-                    onCheckedChange = {
-                        hideAppNames = it
-                        prefs.hideAppNames = it
-                    },
-                )
-            }
-            add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.disable_home_editing),
-                    description = stringResource(R.string.disable_home_editing_desc),
-                    checked = disableHomeEditing,
-                    onCheckedChange = {
-                        disableHomeEditing = it
-                        prefs.disableHomeEditing = it
-                    },
-                )
-            }
-
             // --- All Apps ---
             addHeader(R.string.section_all_apps)
+            add {
+                val sortLabel = when (appSortMode) {
+                    PrefsManager.APP_SORT_RECENT -> stringResource(R.string.app_sort_recent)
+                    PrefsManager.APP_SORT_USED -> stringResource(R.string.app_sort_used)
+                    else -> stringResource(R.string.app_sort_alphabetical)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.app_sort_order),
+                    description = stringResource(R.string.app_sort_order_desc),
+                    value = sortLabel,
+                    onClick = { showSortSheet = true },
+                )
+            }
             add {
                 SettingsToggleRow(
                     title = stringResource(R.string.show_katapult_icon),
@@ -542,16 +623,26 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 SettingsCycleRow(
                     title = stringResource(R.string.double_tap_action),
                     description = actionLabel,
-                    onClick = {
-                        val next = (doubleTapAction + 1) % 3
-                        doubleTapAction = next
-                        prefs.doubleTapAction = next
-                        if (next == PrefsManager.DOUBLE_TAP_LOCK && !LockscreenWidgetService.isEnabled(context)) {
-                            try {
-                                context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-                            } catch (_: Exception) {}
-                        }
-                    },
+                    onClick = { showDoubleTapSheet = true },
+                )
+            }
+            add {
+                val longPressLabel = when (homeLongPress) {
+                    PrefsManager.HOME_LONG_PRESS_NONE ->
+                        stringResource(R.string.home_long_press_none)
+                    PrefsManager.HOME_LONG_PRESS_APP_INFO ->
+                        stringResource(R.string.home_long_press_app_info)
+                    PrefsManager.HOME_LONG_PRESS_MENU ->
+                        stringResource(R.string.home_long_press_menu)
+                    PrefsManager.HOME_LONG_PRESS_CLEAR ->
+                        stringResource(R.string.home_long_press_clear)
+                    else -> stringResource(R.string.home_long_press_edit)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.home_long_press),
+                    description = stringResource(R.string.home_long_press_desc),
+                    value = longPressLabel,
+                    onClick = { showLongPressSheet = true },
                 )
             }
 
@@ -625,6 +716,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     },
                 )
             }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.notification_history),
+                    description = stringResource(R.string.notification_history_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent("android.settings.NOTIFICATION_HISTORY"))
+                        } catch (_: Exception) {}
+                    },
+                )
+            }
 
             // --- E-Ink (modes are Mudita only) ---
             addHeader(R.string.section_eink)
@@ -640,12 +742,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     SettingsCycleRow(
                         title = stringResource(R.string.eink_auto_mode),
                         description = EinkHelper.modeName(einkHelperMode),
-                        onClick = {
-                            val next = EinkHelper.nextMode(einkHelperMode)
-                            einkHelperMode = next
-                            prefs.einkHelperMode = next
-                            (context as? MainActivity)?.setMeinkMode(next)
-                        },
+                        onClick = { showEinkModeSheet = true },
                     )
                 }
             }
@@ -670,6 +767,28 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     onClick = {
                         context.startActivity(Intent(Settings.ACTION_HOME_SETTINGS))
                     },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.search_settings),
+                    description = stringResource(R.string.search_settings_desc),
+                    onClick = {
+                        try {
+                            context.startActivity(Intent(Settings.ACTION_APP_SEARCH_SETTINGS))
+                        } catch (_: Exception) {
+                            try {
+                                context.startActivity(Intent(Settings.ACTION_SETTINGS))
+                            } catch (_: Exception) {}
+                        }
+                    },
+                )
+            }
+            add {
+                SettingsActionRow(
+                    title = stringResource(R.string.permissions),
+                    description = stringResource(R.string.permissions_desc),
+                    onClick = { showPermissionsSheet = true },
                 )
             }
             add {
@@ -801,9 +920,34 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         lockscreenWidget = value
                         prefs.lockscreenWidget = value
                         if (requested && !serviceOn) {
+                            if ("widget" !in pendingServiceToggles) pendingServiceToggles.add("widget")
                             try {
                                 context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                             } catch (_: Exception) {}
+                        } else {
+                            pendingServiceToggles.remove("widget")
+                        }
+                    },
+                )
+            }
+            add {
+                SettingsToggleRow(
+                    title = stringResource(R.string.lockscreen_music_widget),
+                    description = stringResource(R.string.lockscreen_music_widget_desc),
+                    checked = lockscreenMusicWidget && actionServiceEnabled,
+                    onCheckedChange = { requested ->
+                        val serviceOn = LockscreenWidgetService.isEnabled(context)
+                        actionServiceEnabled = serviceOn
+                        val value = requested && serviceOn
+                        lockscreenMusicWidget = value
+                        prefs.lockscreenMusicWidget = value
+                        if (requested && !serviceOn) {
+                            if ("music" !in pendingServiceToggles) pendingServiceToggles.add("music")
+                            try {
+                                context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                            } catch (_: Exception) {}
+                        } else {
+                            pendingServiceToggles.remove("music")
                         }
                     },
                 )
@@ -858,36 +1002,22 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     )
                 }
                 add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_show_clock),
-                        description = stringResource(R.string.screensaver_show_clock_desc),
-                        checked = screensaverShowClock,
-                        onCheckedChange = {
-                            screensaverShowClock = it
-                            prefs.screensaverShowClock = it
-                        },
+                    val enabled = listOfNotNull(
+                        stringResource(R.string.screensaver_show_clock).takeIf { screensaverShowClock },
+                        stringResource(R.string.screensaver_show_notifications)
+                            .takeIf { screensaverShowNotifications },
+                        stringResource(R.string.home_islands).takeIf { screensaverIslands },
+                        stringResource(R.string.screensaver_eink_refresh)
+                            .takeIf { screensaverEinkRefresh },
                     )
-                }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_show_notifications),
-                        description = stringResource(R.string.screensaver_show_notifications_desc),
-                        checked = screensaverShowNotifications,
-                        onCheckedChange = {
-                            screensaverShowNotifications = it
-                            prefs.screensaverShowNotifications = it
+                    SettingsActionRow(
+                        title = stringResource(R.string.screensaver_customization),
+                        description = if (enabled.isEmpty()) {
+                            stringResource(R.string.double_tap_off)
+                        } else {
+                            enabled.joinToString(", ")
                         },
-                    )
-                }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_islands),
-                        description = stringResource(R.string.home_islands_desc),
-                        checked = screensaverIslands,
-                        onCheckedChange = {
-                            screensaverIslands = it
-                            prefs.screensaverIslands = it
-                        },
+                        onClick = { showScreensaverCustomSheet = true },
                     )
                 }
                 add {
@@ -940,30 +1070,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                     SettingsCycleRow(
                         title = stringResource(R.string.screensaver_update_mode),
                         description = modeLabel,
-                        onClick = {
-                            screensaverUpdateMode = (screensaverUpdateMode + 1) % 3
-                            prefs.screensaverUpdateMode = screensaverUpdateMode
-                        },
-                    )
-                }
-                if (screensaverUpdateMode == PrefsManager.SCREENSAVER_MODE_INTERVAL) {
-                    add {
-                        SettingsActionRow(
-                            title = stringResource(R.string.screensaver_update_interval),
-                            description = stringResource(R.string.screensaver_minutes, screensaverUpdateMinutes),
-                            onClick = { showScreensaverInterval = true },
-                        )
-                    }
-                }
-                add {
-                    SettingsToggleRow(
-                        title = stringResource(R.string.screensaver_eink_refresh),
-                        description = stringResource(R.string.screensaver_eink_refresh_desc),
-                        checked = screensaverEinkRefresh,
-                        onCheckedChange = {
-                            screensaverEinkRefresh = it
-                            prefs.screensaverEinkRefresh = it
-                        },
+                        onClick = { showScreensaverModeSheet = true },
                     )
                 }
                 add {
@@ -978,9 +1085,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
                             screensaverOnPower = value
                             prefs.screensaverOnPower = value
                             if (requested && !serviceOn) {
+                                if ("power" !in pendingServiceToggles) pendingServiceToggles.add("power")
                                 try {
                                     context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                                 } catch (_: Exception) {}
+                            } else {
+                                pendingServiceToggles.remove("power")
                             }
                         },
                     )
@@ -1221,23 +1331,332 @@ fun SettingsScreen(viewModel: MainViewModel) {
         }
     }
 
-    if (showScreensaverInterval) {
-        ScreensaverIntervalDialog(
-            current = screensaverUpdateMinutes,
-            onDismiss = { showScreensaverInterval = false },
-            onConfirm = {
-                screensaverUpdateMinutes = it
-                prefs.screensaverUpdateMinutes = it
-                showScreensaverInterval = false
-            },
-        )
-    }
-
     if (showUpdateSheet) {
         UpdateDialog(
             viewModel = viewModel,
             currentVersion = versionName,
             onDismiss = { showUpdateSheet = false },
+        )
+    }
+
+    if (showPermissionsSheet) {
+        var permTick by remember { mutableIntStateOf(0) }
+        LaunchedEffect(Unit) {
+            while (true) {
+                kotlinx.coroutines.delay(1000)
+                permTick++
+            }
+        }
+        val notifAccess = remember(permTick) {
+            NotificationManagerCompat.getEnabledListenerPackages(context).contains(context.packageName)
+        }
+        val serviceOn = remember(permTick) { LockscreenWidgetService.isEnabled(context) }
+        val callLog = remember(permTick) {
+            context.checkSelfPermission(android.Manifest.permission.READ_CALL_LOG) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        val sms = remember(permTick) {
+            context.checkSelfPermission(android.Manifest.permission.READ_SMS) ==
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        val writeSettings = remember(permTick) { Settings.System.canWrite(context) }
+        val installApps = remember(permTick) { context.packageManager.canRequestPackageInstalls() }
+        val usageAccess = remember(permTick) { UsageHelper.hasPermission(context) }
+        val openAppDetails = {
+            try {
+                context.startActivity(
+                    Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + context.packageName))
+                )
+            } catch (_: Exception) {}
+        }
+        BottomSheet(onDismiss = { showPermissionsSheet = false }) {
+            Text(
+                text = stringResource(R.string.permissions),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            PermissionRow(
+                title = stringResource(R.string.perm_notification_access),
+                description = stringResource(R.string.perm_notification_access_desc),
+                checked = notifAccess,
+            ) {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                } catch (_: Exception) {}
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_action_service),
+                description = stringResource(R.string.perm_action_service_desc),
+                checked = serviceOn,
+            ) {
+                try {
+                    context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                } catch (_: Exception) {}
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_call_log),
+                description = stringResource(R.string.perm_call_log_desc),
+                checked = callLog,
+                onClick = openAppDetails,
+            )
+            PermissionRow(
+                title = stringResource(R.string.perm_sms),
+                description = stringResource(R.string.perm_sms_desc),
+                checked = sms,
+                onClick = openAppDetails,
+            )
+            PermissionRow(
+                title = stringResource(R.string.perm_write_settings),
+                description = stringResource(R.string.perm_write_settings_desc),
+                checked = writeSettings,
+            ) {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + context.packageName))
+                    )
+                } catch (_: Exception) {}
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_usage_access),
+                description = stringResource(R.string.perm_usage_access_desc),
+                checked = usageAccess,
+            ) {
+                UsageHelper.openSettings(context)
+            }
+            PermissionRow(
+                title = stringResource(R.string.perm_install_apps),
+                description = stringResource(R.string.perm_install_apps_desc),
+                checked = installApps,
+            ) {
+                try {
+                    context.startActivity(
+                        Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + context.packageName))
+                    )
+                } catch (_: Exception) {}
+            }
+        }
+    }
+
+    if (showSortSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.app_sort_order),
+            options = listOf(
+                PrefsManager.APP_SORT_MANUAL to stringResource(R.string.app_sort_alphabetical),
+                PrefsManager.APP_SORT_RECENT to stringResource(R.string.app_sort_recent),
+                PrefsManager.APP_SORT_USED to stringResource(R.string.app_sort_used),
+            ),
+            selected = appSortMode,
+            onSelect = { mode ->
+                if (mode == PrefsManager.APP_SORT_MANUAL || UsageHelper.hasPermission(context)) {
+                    pendingSortMode = null
+                    appSortMode = mode
+                    prefs.appSortMode = mode
+                    viewModel.loadApps()
+                } else {
+                    pendingSortMode = mode
+                    UsageHelper.openSettings(context)
+                }
+            },
+            onDismiss = { showSortSheet = false },
+        )
+    }
+
+    if (showLongPressSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.home_long_press),
+            options = listOf(
+                PrefsManager.HOME_LONG_PRESS_APP_INFO to stringResource(R.string.home_long_press_app_info),
+                PrefsManager.HOME_LONG_PRESS_MENU to stringResource(R.string.home_long_press_menu),
+                PrefsManager.HOME_LONG_PRESS_CLEAR to stringResource(R.string.home_long_press_clear),
+                PrefsManager.HOME_LONG_PRESS_EDIT to stringResource(R.string.home_long_press_edit),
+                PrefsManager.HOME_LONG_PRESS_NONE to stringResource(R.string.home_long_press_none),
+            ),
+            selected = homeLongPress,
+            onSelect = {
+                homeLongPress = it
+                prefs.homeLongPressAction = it
+            },
+            onDismiss = { showLongPressSheet = false },
+        )
+    }
+
+    if (showEinkModeSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.eink_auto_mode),
+            options = listOf(
+                EinkHelper.MEINK_MODE_DISABLED,
+                EinkHelper.MEINK_MODE_CLEAR,
+                EinkHelper.MEINK_MODE_CONTRAST,
+                EinkHelper.MEINK_MODE_READING,
+            ).map { it to EinkHelper.modeName(it) },
+            selected = einkHelperMode,
+            onSelect = {
+                einkHelperMode = it
+                prefs.einkHelperMode = it
+                (context as? MainActivity)?.setMeinkMode(it)
+            },
+            onDismiss = { showEinkModeSheet = false },
+        )
+    }
+
+    if (showScreensaverModeSheet) {
+        var minutesText by remember {
+            mutableStateOf(
+                androidx.compose.ui.text.input.TextFieldValue(
+                    text = screensaverUpdateMinutes.toString(),
+                    selection = androidx.compose.ui.text.TextRange(
+                        screensaverUpdateMinutes.toString().length,
+                    ),
+                ),
+            )
+        }
+        BottomSheet(onDismiss = { showScreensaverModeSheet = false }, imePadding = true) {
+            Text(
+                text = stringResource(R.string.screensaver_update_mode),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier.padding(bottom = 12.dp),
+            )
+            listOf(
+                PrefsManager.SCREENSAVER_MODE_AUTO to stringResource(R.string.screensaver_mode_auto),
+                PrefsManager.SCREENSAVER_MODE_INTERVAL to stringResource(R.string.screensaver_mode_interval),
+                PrefsManager.SCREENSAVER_MODE_STATIC to stringResource(R.string.screensaver_mode_static),
+            ).forEach { (mode, label) ->
+                BottomSheetOption(
+                    text = label,
+                    icon = if (screensaverUpdateMode == mode) Icons.Rounded.RadioButtonChecked
+                    else Icons.Rounded.RadioButtonUnchecked,
+                ) {
+                    screensaverUpdateMode = mode
+                    prefs.screensaverUpdateMode = mode
+                    if (mode != PrefsManager.SCREENSAVER_MODE_INTERVAL) {
+                        showScreensaverModeSheet = false
+                    }
+                }
+            }
+            if (screensaverUpdateMode == PrefsManager.SCREENSAVER_MODE_INTERVAL) {
+                Text(
+                    text = stringResource(R.string.screensaver_update_interval),
+                    fontSize = 14.sp,
+                    fontFamily = LatoFamily,
+                    color = LocalInk.current,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                )
+                BasicTextField(
+                    value = minutesText,
+                    onValueChange = { v ->
+                        val digits = v.text.filter { it.isDigit() }.take(2)
+                        minutesText = v.copy(text = digits)
+                        val parsed = digits.toIntOrNull()
+                        if (parsed != null && parsed > 0) {
+                            screensaverUpdateMinutes = parsed
+                            prefs.screensaverUpdateMinutes = parsed
+                        }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = LatoFamily,
+                        color = LocalInk.current,
+                    ),
+                    cursorBrush = SolidColor(LocalInk.current),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(2.5.dp, LocalInk.current)
+                        .padding(12.dp),
+                )
+            }
+        }
+    }
+
+    if (showScreensaverCustomSheet) {
+        MultiChoiceSheet(
+            title = stringResource(R.string.screensaver_customization),
+            options = listOf(
+                Triple(
+                    stringResource(R.string.screensaver_show_clock),
+                    screensaverShowClock,
+                    { v: Boolean -> screensaverShowClock = v; prefs.screensaverShowClock = v },
+                ),
+                Triple(
+                    stringResource(R.string.screensaver_show_notifications),
+                    screensaverShowNotifications,
+                    { v: Boolean ->
+                        screensaverShowNotifications = v
+                        prefs.screensaverShowNotifications = v
+                    },
+                ),
+                Triple(
+                    stringResource(R.string.home_islands),
+                    screensaverIslands,
+                    { v: Boolean -> screensaverIslands = v; prefs.screensaverIslands = v },
+                ),
+                Triple(
+                    stringResource(R.string.screensaver_eink_refresh),
+                    screensaverEinkRefresh,
+                    { v: Boolean ->
+                        screensaverEinkRefresh = v
+                        prefs.screensaverEinkRefresh = v
+                    },
+                ),
+            ),
+            onDismiss = { showScreensaverCustomSheet = false },
+        )
+    }
+
+    if (showDoubleTapSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.double_tap_action),
+            options = listOf(
+                PrefsManager.DOUBLE_TAP_OFF to stringResource(R.string.double_tap_off),
+                PrefsManager.DOUBLE_TAP_BRIGHTNESS to stringResource(R.string.double_tap_brightness),
+                PrefsManager.DOUBLE_TAP_LOCK to stringResource(R.string.double_tap_lock),
+            ),
+            selected = doubleTapAction,
+            onSelect = {
+                doubleTapAction = it
+                prefs.doubleTapAction = it
+                if (it == PrefsManager.DOUBLE_TAP_LOCK && !LockscreenWidgetService.isEnabled(context)) {
+                    try {
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    } catch (_: Exception) {}
+                }
+            },
+            onDismiss = { showDoubleTapSheet = false },
+        )
+    }
+
+    if (showClockFormatSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.clock_format),
+            options = ClockFormats.map { it to formatLabel(it) },
+            selected = clockFormat,
+            onSelect = {
+                clockFormat = it
+                prefs.clockFormat = it
+                viewModel.updateClock()
+            },
+            onDismiss = { showClockFormatSheet = false },
+        )
+    }
+
+    if (showDateFormatSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.date_format),
+            options = DateFormats.map { it to formatLabel(it) },
+            selected = dateFormat,
+            onSelect = {
+                dateFormat = it
+                prefs.dateFormat = it
+                viewModel.updateClock()
+            },
+            onDismiss = { showDateFormatSheet = false },
         )
     }
 
@@ -1516,73 +1935,6 @@ private fun UpdateDialog(
     }
 }
 
-@Composable
-private fun ScreensaverIntervalDialog(
-    current: Int,
-    onDismiss: () -> Unit,
-    onConfirm: (Int) -> Unit,
-) {
-    var text by remember {
-        mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(
-            text = current.toString(),
-            selection = androidx.compose.ui.text.TextRange(current.toString().length),
-        ))
-    }
-    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
-
-    BottomSheet(onDismiss = onDismiss, imePadding = true) {
-        Text(
-            text = stringResource(R.string.screensaver_update_interval),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
-            color = LocalInk.current,
-            modifier = Modifier.padding(bottom = 12.dp),
-        )
-        BasicTextField(
-            value = text,
-            onValueChange = { v -> text = v.copy(text = v.text.filter { it.isDigit() }.take(2)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            textStyle = TextStyle(
-                fontSize = 18.sp,
-                fontFamily = LatoFamily,
-                color = LocalInk.current,
-            ),
-            cursorBrush = SolidColor(LocalInk.current),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(2.5.dp, LocalInk.current)
-                .padding(12.dp)
-                .focusRequester(focusRequester),
-        )
-        Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Text(
-                text = stringResource(R.string.cancel),
-                fontSize = 18.sp,
-                fontFamily = LatoFamily,
-                color = LocalInk.current,
-                modifier = Modifier
-                    .clickable { onDismiss() }
-                    .padding(12.dp),
-            )
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = stringResource(R.string.save),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
-                color = LocalInk.current,
-                modifier = Modifier
-                    .clickable { onConfirm(text.text.toIntOrNull()?.coerceIn(1, 60) ?: 5) }
-                    .padding(12.dp),
-            )
-        }
-    }
-
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
-}
 
 /**
  * Allowlist for the experimental lockscreen widget: checked apps appear on it.
@@ -2175,11 +2527,108 @@ fun SettingsActionRow(
                 color = LocalInk.current,
             )
         }
-        Text(
-            text = "\u203A",
-            fontSize = 24.sp,
-            color = LocalInk.current,
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+            contentDescription = null,
+            tint = LocalInk.current,
+            modifier = Modifier.size(24.dp),
         )
+    }
+}
+
+@Composable
+private fun PermissionRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = if (checked) Icons.Rounded.CheckBox
+            else Icons.Rounded.CheckBoxOutlineBlank,
+            contentDescription = null,
+            tint = LocalInk.current,
+            modifier = Modifier.size(22.dp),
+        )
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+            )
+            Text(
+                text = description,
+                fontSize = 13.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MultiChoiceSheet(
+    title: String,
+    options: List<Triple<String, Boolean, (Boolean) -> Unit>>,
+    onDismiss: () -> Unit,
+) {
+    BottomSheet(onDismiss = onDismiss) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        options.forEach { (label, checked, onToggle) ->
+            BottomSheetOption(
+                text = label,
+                icon = if (checked) Icons.Rounded.CheckBox
+                else Icons.Rounded.CheckBoxOutlineBlank,
+            ) {
+                onToggle(!checked)
+            }
+        }
+    }
+}
+
+@Composable
+private fun <T> ChoiceSheet(
+    title: String,
+    options: List<Pair<T, String>>,
+    selected: T,
+    onSelect: (T) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    BottomSheet(onDismiss = onDismiss) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        options.forEach { (value, label) ->
+            BottomSheetOption(
+                text = label,
+                icon = if (value == selected) Icons.Rounded.RadioButtonChecked
+                else Icons.Rounded.RadioButtonUnchecked,
+            ) {
+                onSelect(value)
+                onDismiss()
+            }
+        }
     }
 }
 
@@ -2187,6 +2636,7 @@ fun SettingsActionRow(
 private fun SettingsCycleRow(
     title: String,
     description: String,
+    value: String = description,
     onClick: () -> Unit,
 ) {
     Row(
@@ -2219,7 +2669,7 @@ private fun SettingsCycleRow(
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                text = description,
+                text = value,
                 fontSize = 14.sp,
                 fontFamily = LatoFamily,
                 fontWeight = FontWeight.Bold,

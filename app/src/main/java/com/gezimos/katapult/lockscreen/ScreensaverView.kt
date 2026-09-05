@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -62,6 +63,7 @@ import com.gezimos.katapult.ui.PagePadding
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
+import com.gezimos.katapult.util.WeatherHelper
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -76,6 +78,7 @@ private data class SsClock(
     val alarm: String?,
     val battery: Int,
     val charging: Boolean,
+    val weather: WeatherHelper.Weather?,
 )
 
 private data class SsRow(val count: Int, val label: String, val bitmap: Bitmap?)
@@ -208,6 +211,8 @@ fun ScreensaverView() {
                         batteryPercent = clock.battery,
                         isCharging = clock.charging,
                         showBattery = prefs.showBattery,
+                        showAlarm = prefs.showAlarm,
+                        weather = clock.weather,
                         islandsActive = prefs.screensaverIslands,
                     )
                 }
@@ -230,6 +235,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
     val ink = LocalInk.current
     val surface = LocalSurface.current
     val shape = RoundedCornerShape(14.dp)
+    val strokeWidth = with(LocalDensity.current) { 2.5.dp.toPx().toInt().toDp() }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -240,7 +246,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(surface, shape)
-                .border(2.5.dp, ink, shape)
+                .border(strokeWidth, ink, shape)
                 .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             rows.forEach { row ->
@@ -281,7 +287,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
                     .align(Alignment.TopEnd)
                     .offset(x = (-16).dp, y = 12.dp)
                     .background(surface, RoundedCornerShape(8.dp))
-                    .border(2.5.dp, ink, RoundedCornerShape(8.dp))
+                    .border(strokeWidth, ink, RoundedCornerShape(8.dp))
                     .padding(horizontal = 8.dp, vertical = 2.dp),
             )
         }
@@ -323,7 +329,8 @@ private fun computeClock(context: Context, prefs: PrefsManager): SsClock {
         charging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
             status == BatteryManager.BATTERY_STATUS_FULL
     }
-    return SsClock(time, amPm, date, alarm, battery, charging)
+    val weather = if (prefs.showWeather) WeatherHelper.read(context) else null
+    return SsClock(time, amPm, date, alarm, battery, charging, weather)
 }
 
 private fun computeRows(

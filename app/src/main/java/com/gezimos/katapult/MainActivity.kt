@@ -72,6 +72,7 @@ class MainActivity : ComponentActivity() {
         overridePendingTransition(0, 0)
         viewModel.applyStatusBar(this)
         viewModel.checkLockscreenService(this)
+        viewModel.refreshWeather()
         viewModel.startClock()
         viewModel.loadApps()
         viewModel.refreshNotifications()

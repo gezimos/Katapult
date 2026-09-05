@@ -47,6 +47,7 @@ val LatoFamily = FontFamily(
 )
 
 val IconSize = 72.dp
+val LocalIconSize = staticCompositionLocalOf { IconSize }
 val PagePadding = 8.dp
 val ArrowSize = 40.dp
 val AllAppsRowHeight = 120.dp
@@ -75,6 +76,14 @@ val EinkColorFilterDark = ColorFilter.colorMatrix(EinkTintMatrixDark)
 val LocalInk = staticCompositionLocalOf { Color.Black }
 val LocalSurface = staticCompositionLocalOf { Color.White }
 val LocalIconFilter = staticCompositionLocalOf { EinkColorFilter }
+
+val NoIndication = object : androidx.compose.foundation.IndicationNodeFactory {
+    override fun create(interactionSource: androidx.compose.foundation.interaction.InteractionSource): androidx.compose.ui.Modifier.Node {
+        return object : androidx.compose.ui.Modifier.Node() {}
+    }
+    override fun hashCode() = 0
+    override fun equals(other: Any?) = other === this
+}
 
 val RoundedIconShape = RoundedCornerShape(19.dp)
 val RoundedSmallShape = RoundedCornerShape(10.dp)

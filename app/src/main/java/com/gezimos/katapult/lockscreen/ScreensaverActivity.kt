@@ -63,12 +63,14 @@ class ScreensaverActivity : ComponentActivity() {
         super.onStart()
         isShowing = true
         lastActive = SystemClock.elapsedRealtime()
+        LockscreenWidgetService.onScreensaverVisible(true)
     }
 
     override fun onStop() {
         super.onStop()
         lastActive = SystemClock.elapsedRealtime()
         isShowing = false
+        LockscreenWidgetService.onScreensaverVisible(false)
         val power = getSystemService(PowerManager::class.java)
         if (power != null && !power.isInteractive) {
             finish()
