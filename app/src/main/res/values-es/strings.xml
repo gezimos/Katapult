@@ -100,7 +100,7 @@
     <string name="home_long_press">Mantener pulsada la app en inicio</string>
     <string name="home_long_press_desc">Qué ocurre al mantener pulsada una app en el inicio</string>
     <string name="home_long_press_app_info">Info de la app</string>
-    <string name="home_long_press_menu">Contexto</string>
+    <string name="home_long_press_menu">Menú contextual</string>
     <string name="home_long_press_clear">Borrar notificaciones</string>
     <string name="home_long_press_edit">Editar acceso directo</string>
     <string name="home_long_press_none">Desactivado</string>

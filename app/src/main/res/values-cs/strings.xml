@@ -102,7 +102,7 @@
     <string name="home_long_press">Dlouhé stisknutí aplikace v domovské</string>
     <string name="home_long_press_desc">Co se stane při dlouhém stisknutí aplikace v domovské obrazovce</string>
     <string name="home_long_press_app_info">Info o aplikaci</string>
-    <string name="home_long_press_menu">Kontext</string>
+    <string name="home_long_press_menu">Kontextová nabídka</string>
     <string name="home_long_press_clear">Vymazat oznámení</string>
     <string name="home_long_press_edit">Upravit zástupce</string>
     <string name="home_long_press_none">Vypnuto</string>

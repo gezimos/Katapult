@@ -100,7 +100,7 @@
     <string name="home_long_press">Pressione lunga sull\'app in home</string>
     <string name="home_long_press_desc">Cosa succede con una pressione lunga su un\'app in home</string>
     <string name="home_long_press_app_info">Info app</string>
-    <string name="home_long_press_menu">Contesto</string>
+    <string name="home_long_press_menu">Menu contestuale</string>
     <string name="home_long_press_clear">Cancella notifiche</string>
     <string name="home_long_press_edit">Modifica scorciatoia</string>
     <string name="home_long_press_none">Disattivato</string>

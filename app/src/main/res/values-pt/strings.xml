@@ -100,7 +100,7 @@
     <string name="home_long_press">Premir a app no ecrã principal</string>
     <string name="home_long_press_desc">O que acontece ao premir uma app no ecrã principal</string>
     <string name="home_long_press_app_info">Informações da app</string>
-    <string name="home_long_press_menu">Contexto</string>
+    <string name="home_long_press_menu">Menu de contexto</string>
     <string name="home_long_press_clear">Limpar notificações</string>
     <string name="home_long_press_edit">Editar atalho</string>
     <string name="home_long_press_none">Desativado</string>

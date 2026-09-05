@@ -114,7 +114,7 @@
     <string name="home_long_press">Long-press app in home</string>
     <string name="home_long_press_desc">What happens when you longpress an app in home</string>
     <string name="home_long_press_app_info">App Info</string>
-    <string name="home_long_press_menu">Context</string>
+    <string name="home_long_press_menu">Context Menu</string>
     <string name="home_long_press_clear">Clear Notifications</string>
     <string name="home_long_press_edit">Edit Shortcut</string>
     <string name="home_long_press_none">Disabled</string>

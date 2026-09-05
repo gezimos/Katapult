@@ -100,7 +100,7 @@
     <string name="home_long_press">App auf Startseite lange drücken</string>
     <string name="home_long_press_desc">Was beim langen Drücken einer App auf der Startseite passiert</string>
     <string name="home_long_press_app_info">App-Info</string>
-    <string name="home_long_press_menu">Kontext</string>
+    <string name="home_long_press_menu">Kontextmenü</string>
     <string name="home_long_press_clear">Mitteilungen löschen</string>
     <string name="home_long_press_edit">Verknüpfung bearbeiten</string>
     <string name="home_long_press_none">Deaktiviert</string>

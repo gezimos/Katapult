@@ -100,7 +100,7 @@
     <string name="home_long_press">Długie naciśnięcie aplikacji na ekranie głównym</string>
     <string name="home_long_press_desc">Co się dzieje po długim naciśnięciu aplikacji na ekranie głównym</string>
     <string name="home_long_press_app_info">Informacje o aplikacji</string>
-    <string name="home_long_press_menu">Kontekst</string>
+    <string name="home_long_press_menu">Menu kontekstowe</string>
     <string name="home_long_press_clear">Wyczyść powiadomienia</string>
     <string name="home_long_press_edit">Edytuj skrót</string>
     <string name="home_long_press_none">Wyłączone</string>

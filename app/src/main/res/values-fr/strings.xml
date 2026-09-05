@@ -100,7 +100,7 @@
     <string name="home_long_press">Appui long sur une app à l\'accueil</string>
     <string name="home_long_press_desc">Ce qui se passe lors d\'un appui long sur une app à l\'accueil</string>
     <string name="home_long_press_app_info">Infos sur l\'appli</string>
-    <string name="home_long_press_menu">Contexte</string>
+    <string name="home_long_press_menu">Menu contextuel</string>
     <string name="home_long_press_clear">Effacer les notifications</string>
     <string name="home_long_press_edit">Modifier le raccourci</string>
     <string name="home_long_press_none">Désactivé</string>
