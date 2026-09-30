@@ -215,8 +215,7 @@ private class BottomSheetDialog(
         )
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-        val darkMode = context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
-            .getBoolean("dark_mode", false)
+        val darkMode = com.gezimos.katapult.util.PrefsManager(context).darkMode
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = !darkMode
             isAppearanceLightNavigationBars = !darkMode

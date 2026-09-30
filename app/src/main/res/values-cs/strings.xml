@@ -152,8 +152,11 @@
     <string name="required_hint">* povinné</string>
     <string name="call_sms_badges">Odznaky hovorů a SMS</string>
     <string name="call_sms_badges_desc">Čte protokol hovorů a SMS přímo pro Mudita Phone a SMS, které nefungují s posluchačem oznámení</string>
-    <string name="dark_mode">Tmavý režim</string>
-    <string name="dark_mode_desc">Bílé na černém motivu</string>
+    <string name="theme_mode">Režim motivu</string>
+    <string name="theme_mode_desc">Světlý, tmavý nebo podle systému</string>
+    <string name="theme_system">Systém</string>
+    <string name="theme_light">Světlý</string>
+    <string name="theme_dark">Tmavý</string>
     <string name="section_appearance">Vzhled</string>
     <string name="section_home">Domovská obrazovka</string>
     <string name="section_all_apps">Všechny aplikace</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Používá se pro widget oznámení na zamykací obrazovce, zakrytí hodin stavového řádku, zamknutí telefonu a spořič. Kreslí pouze přes zamykací obrazovku a stavový řádek; z vašich aplikací nic nečte.</string>
     <string name="lockscreen_widget_apps">Aplikace oznámení na zamykací obrazovce</string>
     <string name="lockscreen_widget_apps_desc">Vyberte, které aplikace se zobrazí ve widgetu zamykací obrazovky</string>
+    <string name="lockscreen_message">Zpráva na zamykací obrazovce</string>
+    <string name="lockscreen_message_desc">Vlastní text ve spodní části zamykací obrazovky</string>
     <string name="lockscreen_sort">Řazení na zamykací obrazovce</string>
     <string name="sort_latest_top">Nejnovější nahoře</string>
     <string name="sort_oldest_top">Nejstarší nahoře</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Domů</string>
     <string name="screensaver_on_power">Otevřít tlačítkem napájení</string>
     <string name="screensaver_on_power_desc">Zobrazit spořič, když se obrazovka vypne, vyžaduje službu usnadnění přístupu</string>
+    <string name="screensaver_app_label">Katapult spořič</string>
+    <string name="screensaver_app_icon">Ikona spořiče</string>
+    <string name="screensaver_app_icon_desc">Přidá ikonu spořiče do seznamu aplikací</string>
     <string name="screensaver_wallpaper_custom">Vlastní obrázek</string>
     <string name="screensaver_wallpaper_home">Používá se tapeta plochy</string>
     <string name="screensaver_image">Obrázek spořiče</string>

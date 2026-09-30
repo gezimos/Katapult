@@ -152,8 +152,11 @@
     <string name="app_gesture_direction">Direction des gestes</string>
     <string name="gesture_horizontal">Horizontal</string>
     <string name="gesture_vertical">Vertical</string>
-    <string name="dark_mode">Mode sombre</string>
-    <string name="dark_mode_desc">Thème blanc sur noir</string>
+    <string name="theme_mode">Mode de thème</string>
+    <string name="theme_mode_desc">Clair, sombre ou selon le système</string>
+    <string name="theme_system">Système</string>
+    <string name="theme_light">Clair</string>
+    <string name="theme_dark">Sombre</string>
     <string name="section_appearance">Apparence</string>
     <string name="section_home">Écran d\'accueil</string>
     <string name="section_all_apps">Toutes les apps</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Utilisé pour le widget de notifications de l\'écran de verrouillage, le masquage de l\'horloge de la barre d\'état, le verrouillage du téléphone et l\'économiseur. Ne dessine que sur l\'écran de verrouillage et la barre d\'état ; ne lit rien de vos apps.</string>
     <string name="lockscreen_widget_apps">Apps de notifications de l\'écran de verrouillage</string>
     <string name="lockscreen_widget_apps_desc">Choisissez les apps affichées dans le widget de l\'écran de verrouillage</string>
+    <string name="lockscreen_message">Message sur l\'écran de verrouillage</string>
+    <string name="lockscreen_message_desc">Votre texte en bas de l\'écran de verrouillage</string>
     <string name="lockscreen_sort">Tri de l\'écran de verrouillage</string>
     <string name="sort_latest_top">Récentes en haut</string>
     <string name="sort_oldest_top">Anciennes en haut</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Accueil</string>
     <string name="screensaver_on_power">Ouvrir avec le bouton d\'alimentation</string>
     <string name="screensaver_on_power_desc">Afficher l\'économiseur quand l\'écran s\'éteint, nécessite le service d\'accessibilité</string>
+    <string name="screensaver_app_label">Écran de veille Katapult</string>
+    <string name="screensaver_app_icon">Icône d\'écran de veille</string>
+    <string name="screensaver_app_icon_desc">Ajoute une icône d\'écran de veille au tiroir d\'applis</string>
     <string name="screensaver_wallpaper_custom">Image personnalisée</string>
     <string name="screensaver_wallpaper_home">Utilise le fond d\'écran d\'accueil</string>
     <string name="screensaver_image">Image de l\'économiseur</string>

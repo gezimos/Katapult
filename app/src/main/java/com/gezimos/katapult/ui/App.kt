@@ -1,6 +1,7 @@
 package com.gezimos.katapult.ui
 
 import androidx.activity.result.ActivityResultLauncher
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -21,7 +22,11 @@ fun App(
     val iconShape = if (viewModel.roundedIcons) RoundedIconShape else CircleShape
     val smallShape = if (viewModel.roundedIcons) RoundedSmallShape else CircleShape
     val badgeShape = if (viewModel.roundedIcons) RoundedBadgeShape else CircleShape
-    val dark = viewModel.darkMode
+    val dark = when (viewModel.themeMode) {
+        com.gezimos.katapult.util.PrefsManager.THEME_DARK -> true
+        com.gezimos.katapult.util.PrefsManager.THEME_SYSTEM -> isSystemInDarkTheme()
+        else -> false
+    }
     CompositionLocalProvider(
         androidx.compose.foundation.LocalIndication provides NoIndication,
         LocalIconSize provides viewModel.iconSize.dp,

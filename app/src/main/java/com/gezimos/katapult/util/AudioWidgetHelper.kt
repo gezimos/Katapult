@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadata
 import android.media.session.MediaController
+import android.media.session.MediaSession
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
+import android.view.KeyEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -27,9 +29,12 @@ class AudioWidgetHelper private constructor(private val context: Context) {
 
     private var mediaSessionManager: MediaSessionManager? = null
     private var activeSessionsListener: MediaSessionManager.OnActiveSessionsChangedListener? = null
+    private var initializedFor: ComponentName? = null
     private var currentController: MediaController? = null
     private var currentCallback: MediaController.Callback? = null
     private var userDismissed = false
+    private var lastControllers: List<MediaController> = emptyList()
+    private val watchers = mutableMapOf<MediaSession.Token, Pair<MediaController, MediaController.Callback>>()
     private var dismissedPackageName: String? = null
 
     companion object {
@@ -47,15 +52,19 @@ class AudioWidgetHelper private constructor(private val context: Context) {
         mediaSessionManager = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as? MediaSessionManager
         val manager = mediaSessionManager ?: return
 
-        val listener = MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
-            handleSessionsChanged(controllers)
+        if (activeSessionsListener == null || initializedFor != componentName) {
+            activeSessionsListener?.let { old ->
+                try { manager.removeOnActiveSessionsChangedListener(old) } catch (_: Exception) {}
+            }
+            val listener = MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
+                handleSessionsChanged(controllers)
+            }
+            activeSessionsListener = listener
+            initializedFor = componentName
+            try { manager.addOnActiveSessionsChangedListener(listener, componentName) } catch (_: Exception) {}
         }
-        activeSessionsListener = listener
 
-        try {
-            manager.addOnActiveSessionsChangedListener(listener, componentName)
-            handleSessionsChanged(manager.getActiveSessions(componentName))
-        } catch (_: Exception) {}
+        try { handleSessionsChanged(manager.getActiveSessions(componentName)) } catch (_: Exception) {}
     }
 
     fun cleanup() {
@@ -63,11 +72,15 @@ class AudioWidgetHelper private constructor(private val context: Context) {
             mediaSessionManager?.removeOnActiveSessionsChangedListener(listener)
         }
         activeSessionsListener = null
+        initializedFor = null
+        unwatchAll()
         unregisterCallback()
         mediaSessionManager = null
     }
 
     private fun handleSessionsChanged(controllers: List<MediaController>?) {
+        lastControllers = controllers.orEmpty()
+        watchAll(lastControllers)
         val active = controllers?.firstOrNull { c ->
             val s = c.playbackState?.state
             s == PlaybackState.STATE_PLAYING || s == PlaybackState.STATE_PAUSED
@@ -119,6 +132,39 @@ class AudioWidgetHelper private constructor(private val context: Context) {
         } catch (_: Exception) {}
     }
 
+    private fun watchAll(controllers: List<MediaController>) {
+        val tokens = controllers.map { it.sessionToken }.toSet()
+        watchers.keys.filter { it !in tokens }.forEach { token ->
+            watchers.remove(token)?.let { (c, cb) ->
+                try { c.unregisterCallback(cb) } catch (_: Exception) {}
+            }
+        }
+        controllers.forEach { controller ->
+            val token = controller.sessionToken
+            if (token in watchers) return@forEach
+            val callback = object : MediaController.Callback() {
+                override fun onPlaybackStateChanged(state: PlaybackState?) {
+                    val s = state?.state
+                    if ((s == PlaybackState.STATE_PLAYING || s == PlaybackState.STATE_PAUSED) &&
+                        currentController?.sessionToken != token
+                    ) handleSessionsChanged(lastControllers)
+                }
+            }
+            try {
+                controller.registerCallback(callback)
+                watchers[token] = controller to callback
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun unwatchAll() {
+        watchers.values.forEach { (c, cb) ->
+            try { c.unregisterCallback(cb) } catch (_: Exception) {}
+        }
+        watchers.clear()
+        lastControllers = emptyList()
+    }
+
     private fun unregisterCallback() {
         currentCallback?.let { cb ->
             try { currentController?.unregisterCallback(cb) } catch (_: Exception) {}
@@ -140,32 +186,47 @@ class AudioWidgetHelper private constructor(private val context: Context) {
         )
     }
 
+    private fun sendKey(controller: MediaController, keyCode: Int) {
+        val sent = controller.dispatchMediaButtonEvent(KeyEvent(KeyEvent.ACTION_DOWN, keyCode)) &&
+            controller.dispatchMediaButtonEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
+        if (!sent) {
+            val t = controller.transportControls
+            when (keyCode) {
+                KeyEvent.KEYCODE_MEDIA_PAUSE -> t.pause()
+                KeyEvent.KEYCODE_MEDIA_PLAY -> t.play()
+                KeyEvent.KEYCODE_MEDIA_NEXT -> t.skipToNext()
+                KeyEvent.KEYCODE_MEDIA_PREVIOUS -> t.skipToPrevious()
+                KeyEvent.KEYCODE_MEDIA_STOP -> t.stop()
+            }
+        }
+    }
+
     fun playPause(): Boolean {
         val controller = _state.value?.controller ?: return false
         return try {
             if (controller.playbackState?.state == PlaybackState.STATE_PLAYING)
-                controller.transportControls.pause()
+                sendKey(controller, KeyEvent.KEYCODE_MEDIA_PAUSE)
             else
-                controller.transportControls.play()
+                sendKey(controller, KeyEvent.KEYCODE_MEDIA_PLAY)
             true
         } catch (_: Exception) { false }
     }
 
     fun skipNext(): Boolean {
         val controller = _state.value?.controller ?: return false
-        return try { controller.transportControls.skipToNext(); true } catch (_: Exception) { false }
+        return try { sendKey(controller, KeyEvent.KEYCODE_MEDIA_NEXT); true } catch (_: Exception) { false }
     }
 
     fun skipPrevious(): Boolean {
         val controller = _state.value?.controller ?: return false
-        return try { controller.transportControls.skipToPrevious(); true } catch (_: Exception) { false }
+        return try { sendKey(controller, KeyEvent.KEYCODE_MEDIA_PREVIOUS); true } catch (_: Exception) { false }
     }
 
     fun stop(): Boolean {
         val controller = _state.value?.controller ?: return false
         return try {
             unregisterCallback()
-            controller.transportControls.stop()
+            sendKey(controller, KeyEvent.KEYCODE_MEDIA_STOP)
             dismiss()
             true
         } catch (_: Exception) { dismiss(); false }

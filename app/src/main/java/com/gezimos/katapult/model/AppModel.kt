@@ -6,5 +6,5 @@ data class AppModel(
     val activityName: String,
     val shortcutId: String = "",
 ) {
-    val key: String get() = if (shortcutId.isEmpty()) packageName else "$packageName|$shortcutId"
+    val key: String = if (shortcutId.isEmpty()) packageName else "$packageName|$shortcutId"
 }

@@ -5,8 +5,9 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
@@ -20,6 +21,7 @@ import android.os.BatteryManager
 import android.os.SystemClock
 import android.os.Handler
 import android.os.Looper
+import android.provider.MediaStore
 import android.provider.Telephony
 import android.text.format.DateFormat
 import android.view.WindowInsetsController
@@ -27,6 +29,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.WeatherHelper
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
@@ -39,6 +42,7 @@ import com.gezimos.katapult.service.DirectBadgeHelper
 import com.gezimos.katapult.service.NotificationListener
 import com.gezimos.katapult.ui.IconSize
 import com.gezimos.katapult.util.AppLoader
+import com.gezimos.katapult.util.BitmapHelper
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
@@ -48,6 +52,15 @@ import java.io.File
 import java.util.Date
 
 enum class Screen { ONBOARDING, HOME, ALL_APPS, SETTINGS }
+
+private val AM_PM_REGEX = Regex("\\s*[AaPp][Mm]\\s*")
+
+private val dateFormatCache = mutableMapOf<String, SimpleDateFormat>()
+
+private fun dateFormatter(pattern: String): SimpleDateFormat {
+    val locale = Locale.getDefault()
+    return dateFormatCache.getOrPut("$pattern|$locale") { SimpleDateFormat(pattern, locale) }
+}
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -91,7 +104,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private var weatherCheckedAt = -weatherRefreshMs
     var roundedIcons by mutableStateOf(prefs.roundedIcons)
     var iconSize by mutableStateOf(prefs.iconSize)
-    var darkMode by mutableStateOf(prefs.darkMode)
+    var themeMode by mutableIntStateOf(prefs.themeMode)
 
     var showLockscreenReEnable by mutableStateOf(false)
     private var lockscreenReEnableChecked = false
@@ -159,8 +172,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val gridColumns = 3
     var appsPerPage by mutableIntStateOf(12)
         private set
-    val totalPages: Int
-        get() = if (orderedApps.isEmpty()) 1 else ((orderedApps.size + appsPerPage - 1) / appsPerPage)
+    val totalPages: Int by derivedStateOf {
+        if (orderedApps.isEmpty()) 1 else ((orderedApps.size + appsPerPage - 1) / appsPerPage)
+    }
 
     fun updateAppsPerPage(perPage: Int) {
         val clamped = perPage.coerceAtLeast(gridColumns)
@@ -172,9 +186,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val ctx get() = getApplication<Application>()
     private val isMudita = DeviceHelper.isMuditaKompakt()
-    private val directBadgeHelper = if (isMudita) DirectBadgeHelper(application) else null
+    private val directBadgeHelper = if (isMudita) DirectBadgeHelper.getInstance(application) else null
 
     private val clockHandler = Handler(Looper.getMainLooper())
+
+    private val badgeListener: () -> Unit = {
+        clockHandler.post { refreshNotifications() }
+    }
     private val clockRunnable = object : Runnable {
         override fun run() {
             updateClock()
@@ -199,17 +217,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             AudioWidgetHelper.getInstance(ctx).state.collect { mediaInfo = it }
         }
-        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val sizePx = (iconSize * ctx.resources.displayMetrics.density).toInt()
-            for (slot in PrefsManager.HOME_SLOTS) {
-                val pkg = getShortcutPackage(slot) ?: continue
-                val shortcutId = prefs.loadSlotShortcutId(slot)
-                if (shortcutId != null) {
-                    IconUtility.loadShortcutIcon(ctx, pkg, shortcutId, sizePx)
-                } else {
-                    IconUtility.loadIcon(ctx, pkg, getShortcutActivity(slot), sizePx)
-                }
+        val sizePx = Math.round(iconSize * ctx.resources.displayMetrics.density)
+        for (slot in PrefsManager.HOME_SLOTS) {
+            val pkg = getShortcutPackage(slot) ?: continue
+            val shortcutId = prefs.loadSlotShortcutId(slot)
+            if (shortcutId != null) {
+                IconUtility.loadShortcutIcon(ctx, pkg, shortcutId, sizePx)
+            } else {
+                IconUtility.loadIcon(ctx, pkg, getShortcutActivity(slot), sizePx)
             }
+        }
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             IconUtility.preloadIcons(ctx, orderedApps, sizePx)
         }
     }
@@ -218,8 +236,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val now = Date()
         val clockPattern = prefs.clockFormat
         val fullTime = if (clockPattern == "system") DateFormat.getTimeFormat(ctx).format(now)
-            else SimpleDateFormat(clockPattern, Locale.getDefault()).format(now)
-        clockTime = fullTime.replace(Regex("\\s*[AaPp][Mm]\\s*"), "").trim()
+            else dateFormatter(clockPattern).format(now)
+        clockTime = fullTime.replace(AM_PM_REGEX, "").trim()
         val upper = fullTime.uppercase()
         clockAmPm = when {
             upper.contains("AM") -> "AM"
@@ -228,7 +246,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
         val datePattern = prefs.dateFormat
         clockDate = if (datePattern == "system") DateFormat.getLongDateFormat(ctx).format(now)
-            else SimpleDateFormat(datePattern, Locale.getDefault()).format(now)
+            else dateFormatter(datePattern).format(now)
 
         val alarmManager = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val info = alarmManager.nextAlarmClock
@@ -260,7 +278,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
                 val result = WeatherHelper.read(ctx)
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                    weather = result
+                    if (result != null) weather = result
                 }
             }
         }
@@ -282,17 +300,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun refreshWeather() {
+    fun refreshWeather(force: Boolean = false) {
         syncWeatherObserver()
-        weatherCheckedAt = SystemClock.elapsedRealtime()
         if (!prefs.showWeather) {
+            weatherCheckedAt = SystemClock.elapsedRealtime()
             weather = null
             return
         }
+        if (!force && weather != null &&
+            SystemClock.elapsedRealtime() - weatherCheckedAt < weatherRefreshMs
+        ) return
+        weatherCheckedAt = SystemClock.elapsedRealtime()
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val result = WeatherHelper.read(ctx)
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                weather = result
+                if (result != null) weather = result
             }
         }
     }
@@ -307,6 +329,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadApps() {
+        val previousKeys = orderedApps.map { it.key }.toSet()
         val currentApps = AppLoader.loadApps(ctx, showSelf = prefs.showKatapultIcon) +
             ShortcutHelper.installedShortcuts(ctx, prefs)
         val hidden = prefs.getHiddenApps()
@@ -327,6 +350,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     else s.totalTimeInForeground
                 }.thenBy { it.label.lowercase() }
             )
+            refreshHomeIfAppsChanged(previousKeys)
             return
         }
         val savedOrder = prefs.loadAppOrder()
@@ -335,6 +359,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         } else {
             renamed.sortedBy { it.label.lowercase() }
         }
+        refreshHomeIfAppsChanged(previousKeys)
+    }
+
+    private fun refreshHomeIfAppsChanged(previousKeys: Set<String>) {
+        if (previousKeys.isEmpty()) return
+        if (orderedApps.map { it.key }.toSet() != previousKeys) shortcutRefresh++
     }
 
     fun getAllApps(): List<AppModel> {
@@ -425,12 +455,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         if (name == currentLabel) return
         if (name != prefs.getAppRename(key)) prefs.removeFromAppOrder(key)
         prefs.setAppRename(key, name)
+        shortcutRefresh++
         loadApps()
     }
 
     fun removeShortcut(app: AppModel) {
         forgetShortcut(app.packageName, app.shortcutId)
         contextMenuApp = null
+        shortcutRefresh++
         loadApps()
     }
 
@@ -443,6 +475,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             prefs.clearSlotsForShortcut(packageName, shortcutId)
         }
         ShortcutHelper.syncPins(ctx, prefs, packageName)
+        shortcutRefresh++
         loadApps()
     }
 
@@ -577,23 +610,34 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun getDefaultPackageForSlot(slot: String): String? {
         return when (slot) {
-            "phone" -> {
-                val intent = Intent(Intent.ACTION_DIAL)
-                val ri = ctx.packageManager.resolveActivity(intent, 0)
-                ri?.activityInfo?.packageName
-            }
+            "phone" -> resolveIntent(Intent(Intent.ACTION_DIAL))
             "sms" -> Telephony.Sms.getDefaultSmsPackage(ctx)
             "extra_left" -> "com.mudita.audio.player".takeIfInstalled()
+                ?: resolveCategory(Intent.CATEGORY_APP_MUSIC)
             "extra_center" -> "com.mudita.calendar".takeIfInstalled()
+                ?: resolveCategory(Intent.CATEGORY_APP_CALENDAR)
             "extra_right" -> "com.mudita.camera".takeIfInstalled()
-            "center" -> {
-                val intent = Intent(Intent.ACTION_VIEW, android.provider.ContactsContract.Contacts.CONTENT_URI)
-                val ri = ctx.packageManager.resolveActivity(intent, 0)
-                ri?.activityInfo?.packageName
-            }
+                ?: resolveIntent(Intent(MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA))
+            "center" -> resolveIntent(
+                Intent(Intent.ACTION_VIEW, android.provider.ContactsContract.Contacts.CONTENT_URI)
+            )
             else -> null
         }
     }
+
+    private fun resolveIntent(intent: Intent): String? {
+        val pm = ctx.packageManager
+        val direct = pm.resolveActivity(intent, 0)?.activityInfo?.packageName
+        if (direct != null && direct != "android") return direct
+        val candidates = pm.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            .mapNotNull { it.activityInfo?.applicationInfo }
+            .filter { it.packageName != "android" }
+        val preferred = candidates.firstOrNull { (it.flags and ApplicationInfo.FLAG_SYSTEM) != 0 }
+        return (preferred ?: candidates.firstOrNull())?.packageName
+    }
+
+    private fun resolveCategory(category: String): String? =
+        resolveIntent(Intent(Intent.ACTION_MAIN).addCategory(category))
 
     private fun String.takeIfInstalled(): String? {
         return try {
@@ -638,35 +682,38 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             Handler(Looper.getMainLooper()).post { refreshNotifications() }
         }
         directBadgeHelper?.let {
-            it.onCountsChanged = {
-                Handler(Looper.getMainLooper()).post { refreshNotifications() }
-            }
-            it.start()
+            it.addListener(badgeListener)
+            it.acquire()
         }
     }
 
     fun stopNotificationListener() {
         NotificationListener.onCountsChanged = null
         directBadgeHelper?.let {
-            it.onCountsChanged = null
-            it.stop()
+            it.removeListener(badgeListener)
+            it.release()
         }
     }
 
     fun setWallpaper(context: Context, uri: Uri) {
-        try {
-            val input = context.contentResolver.openInputStream(uri) ?: return
-            val bitmap = BitmapFactory.decodeStream(input)
-            input.close()
-            if (bitmap == null) return
-
+        val maxSide = BitmapHelper.screenMaxSide(ctx)
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val bitmap = BitmapHelper.decodeUri(context, uri, maxSide) ?: return@launch
             val file = File(ctx.filesDir, "wallpaper.png")
-            file.outputStream().use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            val saved = try {
+                file.outputStream().use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+                true
+            } catch (_: Exception) {
+                false
             }
-            prefs.wallpaperPath = file.absolutePath
-            wallpaperBitmap = bitmap
-        } catch (_: Exception) {}
+            if (!saved) return@launch
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                prefs.wallpaperPath = file.absolutePath
+                wallpaperBitmap = bitmap
+            }
+        }
     }
 
     fun clearWallpaper() {
@@ -676,17 +723,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setScreensaverWallpaper(context: Context, uri: Uri) {
-        try {
-            val input = context.contentResolver.openInputStream(uri) ?: return
-            val bitmap = BitmapFactory.decodeStream(input)
-            input.close()
-            if (bitmap == null) return
+        val maxSide = BitmapHelper.screenMaxSide(ctx)
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val bitmap = BitmapHelper.decodeUri(context, uri, maxSide) ?: return@launch
             val file = File(ctx.filesDir, "screensaver_wallpaper.png")
-            file.outputStream().use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            try {
+                file.outputStream().use { out ->
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+            } catch (_: Exception) {
+                return@launch
             }
-            prefs.screensaverWallpaperPath = file.absolutePath
-        } catch (_: Exception) {}
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                prefs.screensaverWallpaperPath = file.absolutePath
+            }
+        }
     }
 
     fun clearScreensaverWallpaper() {
@@ -745,7 +796,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         com.gezimos.katapult.util.SvgRasterizer.rasterize(input, targetPx)
                     }
                 } else {
-                    decodeSampled(context, uri, targetPx * 2)?.let { fitToIcon(it, targetPx) }
+                    BitmapHelper.decodeUri(context, uri, targetPx * 2)?.let { fitToIcon(it, targetPx) }
                 }
                 if (bitmap == null) {
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
@@ -769,28 +820,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     iconImportError = true
                 }
             }
-        }
-    }
-
-    private fun decodeSampled(context: Context, uri: Uri, maxSide: Int): Bitmap? {
-        return try {
-            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-            context.contentResolver.openInputStream(uri)?.use {
-                BitmapFactory.decodeStream(it, null, bounds)
-            }
-            val srcW = bounds.outWidth
-            val srcH = bounds.outHeight
-            if (srcW <= 0 || srcH <= 0) return null
-
-            var sample = 1
-            while (srcW / sample > maxSide || srcH / sample > maxSide) sample *= 2
-
-            val opts = BitmapFactory.Options().apply { inSampleSize = sample }
-            context.contentResolver.openInputStream(uri)?.use {
-                BitmapFactory.decodeStream(it, null, opts)
-            }
-        } catch (_: Exception) {
-            null
         }
     }
 
@@ -837,10 +866,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadWallpaper() {
         val path = prefs.wallpaperPath ?: return
-        val file = File(path)
-        wallpaperBitmap = if (file.exists()) {
-            try { BitmapFactory.decodeFile(path) } catch (_: Exception) { null }
-        } else null
+        wallpaperBitmap = BitmapHelper.decodeFile(path, BitmapHelper.screenMaxSide(ctx))
     }
 
     override fun onCleared() {

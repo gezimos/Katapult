@@ -21,6 +21,7 @@ import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
+import android.os.SystemClock
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.Gravity
@@ -158,6 +159,8 @@ class LockscreenWidgetService :
         // Same corner as the notification island (widgetBackground uses dp(14)).
         private const val MUSIC_WIDGET_CORNER_DP = 14
         private const val KEYGUARD_RECHECK_MS = 120L
+        private const val KEYGUARD_BURST_MS = 2000L
+        private const val KEYGUARD_IDLE_RECHECK_MS = 1000L
 
         /** Whether the user has enabled this service in system accessibility settings. */
         fun isEnabled(context: Context): Boolean {
@@ -177,8 +180,11 @@ class LockscreenWidgetService :
     private var overlay: View? = null
     private var overlayParams: WindowManager.LayoutParams? = null
     private var clockCover: View? = null
+    private var messageOverlay: View? = null
     private var shownRows: List<Pair<String, Int>> = emptyList()
     private var directBadges: DirectBadgeHelper? = null
+
+    private val badgeListener: () -> Unit = { mainHandler.post { evaluate() } }
     private lateinit var prefs: PrefsManager
 
     // Edit-mode state for the current overlay
@@ -191,9 +197,18 @@ class LockscreenWidgetService :
     private var totalCount = 0
     private val editTimeout = Runnable { exitEdit() }
 
+    private var keyguardPossible = true
+
     private val screenReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == Intent.ACTION_SCREEN_OFF) maybeStartScreensaver()
+            when (intent.action) {
+                Intent.ACTION_SCREEN_OFF -> {
+                    keyguardPossible = true
+                    maybeStartScreensaver()
+                }
+                Intent.ACTION_SCREEN_ON -> keyguardPossible = true
+                Intent.ACTION_USER_PRESENT -> keyguardPossible = false
+            }
             evaluate()
         }
     }
@@ -230,17 +245,24 @@ class LockscreenWidgetService :
             addAction(Intent.ACTION_USER_PRESENT)
         })
         if (DeviceHelper.isMuditaKompakt()) {
-            directBadges = DirectBadgeHelper(this).apply {
-                onCountsChanged = { mainHandler.post { evaluate() } }
-                start()
+            directBadges = DirectBadgeHelper.getInstance(this).apply {
+                addListener(badgeListener)
+                acquire()
             }
         }
         NotificationListener.onCountsChangedExtra = { mainHandler.post { evaluate() } }
+        keyguardPossible = try {
+            getSystemService(KeyguardManager::class.java).isKeyguardLocked
+        } catch (_: Exception) {
+            true
+        }
         applyClockCover(launcherForeground || screensaverForeground)
         evaluate()
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
+        if (!keyguardPossible) return
+        burstUntil = SystemClock.elapsedRealtime() + KEYGUARD_BURST_MS
         evaluate()
     }
 
@@ -252,12 +274,13 @@ class LockscreenWidgetService :
         mediaScope?.cancel()
         mediaScope = null
         removeMusicOverlay()
+        removeMessageOverlay()
         lifecycleRegistry.currentState = Lifecycle.State.DESTROYED
         viewModelStoreInstance.clear()
         NotificationListener.onCountsChangedExtra = null
         directBadges?.let {
-            it.onCountsChanged = null
-            it.stop()
+            it.removeListener(badgeListener)
+            it.release()
         }
         directBadges = null
         try { unregisterReceiver(screenReceiver) } catch (_: Exception) {}
@@ -389,12 +412,64 @@ class LockscreenWidgetService :
      * tick, scheduled only while something is shown so it stops itself once they come down.
      */
     private val keyguardRecheck = Runnable { evaluate() }
+    private var burstUntil = 0L
 
     private fun scheduleKeyguardRecheck() {
         mainHandler.removeCallbacks(keyguardRecheck)
-        if (overlay != null || musicOverlay != null) {
-            mainHandler.postDelayed(keyguardRecheck, KEYGUARD_RECHECK_MS)
+        if (overlay == null && musicOverlay == null && messageOverlay == null) return
+        val bursting = SystemClock.elapsedRealtime() < burstUntil
+        val delay = if (bursting) KEYGUARD_RECHECK_MS else KEYGUARD_IDLE_RECHECK_MS
+        mainHandler.postDelayed(keyguardRecheck, delay)
+    }
+
+    /**
+     * MuditaOS prints "Touch the power button to unlock" at the bottom of its lock screen and
+     * offers no way to change it, so the same trick the clock cover uses applies here: an opaque
+     * overlay paints over it, this one carrying the user's own message.
+     */
+    private fun applyLockscreenMessage(onLockscreen: Boolean) {
+        val message = prefs.lockscreenMessage
+        val want = onLockscreen && !message.isNullOrBlank()
+        if (!want) {
+            removeMessageOverlay()
+            return
         }
+        if (messageOverlay != null) return
+        val lato = try { ResourcesCompat.getFont(this, R.font.lato) } catch (_: Exception) { null }
+        val view = TextView(this).apply {
+            text = message
+            setBackgroundColor(if (prefs.darkMode) Color.BLACK else Color.WHITE)
+            setTextColor(if (prefs.darkMode) Color.WHITE else Color.BLACK)
+            typeface = Typeface.create(lato, Typeface.BOLD)
+            textSize = 20f
+            gravity = Gravity.CENTER
+            maxLines = 1
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            setPadding(dp(12f), 0, dp(12f), dp(10f))
+        }
+        val params = WindowManager.LayoutParams().apply {
+            type = WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY
+            format = PixelFormat.OPAQUE
+            flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+            width = WindowManager.LayoutParams.MATCH_PARENT
+            height = dp(56f)
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = 0
+        }
+        try {
+            getSystemService(WindowManager::class.java).addView(view, params)
+            messageOverlay = view
+        } catch (_: Exception) {
+            messageOverlay = null
+        }
+    }
+
+    private fun removeMessageOverlay() {
+        messageOverlay?.let {
+            try { getSystemService(WindowManager::class.java).removeView(it) } catch (_: Exception) {}
+        }
+        messageOverlay = null
     }
 
     private fun removeClockCover() {
@@ -414,16 +489,21 @@ class LockscreenWidgetService :
         if (!::prefs.isInitialized) return
         val keyguard = getSystemService(KeyguardManager::class.java)
         val power = getSystemService(PowerManager::class.java)
-        val counts = currentCounts()
         val onLockscreen = keyguard.isKeyguardLocked &&
             power.isInteractive &&
             !KatapultDreamService.isDreaming &&
             !ScreensaverActivity.isShowing &&
             !inCall() &&
-            !pinShowing()
+            !pinShowing(SystemClock.elapsedRealtime() < burstUntil)
         applyMusicWidget(onLockscreen)
-        val shouldShow = prefs.lockscreenWidget && onLockscreen && counts.isNotEmpty()
-        if (!shouldShow) {
+        applyLockscreenMessage(onLockscreen)
+        if (!onLockscreen || !prefs.lockscreenWidget) {
+            removeOverlay()
+            scheduleKeyguardRecheck()
+            return
+        }
+        val counts = currentCounts()
+        if (counts.isEmpty()) {
             removeOverlay()
             scheduleKeyguardRecheck()
             return
@@ -448,15 +528,21 @@ class LockscreenWidgetService :
      * The PIN screen is in front when a visible input field holds focus. Polled instead of
      * event-driven: re-showing the PIN doesn't re-fire focus events when its field kept focus.
      */
-    private fun pinShowing(): Boolean = try {
-        val focus = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
-        val showing = focus != null && focus.isVisibleToUser &&
-            focus.className?.contains("EditText") == true
-        @Suppress("DEPRECATION")
-        focus?.recycle()
-        showing
-    } catch (_: Exception) {
-        false
+    private var lastPinShowing = false
+
+    private fun pinShowing(check: Boolean): Boolean {
+        if (!check) return lastPinShowing
+        lastPinShowing = try {
+            val focus = findFocus(AccessibilityNodeInfo.FOCUS_INPUT)
+            val showing = focus != null && focus.isVisibleToUser &&
+                focus.className?.contains("EditText") == true
+            @Suppress("DEPRECATION")
+            focus?.recycle()
+            showing
+        } catch (_: Exception) {
+            false
+        }
+        return lastPinShowing
     }
 
     /** An incoming or active call shows its own UI over the lock screen — hide the widget then. */
@@ -824,10 +910,17 @@ class LockscreenWidgetService :
         return out
     }
 
+    private val labelCache = mutableMapOf<String, String>()
+
     private fun appLabel(pkg: String): String? {
         prefs.getAppRename(pkg)?.let { return it }
+        labelCache[pkg]?.let { return it }
         return try {
-            packageManager.getApplicationLabel(packageManager.getApplicationInfo(pkg, 0)).toString()
+            val label = packageManager.getApplicationLabel(
+                packageManager.getApplicationInfo(pkg, 0)
+            ).toString()
+            labelCache[pkg] = label
+            label
         } catch (_: Exception) {
             null
         }

@@ -10,8 +10,9 @@ import android.os.HandlerThread
 import android.provider.CallLog
 import android.provider.Telephony
 import androidx.core.content.ContextCompat
+import java.util.concurrent.CopyOnWriteArrayList
 
-class DirectBadgeHelper(private val context: Context) {
+class DirectBadgeHelper private constructor(private val context: Context) {
 
     companion object {
         const val MUDITA_DIAL = "com.mudita.dial"
@@ -28,17 +29,46 @@ class DirectBadgeHelper(private val context: Context) {
             CallLog.Calls.REJECTED_TYPE.toString(),
             CallLog.Calls.MISSED_TYPE.toString(),
         )
+
+        private const val DEBOUNCE_MS = 300L
+
+        @Volatile
+        private var INSTANCE: DirectBadgeHelper? = null
+
+        fun getInstance(context: Context): DirectBadgeHelper {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: DirectBadgeHelper(context.applicationContext).also { INSTANCE = it }
+            }
+        }
     }
 
-    var onCountsChanged: (() -> Unit)? = null
+    private val listeners = CopyOnWriteArrayList<() -> Unit>()
 
     private var missedCallCount = 0
     private var unreadSmsCount = 0
+    private var refCount = 0
 
     private var callLogThread: HandlerThread? = null
     private var smsThread: HandlerThread? = null
+    private var callLogHandler: Handler? = null
+    private var smsHandler: Handler? = null
     private var callLogObserver: ContentObserver? = null
     private var smsObserver: ContentObserver? = null
+
+    private val callLogQuery = Runnable { queryMissedCalls() }
+    private val smsQuery = Runnable { queryUnreadSms() }
+
+    fun addListener(listener: () -> Unit) {
+        if (!listeners.contains(listener)) listeners.add(listener)
+    }
+
+    fun removeListener(listener: () -> Unit) {
+        listeners.remove(listener)
+    }
+
+    private fun notifyChanged() {
+        listeners.forEach { it.invoke() }
+    }
 
     fun getCounts(): Map<String, Int> {
         val map = mutableMapOf<String, Int>()
@@ -75,19 +105,28 @@ class DirectBadgeHelper(private val context: Context) {
         queryMissedCalls()
     }
 
-    fun start() {
+    @Synchronized
+    fun acquire() {
+        refCount++
+        registerObservers()
         if (hasCallLogPermission()) queryMissedCalls()
         if (hasSmsPermission()) queryUnreadSms()
-        registerObservers()
     }
 
-    fun stop() {
+    @Synchronized
+    fun release() {
+        refCount = (refCount - 1).coerceAtLeast(0)
+        if (refCount > 0) return
+        callLogHandler?.removeCallbacks(callLogQuery)
+        smsHandler?.removeCallbacks(smsQuery)
         callLogObserver?.let { context.contentResolver.unregisterContentObserver(it) }
         smsObserver?.let { context.contentResolver.unregisterContentObserver(it) }
         callLogThread?.quitSafely()
         smsThread?.quitSafely()
         callLogObserver = null
         smsObserver = null
+        callLogHandler = null
+        smsHandler = null
         callLogThread = null
         smsThread = null
     }
@@ -108,7 +147,7 @@ class DirectBadgeHelper(private val context: Context) {
 
         if (count != missedCallCount) {
             missedCallCount = count
-            onCountsChanged?.invoke()
+            notifyChanged()
         }
     }
 
@@ -142,32 +181,42 @@ class DirectBadgeHelper(private val context: Context) {
         val total = smsCount + mmsCount
         if (total != unreadSmsCount) {
             unreadSmsCount = total
-            onCountsChanged?.invoke()
+            notifyChanged()
         }
     }
 
     private fun registerObservers() {
-        if (hasCallLogPermission()) {
-            callLogThread = HandlerThread("CallLogThread").apply { start() }
-            callLogObserver = object : ContentObserver(Handler(callLogThread!!.looper)) {
+        if (callLogObserver == null && hasCallLogPermission()) {
+            val thread = HandlerThread("CallLogThread").apply { start() }
+            val handler = Handler(thread.looper)
+            val observer = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
-                    queryMissedCalls()
+                    handler.removeCallbacks(callLogQuery)
+                    handler.postDelayed(callLogQuery, DEBOUNCE_MS)
                 }
             }
+            callLogThread = thread
+            callLogHandler = handler
+            callLogObserver = observer
             context.contentResolver.registerContentObserver(
-                CallLog.Calls.CONTENT_URI, true, callLogObserver!!,
+                CallLog.Calls.CONTENT_URI, true, observer,
             )
         }
 
-        if (hasSmsPermission()) {
-            smsThread = HandlerThread("SmsThread").apply { start() }
-            smsObserver = object : ContentObserver(Handler(smsThread!!.looper)) {
+        if (smsObserver == null && hasSmsPermission()) {
+            val thread = HandlerThread("SmsThread").apply { start() }
+            val handler = Handler(thread.looper)
+            val observer = object : ContentObserver(handler) {
                 override fun onChange(selfChange: Boolean) {
-                    queryUnreadSms()
+                    handler.removeCallbacks(smsQuery)
+                    handler.postDelayed(smsQuery, DEBOUNCE_MS)
                 }
             }
+            smsThread = thread
+            smsHandler = handler
+            smsObserver = observer
             context.contentResolver.registerContentObserver(
-                Telephony.MmsSms.CONTENT_URI, true, smsObserver!!,
+                Telephony.MmsSms.CONTENT_URI, true, observer,
             )
         }
     }

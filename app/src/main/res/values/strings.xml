@@ -68,8 +68,11 @@
     <string name="icon_shape">Icon Shape</string>
     <string name="icon_shape_rounded">Rounded</string>
     <string name="icon_shape_circle">Circle</string>
-    <string name="dark_mode">Dark Mode</string>
-    <string name="dark_mode_desc">White on black theme</string>
+    <string name="theme_mode">Theme Mode</string>
+    <string name="theme_mode_desc">Light, dark or follow system</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
     <string name="change_icon">Change Icon</string>
     <string name="import_icon">Import Icon</string>
     <string name="katapult_icons">Katapult Icons</string>
@@ -211,6 +214,8 @@
     <string name="lockscreen_widget_a11y_desc">Used for the lockscreen notification widget, covering the status bar clock, locking the phone, and the screensaver. Draws only over the lock screen and status bar; reads nothing from your apps.</string>
     <string name="lockscreen_widget_apps">Lockscreen Notification Apps</string>
     <string name="lockscreen_widget_apps_desc">Choose which apps appear on the lockscreen widget</string>
+    <string name="lockscreen_message">Lockscreen Message</string>
+    <string name="lockscreen_message_desc">Your own text at the bottom of the lock screen</string>
     <string name="lockscreen_sort">Lockscreen Sort</string>
     <string name="sort_latest_top">Latest on top</string>
     <string name="sort_oldest_top">Oldest on top</string>
@@ -272,6 +277,9 @@
     <string name="cat_home">Home</string>
     <string name="screensaver_on_power">Open on Power Button</string>
     <string name="screensaver_on_power_desc">Show the screensaver when the screen turns off, needs the accessibility service</string>
+    <string name="screensaver_app_label">Katapult Screensaver</string>
+    <string name="screensaver_app_icon">Screensaver Icon</string>
+    <string name="screensaver_app_icon_desc">Adds a screensaver icon to the app drawer</string>
     <string name="screensaver_wallpaper_custom">Custom image</string>
     <string name="screensaver_wallpaper_home">Using home wallpaper</string>
     <string name="screensaver_image">Screensaver Image</string>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="screensaver"
+        android:enabled="true"
+        android:icon="@drawable/ic_screensaver"
+        android:shortcutShortLabel="@string/screensaver"
+        android:shortcutLongLabel="@string/screensaver">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.gezimos.katapult.debug"
+            android:targetClass="com.gezimos.katapult.lockscreen.ScreensaverActivity" />
+    </shortcut>
+</shortcuts>

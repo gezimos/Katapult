@@ -105,7 +105,8 @@ class NotificationListener : NotificationListenerService() {
         instance = this
         keysByPkg.clear()
         lastPostByPkg.clear()
-        for (sbn in activeNotifications) {
+        val active = try { activeNotifications } catch (_: Exception) { null }
+        for (sbn in active.orEmpty()) {
             if (!shouldCount(sbn)) continue
             keysByPkg.getOrPut(sbn.packageName) { newKeySet() }.add(sbn.key)
             lastPostByPkg.merge(sbn.packageName, sbn.postTime) { a, b -> maxOf(a, b) }

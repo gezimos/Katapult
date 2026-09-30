@@ -36,10 +36,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
+import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,7 +52,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,9 +63,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gezimos.katapult.MainViewModel
@@ -72,7 +74,6 @@ import com.gezimos.katapult.Screen
 import com.gezimos.katapult.model.AppModel
 import com.gezimos.katapult.service.DirectBadgeHelper
 import com.gezimos.katapult.util.DeviceHelper
-import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.ShortcutHelper
 import android.graphics.Bitmap
@@ -90,7 +91,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.abs
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<Array<String>>) {
     val context = LocalContext.current
@@ -107,48 +108,46 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
         }
     }
 
-    var dragAccumulator by remember { mutableFloatStateOf(0f) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(LocalSurface.current)
-            .then(if (!viewModel.prefs.hideStatusBar) Modifier.statusBarsPadding() else Modifier)
-            .navigationBarsPadding()
+            .then(
+                if (!viewModel.prefs.hideStatusBar)
+                    Modifier.windowInsetsPadding(WindowInsets.statusBarsIgnoringVisibility)
+                else Modifier
+            )
+            .windowInsetsPadding(WindowInsets.navigationBarsIgnoringVisibility)
             .padding(PagePadding)
-            .pointerInput(viewModel.currentPage, viewModel.totalPages, viewModel.prefs.verticalAppGestures) {
-                val handleDragEnd = {
-                    val wrap = viewModel.prefs.infiniteScroll
-                    val threshold = 100f
-                    if (abs(dragAccumulator) > threshold) {
-                        if (dragAccumulator < 0) {
-                            val next = if (viewModel.currentPage < viewModel.totalPages - 1)
-                                viewModel.currentPage + 1
-                            else if (wrap) 0 else viewModel.currentPage
-                            viewModel.showPage(next)
+            .pointerInput(viewModel.prefs.verticalAppGestures) {
+                val threshold = 17.5.dp.toPx()
+                var accumulated = 0f
+                val onEnd = {
+                    if (abs(accumulated) > threshold) {
+                        val wrap = viewModel.prefs.infiniteScroll
+                        val page = viewModel.currentPage
+                        val last = viewModel.totalPages - 1
+                        if (accumulated < 0) {
+                            val next = if (page < last) page + 1 else if (wrap) 0 else page
+                            if (next != page) viewModel.showPage(next)
+                        } else if (!wrap && page == 0) {
+                            viewModel.navigateTo(Screen.HOME)
                         } else {
-                            if (!wrap && viewModel.currentPage == 0) {
-                                viewModel.navigateTo(Screen.HOME)
-                            } else {
-                                val prev = if (viewModel.currentPage > 0)
-                                    viewModel.currentPage - 1
-                                else viewModel.totalPages - 1
-                                viewModel.showPage(prev)
-                            }
+                            viewModel.showPage(if (page > 0) page - 1 else last)
                         }
                     }
                 }
                 if (viewModel.prefs.verticalAppGestures) {
                     detectVerticalDragGestures(
-                        onDragStart = { dragAccumulator = 0f },
-                        onDragEnd = handleDragEnd,
-                        onVerticalDrag = { _, dragAmount -> dragAccumulator += dragAmount },
+                        onDragStart = { accumulated = 0f },
+                        onDragEnd = onEnd,
+                        onVerticalDrag = { _, dragAmount -> accumulated += dragAmount },
                     )
                 } else {
                     detectHorizontalDragGestures(
-                        onDragStart = { dragAccumulator = 0f },
-                        onDragEnd = handleDragEnd,
-                        onHorizontalDrag = { _, dragAmount -> dragAccumulator += dragAmount },
+                        onDragStart = { accumulated = 0f },
+                        onDragEnd = onEnd,
+                        onHorizontalDrag = { _, dragAmount -> accumulated += dragAmount },
                     )
                 }
             },
@@ -159,11 +158,17 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 .weight(1f),
         ) {
             val columns = viewModel.gridColumns
-            val rowHeight = if (viewModel.prefs.hideAppNames) AllAppsRowHeightNoLabels else AllAppsRowHeight
+            val hideLabels = viewModel.prefs.hideAppNames
+            val showBadges = viewModel.prefs.notificationIndicators
+            val reorder = viewModel.reorderMode
+            val refresh = viewModel.shortcutRefresh
+            val counts = if (showBadges) viewModel.notificationCounts else emptyMap()
+            val highlight = if (reorder) viewModel.reorderHighlightIndex else -1
+            val rowHeight = if (hideLabels) AllAppsRowHeightNoLabels else AllAppsRowHeight
             val measuredRows = (maxHeight / rowHeight).toInt().coerceAtLeast(1)
-            val perPage = if (viewModel.reorderMode) viewModel.appsPerPage else measuredRows * columns
+            val perPage = if (reorder) viewModel.appsPerPage else measuredRows * columns
             val rows = perPage / columns
-            if (!viewModel.reorderMode && viewModel.appsPerPage != perPage) {
+            if (!reorder && viewModel.appsPerPage != perPage) {
                 viewModel.updateAppsPerPage(perPage)
             }
             val pageApps = remember(viewModel.currentPage, viewModel.orderedApps, perPage) {
@@ -176,6 +181,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 while (list.size < perPage) list.add(AppModel("", "", ""))
                 list
             }
+            val pageStart = viewModel.currentPage * perPage
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.SpaceEvenly,
@@ -193,17 +199,15 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                             contentAlignment = Alignment.Center,
                         ) {
                             val idx = row * columns + col
-                            val absoluteIndex = viewModel.currentPage * perPage + idx
+                            val absoluteIndex = pageStart + idx
                             val app = slots.getOrElse(idx) { AppModel("", "", "") }
                             if (app.packageName.isNotEmpty()) {
                                 AppGridItem(
                                     app = app,
-                                    notificationCount = if (viewModel.prefs.notificationIndicators &&
-                                        app.shortcutId.isEmpty())
-                                        viewModel.notificationCounts[app.packageName] ?: 0 else 0,
-                                    isHighlighted = viewModel.reorderMode && absoluteIndex == viewModel.reorderHighlightIndex,
-                                    hideLabel = viewModel.prefs.hideAppNames,
-                                    refresh = viewModel.shortcutRefresh,
+                                    notificationCount = if (app.shortcutId.isEmpty()) counts[app.packageName] ?: 0 else 0,
+                                    isHighlighted = absoluteIndex == highlight,
+                                    hideLabel = hideLabels,
+                                    refresh = refresh,
                                     onClick = {
                                         if (viewModel.reorderMode) {
                                             showReorderHint = false
@@ -234,104 +238,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
 
         val wrap = viewModel.prefs.infiniteScroll
         if (viewModel.reorderMode || (!viewModel.prefs.hideArrowButtons && viewModel.totalPages > 1)) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterStart) {
-                        val canGoPrev = viewModel.currentPage > 0 || wrap
-                        if (canGoPrev) {
-                            ArrowButton(
-                                iconRes = R.drawable.ic_arrow_left,
-                                onClick = {
-                                    val prev = if (viewModel.currentPage > 0)
-                                        viewModel.currentPage - 1 else viewModel.totalPages - 1
-                                    viewModel.showPage(prev)
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-
-            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                if (viewModel.reorderMode) {
-                    val buttonShape = LocalSmallIconShape.current
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.RestartAlt,
-                            contentDescription = stringResource(R.string.cd_reset_order),
-                            tint = LocalInk.current,
-                            modifier = Modifier
-                                .size(ArrowSize)
-                                .border(2.5.dp, LocalInk.current, buttonShape)
-                                .clickable { showResetConfirm = true }
-                                .padding(8.dp),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Box(
-                            modifier = Modifier
-                                .height(ArrowSize)
-                                .border(2.5.dp, LocalInk.current, buttonShape)
-                                .clickable { viewModel.finishReorder() }
-                                .padding(horizontal = 12.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.save_uppercase),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = LatoFamily,
-                                color = LocalInk.current,
-                                maxLines = 1,
-                            )
-                        }
-                    }
-                } else {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        for (i in 0 until viewModel.totalPages) {
-                            Box(
-                                Modifier
-                                    .padding(horizontal = 4.dp)
-                                    .size(8.dp)
-                                    .then(
-                                        if (i == viewModel.currentPage) Modifier.background(LocalInk.current, CircleShape)
-                                        else Modifier.border(1.5.dp, LocalInk.current, CircleShape)
-                                    )
-                            )
-                        }
-                    }
-                }
-            }
-
-            Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterEnd) {
-                        val canGoNext = viewModel.currentPage < viewModel.totalPages - 1 || wrap
-                        if (canGoNext) {
-                            ArrowButton(
-                                iconRes = R.drawable.ic_arrow_right,
-                                onClick = {
-                                    val next = if (viewModel.currentPage < viewModel.totalPages - 1)
-                                        viewModel.currentPage + 1 else 0
-                                    viewModel.showPage(next)
-                                },
-                            )
-                        }
-                    }
-                }
-            }
-        }
+            PageNavRow(viewModel, wrap, onResetOrder = { showResetConfirm = true })
         }
     }
 
@@ -386,6 +293,108 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
 }
 
 @Composable
+private fun PageNavRow(viewModel: MainViewModel, wrap: Boolean, onResetOrder: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterStart) {
+                    val canGoPrev = viewModel.currentPage > 0 || wrap
+                    if (canGoPrev) {
+                        ArrowButton(
+                            iconRes = R.drawable.ic_arrow_left,
+                            onClick = {
+                                val prev = if (viewModel.currentPage > 0)
+                                    viewModel.currentPage - 1 else viewModel.totalPages - 1
+                                viewModel.showPage(prev)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+
+        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            if (viewModel.reorderMode) {
+                val buttonShape = LocalSmallIconShape.current
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.RestartAlt,
+                        contentDescription = stringResource(R.string.cd_reset_order),
+                        tint = LocalInk.current,
+                        modifier = Modifier
+                            .size(ArrowSize)
+                            .border(2.5.dp, LocalInk.current, buttonShape)
+                            .clickable(onClick = onResetOrder)
+                            .padding(8.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .height(ArrowSize)
+                            .border(2.5.dp, LocalInk.current, buttonShape)
+                            .clickable { viewModel.finishReorder() }
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.save_uppercase),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = LatoFamily,
+                            color = LocalInk.current,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    for (i in 0 until viewModel.totalPages) {
+                        Box(
+                            Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(8.dp)
+                                .then(
+                                    if (i == viewModel.currentPage) Modifier.background(LocalInk.current, CircleShape)
+                                    else Modifier.border(1.5.dp, LocalInk.current, CircleShape)
+                                )
+                        )
+                    }
+                }
+            }
+        }
+
+        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterEnd) {
+                    val canGoNext = viewModel.currentPage < viewModel.totalPages - 1 || wrap
+                    if (canGoNext) {
+                        ArrowButton(
+                            iconRes = R.drawable.ic_arrow_right,
+                            onClick = {
+                                val next = if (viewModel.currentPage < viewModel.totalPages - 1)
+                                    viewModel.currentPage + 1 else 0
+                                viewModel.showPage(next)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun AppGridItem(
     app: AppModel,
     notificationCount: Int,
@@ -395,16 +404,10 @@ private fun AppGridItem(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
-    val context = LocalContext.current
     val iconSize = LocalIconSize.current
-    val sizePx = remember(iconSize) { (iconSize.value * context.resources.displayMetrics.density).toInt() }
-    val bitmap = remember(app.key, refresh, sizePx) {
-        if (app.shortcutId.isNotEmpty()) {
-            IconUtility.loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
-        } else {
-            IconUtility.loadIcon(context, app.packageName, app.activityName, sizePx)
-        }
-    }
+    val density = LocalDensity.current
+    val sizePx = remember(iconSize, density) { with(density) { iconSize.roundToPx() } }
+    val bitmap = rememberAppIcon(app.packageName, app.activityName, app.shortcutId, sizePx, refresh)
     val isRounded = LocalIconShape.current != CircleShape
 
     Column(
@@ -430,30 +433,14 @@ private fun AppGridItem(
         }
         if (!hideLabel) {
             Spacer(Modifier.height(4.dp))
-            val textMeasurer = androidx.compose.ui.text.rememberTextMeasurer()
-            val maxWidth = with(androidx.compose.ui.platform.LocalDensity.current) { 110.dp.toPx() }
-            val style = TextStyle(fontSize = 18.sp, fontFamily = LatoFamily)
-            val displayLabel = remember(app.label) {
-                val full = textMeasurer.measure(app.label, style, maxLines = 1)
-                if (full.size.width <= maxWidth.toInt()) {
-                    app.label
-                } else {
-                    var end = app.label.length
-                    while (end > 1) {
-                        end--
-                        val truncated = app.label.take(end) + "."
-                        val measured = textMeasurer.measure(truncated, style, maxLines = 1)
-                        if (measured.size.width <= maxWidth.toInt()) return@remember truncated
-                    }
-                    "."
-                }
-            }
             Text(
-                text = displayLabel,
+                text = app.label,
                 fontSize = 18.sp,
                 fontFamily = LatoFamily,
                 color = LocalInk.current,
                 maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.width(110.dp),
             )

@@ -26,11 +26,15 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
+import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -79,8 +83,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -99,7 +105,7 @@ import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.WeatherHelper
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel,
@@ -209,8 +215,12 @@ fun HomeScreen(
         androidx.compose.foundation.layout.BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
-                .then(if (!viewModel.prefs.hideStatusBar) Modifier.statusBarsPadding() else Modifier)
-                .navigationBarsPadding()
+                .then(
+                    if (!viewModel.prefs.hideStatusBar)
+                        Modifier.windowInsetsPadding(WindowInsets.statusBarsIgnoringVisibility)
+                    else Modifier
+                )
+                .windowInsetsPadding(WindowInsets.navigationBarsIgnoringVisibility)
                 .padding(PagePadding),
         ) {
         val gridRowHeight = if (viewModel.prefs.hideAppNames) AllAppsRowHeightNoLabels else AllAppsRowHeight
@@ -814,14 +824,9 @@ private fun ShortcutItem(
     val slotShortcutId = remember(refresh) { viewModel.prefs.loadSlotShortcutId(slot) }
     val label = remember(refresh) { viewModel.getShortcutLabel(slot, defaultLabel) }
     val iconSize = LocalIconSize.current
-    val sizePx = remember(iconSize) { (iconSize.value * context.resources.displayMetrics.density).toInt() }
-    val bitmap = remember(pkg, activityName, refresh, sizePx) {
-        when {
-            pkg == null -> null
-            slotShortcutId != null -> IconUtility.loadShortcutIcon(context, pkg, slotShortcutId, sizePx)
-            else -> IconUtility.loadIcon(context, pkg, activityName, sizePx)
-        }
-    }
+    val density = LocalDensity.current
+    val sizePx = remember(iconSize, density) { with(density) { iconSize.roundToPx() } }
+    val bitmap = rememberAppIcon(pkg ?: "", activityName, slotShortcutId ?: "", sizePx, refresh)
 
     val notificationCount = if (viewModel.prefs.notificationIndicators && slotShortcutId == null)
         pkg?.let { viewModel.notificationCounts[it] ?: 0 } ?: 0 else 0
@@ -841,24 +846,45 @@ private fun ShortcutItem(
         }
         if (!viewModel.prefs.hideAppNames) {
             Spacer(Modifier.height(4.dp))
+            val labelWidth = if (viewModel.prefs.homeIslands) 110.dp - 24.dp else 110.dp
+            var lineLeft by remember { mutableFloatStateOf(0f) }
+            var lineRight by remember { mutableFloatStateOf(0f) }
             Text(
                 text = label,
-                modifier = Modifier.homeIsland(
-                    show = viewModel.prefs.homeIslands,
-                    surface = LocalSurface.current,
-                    ink = LocalInk.current,
-                    hPad = 12.dp,
-                    vPad = 2.dp,
-                ),
+                modifier = Modifier
+                    .widthIn(max = labelWidth)
+                    .homeIsland(
+                        show = viewModel.prefs.homeIslands,
+                        surface = LocalSurface.current,
+                        ink = LocalInk.current,
+                        hPad = 12.dp,
+                        vPad = 2.dp,
+                        bounds = { lineLeft to lineRight },
+                    ),
                 fontSize = 18.sp,
                 fontFamily = LatoFamily,
                 color = LocalInk.current,
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+                onTextLayout = {
+                    lineLeft = it.getLineLeft(0)
+                    lineRight = it.getLineRight(0)
+                },
             )
         }
     }
 }
 
-internal fun Modifier.homeIsland(show: Boolean, surface: Color, ink: Color, hPad: Dp = 8.dp, vPad: Dp = 7.dp): Modifier =
+internal fun Modifier.homeIsland(
+    show: Boolean,
+    surface: Color,
+    ink: Color,
+    hPad: Dp = 8.dp,
+    vPad: Dp = 7.dp,
+    bounds: (() -> Pair<Float, Float>)? = null,
+): Modifier =
     if (!show) this else drawBehind {
         val px = hPad.toPx()
         val py = vPad.toPx()
@@ -869,8 +895,11 @@ internal fun Modifier.homeIsland(show: Boolean, surface: Color, ink: Color, hPad
             .coerceAtMost(2.dp.toPx())
             .coerceAtMost(py - 1.dp.toPx())
             .coerceAtLeast(0f)
-        val topLeft = Offset(-px, -py + bias)
-        val rectSize = Size(size.width + px * 2, size.height + py * 2)
+        val b = bounds?.invoke()
+        val left = if (b != null && b.second > b.first) b.first.coerceIn(0f, size.width) else 0f
+        val right = if (b != null && b.second > b.first) b.second.coerceIn(0f, size.width) else size.width
+        val topLeft = Offset(left - px, -py + bias)
+        val rectSize = Size(right - left + px * 2, size.height + py * 2)
         drawRoundRect(color = surface, topLeft = topLeft, size = rectSize, cornerRadius = corner)
         drawRoundRect(
             color = ink,

@@ -152,8 +152,11 @@
     <string name="app_gesture_direction">App-Gestenrichtung</string>
     <string name="gesture_horizontal">Horizontal</string>
     <string name="gesture_vertical">Vertikal</string>
-    <string name="dark_mode">Dunkler Modus</string>
-    <string name="dark_mode_desc">Weiß auf schwarzem Design</string>
+    <string name="theme_mode">Designmodus</string>
+    <string name="theme_mode_desc">Hell, dunkel oder wie das System</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Hell</string>
+    <string name="theme_dark">Dunkel</string>
     <string name="section_appearance">Darstellung</string>
     <string name="section_home">Startbildschirm</string>
     <string name="section_all_apps">Alle Apps</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Wird für das Sperrbildschirm-Widget, das Abdecken der Statusleisten-Uhr, das Sperren des Telefons und den Bildschirmschoner verwendet. Zeichnet nur über Sperrbildschirm und Statusleiste; liest nichts aus deinen Apps.</string>
     <string name="lockscreen_widget_apps">Apps für Sperrbildschirm-Benachrichtigungen</string>
     <string name="lockscreen_widget_apps_desc">Wähle, welche Apps im Sperrbildschirm-Widget erscheinen</string>
+    <string name="lockscreen_message">Sperrbildschirm-Nachricht</string>
+    <string name="lockscreen_message_desc">Eigener Text am unteren Rand des Sperrbildschirms</string>
     <string name="lockscreen_sort">Sperrbildschirm-Sortierung</string>
     <string name="sort_latest_top">Neueste oben</string>
     <string name="sort_oldest_top">Älteste oben</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Start</string>
     <string name="screensaver_on_power">Mit Ein-/Aus-Taste öffnen</string>
     <string name="screensaver_on_power_desc">Bildschirmschoner anzeigen, wenn der Bildschirm ausgeht, benötigt den Bedienungshilfen-Dienst</string>
+    <string name="screensaver_app_label">Katapult Bildschirmschoner</string>
+    <string name="screensaver_app_icon">Bildschirmschoner-Symbol</string>
+    <string name="screensaver_app_icon_desc">Fügt ein Bildschirmschoner-Symbol zur App-Liste hinzu</string>
     <string name="screensaver_wallpaper_custom">Eigenes Bild</string>
     <string name="screensaver_wallpaper_home">Startbild-Hintergrund wird verwendet</string>
     <string name="screensaver_image">Bildschirmschoner-Bild</string>

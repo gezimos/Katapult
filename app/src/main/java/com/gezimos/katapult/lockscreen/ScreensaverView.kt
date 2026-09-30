@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.BatteryManager
 import android.os.Handler
 import android.os.Looper
@@ -60,6 +59,7 @@ import com.gezimos.katapult.ui.LocalIconShape
 import com.gezimos.katapult.ui.LocalInk
 import com.gezimos.katapult.ui.LocalSurface
 import com.gezimos.katapult.ui.PagePadding
+import com.gezimos.katapult.util.BitmapHelper
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
@@ -105,11 +105,11 @@ fun ScreensaverView() {
     }
 
     val directBadges = remember {
-        if (DeviceHelper.isMuditaKompakt()) DirectBadgeHelper(context) else null
+        if (DeviceHelper.isMuditaKompakt()) DirectBadgeHelper.getInstance(context) else null
     }
     DisposableEffect(Unit) {
-        directBadges?.start()
-        onDispose { directBadges?.stop() }
+        directBadges?.acquire()
+        onDispose { directBadges?.release() }
     }
 
     var clock by remember { mutableStateOf(computeClock(context, prefs)) }
@@ -139,7 +139,22 @@ fun ScreensaverView() {
         else -> {
             DisposableEffect(Unit) {
                 val receiver = object : BroadcastReceiver() {
-                    override fun onReceive(c: Context, i: Intent) { clock = computeClock(context, prefs) }
+                    override fun onReceive(c: Context, i: Intent) {
+                        if (i.action == Intent.ACTION_BATTERY_CHANGED) {
+                            val level = i.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                            val scale = i.getIntExtra(BatteryManager.EXTRA_SCALE, 100)
+                            val battery = if (level >= 0) (level * 100) / scale else -1
+                            val status = i.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                            val charging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                                status == BatteryManager.BATTERY_STATUS_FULL
+                            val current = clock
+                            if (current.battery != battery || current.charging != charging) {
+                                clock = current.copy(battery = battery, charging = charging)
+                            }
+                            return
+                        }
+                        clock = computeClock(context, prefs)
+                    }
                 }
                 context.registerReceiver(receiver, IntentFilter().apply {
                     addAction(Intent.ACTION_TIME_TICK)
@@ -151,21 +166,21 @@ fun ScreensaverView() {
             }
             DisposableEffect(Unit) {
                 val main = Handler(Looper.getMainLooper())
-                val refresh = { main.post { rowsState = computeRows(context, prefs, directBadges) } }
-                directBadges?.onCountsChanged = { refresh() }
+                val refresh: () -> Unit = { main.post { rowsState = computeRows(context, prefs, directBadges) } }
+                directBadges?.addListener(refresh)
                 NotificationListener.onCountsChangedDream = { refresh() }
                 onDispose {
                     NotificationListener.onCountsChangedDream = null
-                    directBadges?.onCountsChanged = null
+                    directBadges?.removeListener(refresh)
                 }
             }
         }
     }
 
     val wallpaper = remember {
-        try {
-            (prefs.screensaverWallpaperPath ?: prefs.wallpaperPath)?.let { BitmapFactory.decodeFile(it) }
-        } catch (_: Exception) { null }
+        (prefs.screensaverWallpaperPath ?: prefs.wallpaperPath)?.let {
+            BitmapHelper.decodeFile(it, BitmapHelper.screenMaxSide(context))
+        }
     }
 
     val iconShape = if (prefs.roundedIcons) RoundedCornerShape(8.dp) else CircleShape
@@ -300,12 +315,21 @@ private fun millisToNextBoundary(intervalMinutes: Int): Long {
     return minsToNext * 60_000L - cal.get(Calendar.SECOND) * 1000L - cal.get(Calendar.MILLISECOND)
 }
 
+private val AM_PM_REGEX = Regex("\\s*[AaPp][Mm]\\s*")
+
+private val dateFormatCache = mutableMapOf<String, SimpleDateFormat>()
+
+private fun dateFormatter(pattern: String): SimpleDateFormat {
+    val locale = Locale.getDefault()
+    return dateFormatCache.getOrPut("$pattern|$locale") { SimpleDateFormat(pattern, locale) }
+}
+
 private fun computeClock(context: Context, prefs: PrefsManager): SsClock {
     val now = Date()
     val clockPattern = prefs.clockFormat
     val fullTime = if (clockPattern == "system") DateFormat.getTimeFormat(context).format(now)
-        else SimpleDateFormat(clockPattern, Locale.getDefault()).format(now)
-    val time = fullTime.replace(Regex("\\s*[AaPp][Mm]\\s*"), "").trim()
+        else dateFormatter(clockPattern).format(now)
+    val time = fullTime.replace(AM_PM_REGEX, "").trim()
     val upper = fullTime.uppercase()
     val amPm = when {
         upper.contains("AM") -> "AM"
@@ -314,7 +338,7 @@ private fun computeClock(context: Context, prefs: PrefsManager): SsClock {
     }
     val datePattern = prefs.dateFormat
     val date = if (datePattern == "system") DateFormat.getLongDateFormat(context).format(now)
-        else SimpleDateFormat(datePattern, Locale.getDefault()).format(now)
+        else dateFormatter(datePattern).format(now)
 
     val alarm = (context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager)
         .nextAlarmClock?.let { DateFormat.getTimeFormat(context).format(Date(it.triggerTime)) }

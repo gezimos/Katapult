@@ -11,22 +11,16 @@
 <div align="center">
     <table>
         <tr>
-            <td><img src='docs/img/screenshots/home-rounded.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/home-circle.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/home-minimal.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/widget.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/home_music_weather.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/home_clean.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/all_apps_80.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/lockscreen_widgets.png' height='300' alt=""></td>
         </tr>
         <tr>
-            <td><img src='docs/img/screenshots/grid.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/grid-rounded.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/grid-circle.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/grid-page.png' height='300' alt=""></td>
-        </tr>
-        <tr>
-            <td><img src='docs/img/screenshots/hide_names.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/wallpapers.png' height='300' alt=""></td>
-            <td><img src='docs/img/screenshots/reorder.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/with_wallpaper.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/dark_home.png' height='300' alt=""></td>
             <td><img src='docs/img/screenshots/settings.png' height='300' alt=""></td>
+            <td><img src='docs/img/screenshots/order_apps.png' height='300' alt=""></td>
         </tr>
     </table>
 </div>

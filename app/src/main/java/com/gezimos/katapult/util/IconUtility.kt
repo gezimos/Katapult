@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.XmlResourceParser
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.PorterDuff
@@ -16,6 +15,10 @@ import android.util.LruCache
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import com.gezimos.katapult.R
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
@@ -127,7 +130,46 @@ object IconUtility {
     private fun resolveBundled(resName: String): Int? =
         bundledIcons.firstOrNull { it.resName == resName }?.resId
 
+    @Volatile
+    private var overrides: Map<String, String>? = null
+
+    fun invalidateOverrides() {
+        overrides = null
+    }
+
+    private fun overrideFor(context: Context, key: String): String? {
+        var map = overrides
+        if (map == null) {
+            map = runCatching {
+                context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE).all
+                    .asSequence()
+                    .filter { it.key.startsWith("icon_override_") && it.value is String }
+                    .associate { it.key.removePrefix("icon_override_") to it.value as String }
+            }.getOrDefault(emptyMap())
+            overrides = map
+        }
+        return map[key]
+    }
+
+    fun cachedIcon(
+        context: Context,
+        packageName: String,
+        activityClass: String,
+        shortcutId: String,
+        sizePx: Int,
+    ): Bitmap? {
+        if (packageName.isBlank() || sizePx <= 0) return null
+        return if (shortcutId.isNotEmpty()) {
+            val override = overrideFor(context, "$packageName|$shortcutId")
+            bitmapCache.get("$packageName|$shortcutId:$sizePx:${override ?: ""}")
+        } else {
+            val override = overrideFor(context, packageName)
+            bitmapCache.get("$packageName:$activityClass:$sizePx:${override ?: ""}")
+        }
+    }
+
     fun clearCacheFor(key: String) {
+        invalidateOverrides()
         val prefixes = if (key.contains('|')) listOf("$key:") else listOf("$key:", "$key|")
         val keys = bitmapCache.snapshot().keys.filter { cached ->
             prefixes.any { cached.startsWith(it) }
@@ -147,10 +189,7 @@ object IconUtility {
     fun loadIcon(context: Context, packageName: String, activityClass: String, sizePx: Int): Bitmap? {
         if (packageName.isBlank() || sizePx <= 0) return null
 
-        val override = runCatching {
-            context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
-                .getString("icon_override_$packageName", null)
-        }.getOrNull()
+        val override = overrideFor(context, packageName)
 
         val cacheKey = "$packageName:$activityClass:$sizePx:${override ?: ""}"
         bitmapCache.get(cacheKey)?.let { return it }
@@ -196,7 +235,7 @@ object IconUtility {
                     val path = override.removePrefix("file:")
                     val file = File(path)
                     if (!file.exists()) return null
-                    val bmp = BitmapFactory.decodeFile(path) ?: return null
+                    val bmp = BitmapHelper.decodeFile(path, sizePx * 2) ?: return null
                     drawableToBitmap(BitmapDrawable(context.resources, bmp), sizePx)
                 }
                 override.startsWith("res:") -> {
@@ -311,19 +350,32 @@ object IconUtility {
         return bitmap
     }
 
-    fun preloadIcons(context: Context, apps: List<com.gezimos.katapult.model.AppModel>, sizePx: Int) {
-        for (app in apps) {
-            if (app.shortcutId.isNotEmpty()) loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
-            else loadIcon(context, app.packageName, app.activityName, sizePx)
-        }
+    suspend fun preloadIcons(
+        context: Context,
+        apps: List<com.gezimos.katapult.model.AppModel>,
+        sizePx: Int,
+    ) = coroutineScope {
+        val workers = 4
+        (0 until workers).map { worker ->
+            async(Dispatchers.IO) {
+                var i = worker
+                while (i < apps.size) {
+                    val app = apps[i]
+                    if (app.shortcutId.isNotEmpty()) {
+                        loadShortcutIcon(context, app.packageName, app.shortcutId, sizePx)
+                    } else {
+                        loadIcon(context, app.packageName, app.activityName, sizePx)
+                    }
+                    i += workers
+                }
+            }
+        }.awaitAll()
+        Unit
     }
 
     fun loadShortcutIcon(context: Context, packageName: String, shortcutId: String, sizePx: Int): Bitmap? {
         if (packageName.isBlank() || shortcutId.isBlank() || sizePx <= 0) return null
-        val override = runCatching {
-            context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
-                .getString("icon_override_$packageName|$shortcutId", null)
-        }.getOrNull()
+        val override = overrideFor(context, "$packageName|$shortcutId")
 
         val cacheKey = "$packageName|$shortcutId:$sizePx:${override ?: ""}"
         bitmapCache.get(cacheKey)?.let { return it }
@@ -347,7 +399,11 @@ object IconUtility {
             }
         } catch (_: Exception) {
             null
-        } ?: return loadIcon(context, packageName, "", sizePx)
+        } ?: run {
+            val fallback = loadIcon(context, packageName, "", sizePx) ?: return null
+            if (ShortcutHelper.hasHostPermission(context)) bitmapCache.put(cacheKey, fallback)
+            return fallback
+        }
 
         bitmapCache.put(cacheKey, bitmap)
         return bitmap

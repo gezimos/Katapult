@@ -152,8 +152,11 @@
     <string name="app_gesture_direction">Direzione gesti app</string>
     <string name="gesture_horizontal">Orizzontale</string>
     <string name="gesture_vertical">Verticale</string>
-    <string name="dark_mode">Modalità scura</string>
-    <string name="dark_mode_desc">Tema bianco su nero</string>
+    <string name="theme_mode">Modalità tema</string>
+    <string name="theme_mode_desc">Chiaro, scuro o come il sistema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Chiaro</string>
+    <string name="theme_dark">Scuro</string>
     <string name="section_appearance">Aspetto</string>
     <string name="section_home">Schermata home</string>
     <string name="section_all_apps">Tutte le app</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Usato per il widget delle notifiche sulla schermata di blocco, la copertura dell\'orologio della barra di stato, il blocco del telefono e il salvaschermo. Disegna solo sulla schermata di blocco e sulla barra di stato; non legge nulla dalle tue app.</string>
     <string name="lockscreen_widget_apps">App delle notifiche sulla schermata di blocco</string>
     <string name="lockscreen_widget_apps_desc">Scegli quali app appaiono nel widget della schermata di blocco</string>
+    <string name="lockscreen_message">Messaggio schermata di blocco</string>
+    <string name="lockscreen_message_desc">Il tuo testo in fondo alla schermata di blocco</string>
     <string name="lockscreen_sort">Ordinamento schermata di blocco</string>
     <string name="sort_latest_top">Più recenti in alto</string>
     <string name="sort_oldest_top">Più vecchie in alto</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Home</string>
     <string name="screensaver_on_power">Apri con il tasto di accensione</string>
     <string name="screensaver_on_power_desc">Mostra il salvaschermo quando lo schermo si spegne, richiede il servizio di accessibilità</string>
+    <string name="screensaver_app_label">Salvaschermo Katapult</string>
+    <string name="screensaver_app_icon">Icona salvaschermo</string>
+    <string name="screensaver_app_icon_desc">Aggiunge un\'icona salvaschermo all\'elenco app</string>
     <string name="screensaver_wallpaper_custom">Immagine personalizzata</string>
     <string name="screensaver_wallpaper_home">Usa lo sfondo della home</string>
     <string name="screensaver_image">Immagine del salvaschermo</string>

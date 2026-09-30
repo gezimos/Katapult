@@ -1,7 +1,6 @@
 package com.gezimos.katapult.ui
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,20 +20,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import com.gezimos.katapult.util.IconUtility
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.translate
+import kotlin.math.roundToInt
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -165,60 +174,87 @@ val LocalSmallIconShape = compositionLocalOf<Shape> { CircleShape }
 val LocalSheetDismissSignal = compositionLocalOf { 0 }
 
 @Composable
+fun rememberAppIcon(
+    packageName: String,
+    activityName: String,
+    shortcutId: String,
+    sizePx: Int,
+    refresh: Int,
+): Bitmap? {
+    val context = LocalContext.current
+    val initial = remember(packageName, activityName, shortcutId, sizePx, refresh) {
+        IconUtility.cachedIcon(context, packageName, activityName, shortcutId, sizePx)
+    }
+    var bitmap by remember(packageName, activityName, shortcutId, sizePx, refresh) {
+        mutableStateOf(initial)
+    }
+    if (bitmap == null && packageName.isNotEmpty() && sizePx > 0) {
+        LaunchedEffect(packageName, activityName, shortcutId, sizePx, refresh) {
+            bitmap = withContext(Dispatchers.Default) {
+                if (shortcutId.isNotEmpty()) {
+                    IconUtility.loadShortcutIcon(context, packageName, shortcutId, sizePx)
+                } else {
+                    IconUtility.loadIcon(context, packageName, activityName, sizePx)
+                }
+            }
+        }
+    }
+    return bitmap
+}
+
+@Composable
 fun AppIconCircle(bitmap: Bitmap?, size: Dp, borderWidth: Dp = 2.5.dp, shape: Shape = LocalIconShape.current) {
+    val image = remember(bitmap) { bitmap?.asImageBitmap() }
+    val filter = LocalIconFilter.current
     Box(
         modifier = Modifier
             .size(size)
             .clip(shape)
-            .background(LocalSurface.current),
-    ) {
-        if (bitmap != null) {
-            Image(
-                bitmap = bitmap.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                colorFilter = LocalIconFilter.current,
-            )
-        }
-        Box(
-            Modifier
-                .fillMaxSize()
-                .border(borderWidth, LocalInk.current, shape)
-        )
-    }
+            .background(LocalSurface.current)
+            .drawBehind {
+                if (image != null) {
+                    drawImage(
+                        image = image,
+                        dstSize = IntSize(this.size.width.roundToInt(), this.size.height.roundToInt()),
+                        colorFilter = filter,
+                    )
+                }
+            }
+            .border(borderWidth, LocalInk.current, shape),
+    )
 }
+
+private val arrowImages = HashMap<Int, ImageBitmap>()
 
 @Composable
 fun ArrowButton(iconRes: Int, onClick: () -> Unit) {
     val shape = LocalSmallIconShape.current
     val ink = LocalInk.current
+    val context = LocalContext.current
+    val image = remember(iconRes) {
+        arrowImages.getOrPut(iconRes) {
+            val b = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888)
+            context.getDrawable(iconRes)?.let { d ->
+                d.setBounds(0, 0, 48, 48)
+                d.draw(android.graphics.Canvas(b))
+            }
+            b.asImageBitmap()
+        }
+    }
+    val filter = remember(ink) { ColorFilter.tint(ink) }
+    val glyph = with(LocalDensity.current) { 20.dp.roundToPx() }
     Box(
         modifier = Modifier
             .size(ArrowSize)
             .border(2.5.dp, ink, shape)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        val context = LocalContext.current
-        val drawable = remember(iconRes) { context.getDrawable(iconRes) }
-        if (drawable != null) {
-            val bmp = remember(iconRes) {
-                val b = android.graphics.Bitmap.createBitmap(48, 48, android.graphics.Bitmap.Config.ARGB_8888)
-                val c = android.graphics.Canvas(b)
-                drawable.setBounds(0, 0, 48, 48)
-                drawable.draw(c)
-                b
-            }
-            Image(
-                bitmap = bmp.asImageBitmap(),
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                contentScale = ContentScale.Fit,
-                colorFilter = ColorFilter.tint(ink),
-            )
-        }
-    }
+            .clickable(onClick = onClick)
+            .drawBehind {
+                val off = ((size.width - glyph) / 2f).roundToInt().toFloat()
+                translate(off, off) {
+                    drawImage(image, dstSize = IntSize(glyph, glyph), colorFilter = filter)
+                }
+            },
+    )
 }
 
 @Composable

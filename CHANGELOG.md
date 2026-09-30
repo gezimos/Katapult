@@ -2,6 +2,25 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.6]
+
+### Added
+- **Lockscreen Message**: your own line of text at the bottom of the lock screen, replacing "Touch the power button to unlock". Needs the Action Service.
+- **Screensaver shortcut** for other launchers, plus an optional Screensaver icon in the app drawer.
+
+### Changed
+- **Dark Mode** is now **Theme Mode**: System, Light or Dark.
+- Faster Home and All Apps: the app list and icons stay in memory.
+- **Most Used** sorting looks at the last 30 days.
+- Performance improvements.
+
+### Fixed
+- Weather keeps the last reading when the connection drops.
+- The music widget controls apps on the newer media API, like Transistor.
+- Long app names shorten to one line on Home, and text islands no longer leave a gap after them.
+- Renaming, removing or uninstalling an app updates its home slot straight away.
+- Wallpapers are stored at screen size, so they load faster.
+
 ## [1.5]
 
 ### Added

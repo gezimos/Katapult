@@ -152,8 +152,11 @@
     <string name="app_gesture_direction">Direção dos gestos</string>
     <string name="gesture_horizontal">Horizontal</string>
     <string name="gesture_vertical">Vertical</string>
-    <string name="dark_mode">Modo escuro</string>
-    <string name="dark_mode_desc">Tema branco sobre preto</string>
+    <string name="theme_mode">Modo de tema</string>
+    <string name="theme_mode_desc">Claro, escuro ou seguir o sistema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Escuro</string>
     <string name="section_appearance">Aparência</string>
     <string name="section_home">Ecrã inicial</string>
     <string name="section_all_apps">Todas as apps</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Usado para o widget de notificações do ecrã de bloqueio, cobrir o relógio da barra de estado, bloquear o telefone e a proteção de ecrã. Desenha apenas sobre o ecrã de bloqueio e a barra de estado; não lê nada das suas apps.</string>
     <string name="lockscreen_widget_apps">Apps de notificações do ecrã de bloqueio</string>
     <string name="lockscreen_widget_apps_desc">Escolha que apps aparecem no widget do ecrã de bloqueio</string>
+    <string name="lockscreen_message">Mensagem no ecrã de bloqueio</string>
+    <string name="lockscreen_message_desc">O seu texto no fundo do ecrã de bloqueio</string>
     <string name="lockscreen_sort">Ordenação do ecrã de bloqueio</string>
     <string name="sort_latest_top">Mais recentes no topo</string>
     <string name="sort_oldest_top">Mais antigas no topo</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Início</string>
     <string name="screensaver_on_power">Abrir com o botão de energia</string>
     <string name="screensaver_on_power_desc">Mostrar a proteção de ecrã quando o ecrã se desliga, requer o serviço de acessibilidade</string>
+    <string name="screensaver_app_label">Proteção de ecrã Katapult</string>
+    <string name="screensaver_app_icon">Ícone da proteção de ecrã</string>
+    <string name="screensaver_app_icon_desc">Adiciona um ícone da proteção de ecrã à lista de apps</string>
     <string name="screensaver_wallpaper_custom">Imagem personalizada</string>
     <string name="screensaver_wallpaper_home">A usar o fundo do ecrã inicial</string>
     <string name="screensaver_image">Imagem da proteção de ecrã</string>

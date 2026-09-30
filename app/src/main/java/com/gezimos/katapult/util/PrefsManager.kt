@@ -10,6 +10,8 @@ import java.util.Locale
 
 class PrefsManager(context: Context) {
 
+    private val appContext: Context = context.applicationContext
+
     private val prefs: SharedPreferences =
         context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
 
@@ -252,9 +254,20 @@ class PrefsManager(context: Context) {
         get() = boolPref(KEY_ROUNDED_ICONS, false)
         set(value) = prefs.edit().putBoolean(KEY_ROUNDED_ICONS, value).apply()
 
-    var darkMode: Boolean
-        get() = boolPref(KEY_DARK_MODE, false)
-        set(value) = prefs.edit().putBoolean(KEY_DARK_MODE, value).apply()
+    var themeMode: Int
+        get() = intPref(KEY_THEME_MODE, if (boolPref(KEY_DARK_MODE, false)) THEME_DARK else THEME_LIGHT)
+        set(value) = prefs.edit().putInt(KEY_THEME_MODE, value).apply()
+
+    val darkMode: Boolean
+        get() = when (themeMode) {
+            THEME_DARK -> true
+            THEME_SYSTEM -> {
+                val mode = appContext.resources.configuration.uiMode and
+                    android.content.res.Configuration.UI_MODE_NIGHT_MASK
+                mode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            }
+            else -> false
+        }
 
     var hideStatusBar: Boolean
         get() = boolPref(KEY_HIDE_STATUS_BAR, false)
@@ -358,6 +371,10 @@ class PrefsManager(context: Context) {
     var lockscreenWidgetLatestFirst: Boolean
         get() = boolPref(KEY_LOCKSCREEN_WIDGET_LATEST_FIRST, true)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_WIDGET_LATEST_FIRST, value).apply()
+
+    var lockscreenMessage: String?
+        get() = strPref(KEY_LOCKSCREEN_MESSAGE, null)
+        set(value) = prefs.edit().putString(KEY_LOCKSCREEN_MESSAGE, value).apply()
 
     var screensaverEnabled: Boolean
         get() = boolPref(KEY_SCREENSAVER_ENABLED, false)
@@ -570,6 +587,11 @@ class PrefsManager(context: Context) {
         private const val KEY_SHOW_WEATHER = "show_weather"
         private const val KEY_ROUNDED_ICONS = "rounded_icons"
         private const val KEY_DARK_MODE = "dark_mode"
+        private const val KEY_THEME_MODE = "theme_mode"
+
+        const val THEME_LIGHT = 0
+        const val THEME_DARK = 1
+        const val THEME_SYSTEM = 2
         private const val KEY_HIDE_STATUS_BAR = "hide_status_bar"
         private const val KEY_HIDE_STATUS_BAR_CLOCK = "hide_status_bar_clock"
         private const val KEY_EINK_REFRESH_HOME = "eink_refresh_home"
@@ -599,6 +621,7 @@ class PrefsManager(context: Context) {
         private const val KEY_LOCKSCREEN_WIDGET_ROWS = "lockscreen_widget_rows"
         private const val KEY_LOCKSCREEN_WIDGET_EXCLUDED = "lockscreen_widget_excluded"
         private const val KEY_LOCKSCREEN_WIDGET_LATEST_FIRST = "lockscreen_widget_latest_first"
+        private const val KEY_LOCKSCREEN_MESSAGE = "lockscreen_message"
         private const val KEY_SCREENSAVER_ENABLED = "screensaver_enabled"
         private const val KEY_SCREENSAVER_ISLANDS = "screensaver_islands"
         private const val KEY_SCREENSAVER_WALLPAPER = "screensaver_wallpaper"

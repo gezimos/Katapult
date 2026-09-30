@@ -152,8 +152,11 @@
     <string name="app_gesture_direction">Kierunek gestów</string>
     <string name="gesture_horizontal">Poziomy</string>
     <string name="gesture_vertical">Pionowy</string>
-    <string name="dark_mode">Tryb ciemny</string>
-    <string name="dark_mode_desc">Motyw biały na czarnym</string>
+    <string name="theme_mode">Tryb motywu</string>
+    <string name="theme_mode_desc">Jasny, ciemny lub jak system</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Jasny</string>
+    <string name="theme_dark">Ciemny</string>
     <string name="section_appearance">Wygląd</string>
     <string name="section_home">Ekran główny</string>
     <string name="section_all_apps">Wszystkie aplikacje</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Używana do widżetu powiadomień na ekranie blokady, zakrywania zegara paska stanu, blokowania telefonu i wygaszacza. Rysuje tylko na ekranie blokady i pasku stanu; nie odczytuje niczego z Twoich aplikacji.</string>
     <string name="lockscreen_widget_apps">Aplikacje powiadomień na ekranie blokady</string>
     <string name="lockscreen_widget_apps_desc">Wybierz, które aplikacje pojawiają się w widżecie ekranu blokady</string>
+    <string name="lockscreen_message">Wiadomość na ekranie blokady</string>
+    <string name="lockscreen_message_desc">Własny tekst na dole ekranu blokady</string>
     <string name="lockscreen_sort">Sortowanie na ekranie blokady</string>
     <string name="sort_latest_top">Najnowsze na górze</string>
     <string name="sort_oldest_top">Najstarsze na górze</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Główny</string>
     <string name="screensaver_on_power">Otwórz przyciskiem zasilania</string>
     <string name="screensaver_on_power_desc">Pokaż wygaszacz, gdy ekran się wyłącza, wymaga usługi ułatwień dostępu</string>
+    <string name="screensaver_app_label">Wygaszacz Katapult</string>
+    <string name="screensaver_app_icon">Ikona wygaszacza</string>
+    <string name="screensaver_app_icon_desc">Dodaje ikonę wygaszacza do listy aplikacji</string>
     <string name="screensaver_wallpaper_custom">Własny obraz</string>
     <string name="screensaver_wallpaper_home">Używa tapety ekranu głównego</string>
     <string name="screensaver_image">Obraz wygaszacza</string>

@@ -152,8 +152,11 @@
     <string name="app_gesture_direction">Richting app-gebaren</string>
     <string name="gesture_horizontal">Horizontaal</string>
     <string name="gesture_vertical">Verticaal</string>
-    <string name="dark_mode">Donkere modus</string>
-    <string name="dark_mode_desc">Wit-op-zwart thema</string>
+    <string name="theme_mode">Themamodus</string>
+    <string name="theme_mode_desc">Licht, donker of systeem volgen</string>
+    <string name="theme_system">Systeem</string>
+    <string name="theme_light">Licht</string>
+    <string name="theme_dark">Donker</string>
     <string name="section_appearance">Weergave</string>
     <string name="section_home">Startscherm</string>
     <string name="section_all_apps">Alle apps</string>
@@ -170,6 +173,8 @@
     <string name="lockscreen_widget_a11y_desc">Gebruikt voor de meldingswidget op het vergrendelscherm, het bedekken van de statusbalkklok, het vergrendelen van de telefoon en de schermbeveiliging. Tekent alleen over het vergrendelscherm en de statusbalk; leest niets uit je apps.</string>
     <string name="lockscreen_widget_apps">Apps voor vergrendelscherm-meldingen</string>
     <string name="lockscreen_widget_apps_desc">Kies welke apps in de vergrendelscherm-widget verschijnen</string>
+    <string name="lockscreen_message">Vergrendelschermbericht</string>
+    <string name="lockscreen_message_desc">Je eigen tekst onderaan het vergrendelscherm</string>
     <string name="lockscreen_sort">Sortering vergrendelscherm</string>
     <string name="sort_latest_top">Nieuwste bovenaan</string>
     <string name="sort_oldest_top">Oudste bovenaan</string>
@@ -231,6 +236,9 @@
     <string name="cat_home">Start</string>
     <string name="screensaver_on_power">Openen met aan/uit-knop</string>
     <string name="screensaver_on_power_desc">Toon de schermbeveiliging wanneer het scherm uitgaat, vereist de toegankelijkheidsdienst</string>
+    <string name="screensaver_app_label">Katapult-schermbeveiliging</string>
+    <string name="screensaver_app_icon">Schermbeveiligingspictogram</string>
+    <string name="screensaver_app_icon_desc">Voegt een schermbeveiligingspictogram toe aan de app-lijst</string>
     <string name="screensaver_wallpaper_custom">Aangepaste afbeelding</string>
     <string name="screensaver_wallpaper_home">Startscherm-achtergrond wordt gebruikt</string>
     <string name="screensaver_image">Schermbeveiligingsafbeelding</string>

@@ -95,6 +95,7 @@ import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.EinkHelper
 import com.gezimos.katapult.util.PrefsManager
 import com.gezimos.katapult.util.IconUtility
+import com.gezimos.katapult.util.ScreensaverShortcut
 import com.gezimos.katapult.util.ShortcutHelper
 import com.gezimos.katapult.util.UpdateChecker
 import com.gezimos.katapult.util.UsageHelper
@@ -127,7 +128,8 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var showWeather by remember { mutableStateOf(prefs.showWeather) }
     var roundedIcons by remember { mutableStateOf(prefs.roundedIcons) }
     var iconSize by remember { mutableIntStateOf(prefs.iconSize) }
-    var darkMode by remember { mutableStateOf(prefs.darkMode) }
+    var themeMode by remember { mutableIntStateOf(prefs.themeMode) }
+    var showThemeSheet by remember { mutableStateOf(false) }
     var hideStatusBar by remember { mutableStateOf(prefs.hideStatusBar) }
     var hideStatusBarClock by remember { mutableStateOf(prefs.hideStatusBarClock) }
     var showClockCoverSheet by remember { mutableStateOf(false) }
@@ -145,6 +147,9 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var appSortMode by remember { mutableIntStateOf(prefs.appSortMode) }
     var showSortSheet by remember { mutableStateOf(false) }
     var pendingSortMode by remember { mutableStateOf<Int?>(null) }
+    var lockscreenMessage by remember { mutableStateOf(prefs.lockscreenMessage.orEmpty()) }
+    var showLockscreenMessageSheet by remember { mutableStateOf(false) }
+    var pendingLockscreenMessage by remember { mutableStateOf<String?>(null) }
     var showClockFormatSheet by remember { mutableStateOf(false) }
     var showDateFormatSheet by remember { mutableStateOf(false) }
     var showDoubleTapSheet by remember { mutableStateOf(false) }
@@ -199,6 +204,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             if (text != null && prefs.importFromJson(text)) {
                 ShortcutHelper.syncAllPins(context, prefs)
+                IconUtility.invalidateOverrides()
                 restartApp(context)
             } else {
                 Toast.makeText(context, R.string.config_import_failed, Toast.LENGTH_SHORT).show()
@@ -225,6 +231,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     var screensaverUpdateMinutes by remember { mutableIntStateOf(prefs.screensaverUpdateMinutes) }
     var screensaverEinkRefresh by remember { mutableStateOf(prefs.screensaverEinkRefresh) }
     var screensaverOnPower by remember { mutableStateOf(prefs.screensaverOnPower) }
+    var screensaverAppIcon by remember { mutableStateOf(ScreensaverShortcut.isIconEnabled(context)) }
 
     // Poll notification listener permission to sync toggle state
     LaunchedEffect(context) {
@@ -268,6 +275,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 prefs.appSortMode = sortPending
                 pendingSortMode = null
                 viewModel.loadApps()
+            }
+            val messagePending = pendingLockscreenMessage
+            if (messagePending != null && serviceOn) {
+                lockscreenMessage = messagePending
+                prefs.lockscreenMessage = messagePending
+                pendingLockscreenMessage = null
             }
         }
     }
@@ -376,16 +389,16 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
             }
             add {
-                SettingsToggleRow(
-                    title = stringResource(R.string.dark_mode),
-                    description = stringResource(R.string.dark_mode_desc),
-                    checked = darkMode,
-                    onCheckedChange = {
-                        darkMode = it
-                        prefs.darkMode = it
-                        viewModel.darkMode = it
-                        viewModel.applyStatusBar(context)
-                    },
+                val themeLabel = when (themeMode) {
+                    PrefsManager.THEME_SYSTEM -> stringResource(R.string.theme_system)
+                    PrefsManager.THEME_DARK -> stringResource(R.string.theme_dark)
+                    else -> stringResource(R.string.theme_light)
+                }
+                SettingsCycleRow(
+                    title = stringResource(R.string.theme_mode),
+                    description = stringResource(R.string.theme_mode_desc),
+                    value = themeLabel,
+                    onClick = { showThemeSheet = true },
                 )
             }
             if (isMudita) {
@@ -484,7 +497,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         onCheckedChange = {
                             showWeather = it
                             prefs.showWeather = it
-                            viewModel.refreshWeather()
+                            viewModel.refreshWeather(force = true)
                         },
                     )
                 }
@@ -954,6 +967,15 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
             add {
                 SettingsActionRow(
+                    title = stringResource(R.string.lockscreen_message),
+                    description = lockscreenMessage.ifBlank {
+                        stringResource(R.string.lockscreen_message_desc)
+                    },
+                    onClick = { showLockscreenMessageSheet = true },
+                )
+            }
+            add {
+                SettingsActionRow(
                     title = stringResource(R.string.lockscreen_widget_apps),
                     description = stringResource(R.string.lockscreen_widget_apps_desc),
                     onClick = { showLockscreenApps = true },
@@ -1092,6 +1114,17 @@ fun SettingsScreen(viewModel: MainViewModel) {
                             } else {
                                 pendingServiceToggles.remove("power")
                             }
+                        },
+                    )
+                }
+                add {
+                    SettingsToggleRow(
+                        title = stringResource(R.string.screensaver_app_icon),
+                        description = stringResource(R.string.screensaver_app_icon_desc),
+                        checked = screensaverAppIcon,
+                        onCheckedChange = {
+                            screensaverAppIcon = it
+                            ScreensaverShortcut.setIconEnabled(context, it)
                         },
                     )
                 }
@@ -1339,11 +1372,52 @@ fun SettingsScreen(viewModel: MainViewModel) {
         )
     }
 
+    if (showThemeSheet) {
+        ChoiceSheet(
+            title = stringResource(R.string.theme_mode),
+            options = listOf(
+                PrefsManager.THEME_SYSTEM to stringResource(R.string.theme_system),
+                PrefsManager.THEME_LIGHT to stringResource(R.string.theme_light),
+                PrefsManager.THEME_DARK to stringResource(R.string.theme_dark),
+            ),
+            selected = themeMode,
+            onSelect = {
+                themeMode = it
+                prefs.themeMode = it
+                viewModel.themeMode = it
+                viewModel.applyStatusBar(context)
+            },
+            onDismiss = { showThemeSheet = false },
+        )
+    }
+
+    if (showLockscreenMessageSheet) {
+        LockscreenMessageSheet(
+            current = lockscreenMessage,
+            onDismiss = { showLockscreenMessageSheet = false },
+            onConfirm = { text ->
+                showLockscreenMessageSheet = false
+                val serviceOn = LockscreenWidgetService.isEnabled(context)
+                actionServiceEnabled = serviceOn
+                if (text.isBlank() || serviceOn) {
+                    pendingLockscreenMessage = null
+                    lockscreenMessage = text
+                    prefs.lockscreenMessage = text
+                } else {
+                    pendingLockscreenMessage = text
+                    try {
+                        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                    } catch (_: Exception) {}
+                }
+            },
+        )
+    }
+
     if (showPermissionsSheet) {
         var permTick by remember { mutableIntStateOf(0) }
         LaunchedEffect(Unit) {
             while (true) {
-                kotlinx.coroutines.delay(1000)
+                kotlinx.coroutines.delay(2000)
                 permTick++
             }
         }
@@ -1735,6 +1809,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
             BottomSheetOption(stringResource(R.string.config_clear), icon = Icons.Rounded.DeleteForever) {
                 showClearConfirm = false
                 prefs.clearAll(context)
+                IconUtility.invalidateOverrides()
                 restartApp(context)
             }
         }
@@ -2534,6 +2609,71 @@ fun SettingsActionRow(
             modifier = Modifier.size(24.dp),
         )
     }
+}
+
+@Composable
+private fun LockscreenMessageSheet(
+    current: String,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit,
+) {
+    var textFieldValue by remember {
+        mutableStateOf(
+            androidx.compose.ui.text.input.TextFieldValue(
+                text = current,
+                selection = androidx.compose.ui.text.TextRange(current.length),
+            ),
+        )
+    }
+    val focusRequester = remember { androidx.compose.ui.focus.FocusRequester() }
+
+    BottomSheet(onDismiss = onDismiss, imePadding = true) {
+        Text(
+            text = stringResource(R.string.lockscreen_message),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = LatoFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        BasicTextField(
+            value = textFieldValue,
+            onValueChange = { textFieldValue = it },
+            singleLine = true,
+            textStyle = TextStyle(fontSize = 18.sp, fontFamily = LatoFamily, color = LocalInk.current),
+            cursorBrush = SolidColor(LocalInk.current),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(2.5.dp, LocalInk.current)
+                .padding(12.dp)
+                .focusRequester(focusRequester),
+        )
+        Spacer(Modifier.height(16.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            Text(
+                text = stringResource(R.string.cancel),
+                fontSize = 18.sp,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier
+                    .clickable { onDismiss() }
+                    .padding(12.dp),
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.save),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = LatoFamily,
+                color = LocalInk.current,
+                modifier = Modifier
+                    .clickable { onConfirm(textFieldValue.text.trim()) }
+                    .padding(12.dp),
+            )
+        }
+    }
+
+    LaunchedEffect(Unit) { focusRequester.requestFocus() }
 }
 
 @Composable
