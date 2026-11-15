@@ -28,6 +28,7 @@ import android.view.WindowInsetsController
 import java.text.SimpleDateFormat
 import java.util.Locale
 import com.gezimos.katapult.util.AudioWidgetHelper
+import com.gezimos.katapult.util.SmartspaceHelper
 import com.gezimos.katapult.util.WeatherHelper
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -79,6 +80,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     var orderedApps by mutableStateOf(listOf<AppModel>())
         private set
     var currentPage by mutableIntStateOf(0)
+        private set
+    var openFolder by mutableStateOf<String?>(null)
+        private set
+    private var folderFromHome = false
+    var folderContents by mutableStateOf(mapOf<String, List<AppModel>>())
         private set
     var clockTime by mutableStateOf("")
         private set
@@ -161,6 +167,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startScreensaver(context: Context) {
+        if (DeviceHelper.isLineageOs()) return
         try {
             context.startActivity(
                 Intent(context, com.gezimos.katapult.lockscreen.ScreensaverActivity::class.java)
@@ -193,12 +200,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val badgeListener: () -> Unit = {
         clockHandler.post { refreshNotifications() }
     }
-    private val clockRunnable = object : Runnable {
-        override fun run() {
+    // The system's minute tick, so the clock turns over with the status bar's.
+    private val tickReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
             updateClock()
-            clockHandler.postDelayed(this, 15_000)
         }
     }
+    private var tickRegistered = false
 
     private val powerReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -206,7 +214,16 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private val appsChanged = Runnable { loadApps() }
+
     init {
+        SmartspaceHelper.onWeather = { result ->
+            if (prefs.showWeather && !WeatherHelper.isInstalled(ctx)) weather = result
+        }
+        AppLoader.onChanged = {
+            clockHandler.removeCallbacks(appsChanged)
+            clockHandler.postDelayed(appsChanged, 300)
+        }
         loadApps()
         updateClock()
         loadWallpaper()
@@ -217,6 +234,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             AudioWidgetHelper.getInstance(ctx).state.collect { mediaInfo = it }
         }
+        reloadIcons()
+    }
+
+    fun reloadIcons() {
         val sizePx = Math.round(iconSize * ctx.resources.displayMetrics.density)
         for (slot in PrefsManager.HOME_SLOTS) {
             val pkg = getShortcutPackage(slot) ?: continue
@@ -302,7 +323,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun refreshWeather(force: Boolean = false) {
         syncWeatherObserver()
-        if (!prefs.showWeather) {
+        if (!prefs.showWeather || !WeatherHelper.hasSource(ctx)) {
             weatherCheckedAt = SystemClock.elapsedRealtime()
             weather = null
             return
@@ -311,6 +332,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             SystemClock.elapsedRealtime() - weatherCheckedAt < weatherRefreshMs
         ) return
         weatherCheckedAt = SystemClock.elapsedRealtime()
+        if (!WeatherHelper.isInstalled(ctx)) {
+            SmartspaceHelper.start(ctx)
+            SmartspaceHelper.latest?.let { weather = it }
+            return
+        }
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             val result = WeatherHelper.read(ctx)
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
@@ -321,11 +347,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun startClock() {
         updateClock()
-        clockHandler.postDelayed(clockRunnable, 15_000)
+        if (!tickRegistered) {
+            ctx.registerReceiver(tickReceiver, IntentFilter().apply {
+                addAction(Intent.ACTION_TIME_TICK)
+                addAction(Intent.ACTION_TIME_CHANGED)
+                addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            })
+            tickRegistered = true
+        }
     }
 
     fun stopClock() {
-        clockHandler.removeCallbacks(clockRunnable)
+        if (tickRegistered) {
+            try { ctx.unregisterReceiver(tickReceiver) } catch (_: Exception) {}
+            tickRegistered = false
+        }
     }
 
     fun loadApps() {
@@ -338,28 +374,152 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val customName = prefs.getAppRename(app.key)
             if (customName != null) app.copy(label = customName) else app
         }
+        val byKey = renamed.associateBy { it.key }
+        dropUninstalledSlots()
+        val folders = syncFolders(currentApps.map { it.key }.toSet())
+        val contents = folders.associate { f ->
+            f.id to f.apps.mapNotNull { byKey[it] }.sortedBy { it.label.lowercase() }
+        }
+        folderContents = contents
+        if (openFolder != null && contents[openFolder].isNullOrEmpty()) openFolder = null
+        val inFolders = folders.flatMap { it.apps }.toSet()
+        val loose = renamed.filter { it.key !in inFolders }
+        val folderApps = folders.filter { !contents[it.id].isNullOrEmpty() }.map { folderModel(it) }
         val sortMode = prefs.appSortMode
         if (sortMode != PrefsManager.APP_SORT_MANUAL && UsageHelper.hasPermission(ctx)) {
             val stats = UsageHelper.stats(ctx)
             val ignored = UsageHelper.ignoredPackages(ctx)
-            orderedApps = renamed.sortedWith(
+            orderedApps = loose.sortedWith(
                 compareByDescending<AppModel> { app ->
                     val s = if (app.packageName in ignored) null else stats[app.packageName]
                     if (s == null) 0L
                     else if (sortMode == PrefsManager.APP_SORT_RECENT) s.lastTimeUsed
                     else s.totalTimeInForeground
                 }.thenBy { it.label.lowercase() }
-            )
+            ) + folderApps.sortedBy { it.label.lowercase() }
             refreshHomeIfAppsChanged(previousKeys)
             return
         }
         val savedOrder = prefs.loadAppOrder()
         orderedApps = if (savedOrder != null) {
-            prefs.reconcileOrder(savedOrder, renamed)
+            prefs.reconcileOrder(savedOrder, loose + folderApps)
         } else {
-            renamed.sortedBy { it.label.lowercase() }
+            (loose + folderApps).sortedBy { it.label.lowercase() }
         }
         refreshHomeIfAppsChanged(previousKeys)
+    }
+
+    private fun syncFolders(installed: Set<String>): List<PrefsManager.Folder> {
+        prefs.pruneFolders(installed).forEach { forgetFolder(it.key) }
+        return prefs.getFolders()
+    }
+
+    private fun folderModel(folder: PrefsManager.Folder): AppModel =
+        AppModel(folder.key, folderName(folder), "")
+
+    private fun folderName(folder: PrefsManager.Folder): String =
+        prefs.getAppRename(folder.key) ?: folder.name
+
+    fun folders(): List<AppModel> = prefs.getFolders().map { folderModel(it) }
+
+    fun folderOf(app: AppModel): String? = prefs.folderOf(app.key)?.id
+
+    fun folderSize(id: String): Int = prefs.getFolders().firstOrNull { it.id == id }?.apps?.size ?: 0
+
+    fun folderLabel(id: String): String =
+        prefs.getFolders().firstOrNull { it.id == id }?.let { folderName(it) } ?: ""
+
+    fun folderMembers(id: String): Set<String> =
+        prefs.getFolders().firstOrNull { it.id == id }?.apps?.toSet() ?: emptySet()
+
+    fun folderCandidates(id: String): List<AppModel> {
+        val taken = prefs.getFolders().filter { it.id != id }.flatMap { it.apps }.toSet()
+        return getAllApps().filter { !it.isFolder && it.key !in taken }
+    }
+
+    fun openFolder(id: String, fromHome: Boolean = false) {
+        if (reorderMode) finishReorder()
+        folderFromHome = fromHome
+        openFolder = id
+        screen = Screen.ALL_APPS
+    }
+
+    fun closeFolder() {
+        openFolder = null
+        if (folderFromHome) screen = Screen.HOME
+        folderFromHome = false
+    }
+
+    fun createFolder(app: AppModel, name: String) {
+        val trimmed = name.trim()
+        contextMenuApp = null
+        if (trimmed.isEmpty()) return
+        prefs.createFolder(trimmed, app.key)
+        shortcutRefresh++
+        loadApps()
+    }
+
+    fun addToFolder(app: AppModel, id: String) {
+        contextMenuApp = null
+        if (!prefs.addToFolder(id, app.key)) return
+        shortcutRefresh++
+        loadApps()
+    }
+
+    fun removeFromFolder(app: AppModel) {
+        contextMenuApp = null
+        val folder = prefs.folderOf(app.key)
+        prefs.removeFromFolder(app.key)
+        if (folder != null && folder.apps.size <= 1) forgetFolder(folder.key)
+        shortcutRefresh++
+        loadApps()
+    }
+
+    fun toggleFolderApp(id: String, key: String) {
+        val current = prefs.getFolders().firstOrNull { it.id == id }?.apps ?: return
+        val next = if (key in current) current - key else current + key
+        if (next.size > AppModel.FOLDER_LIMIT) return
+        if (next.isEmpty()) forgetFolder(AppModel.FOLDER_PREFIX + id)
+        prefs.setFolderApps(id, next)
+        shortcutRefresh++
+        loadApps()
+    }
+
+    fun deleteFolder(app: AppModel) {
+        contextMenuApp = null
+        forgetFolder(app.key)
+        prefs.deleteFolder(app.folderId)
+        shortcutRefresh++
+        loadApps()
+    }
+
+    private fun forgetFolder(key: String) {
+        prefs.setAppRename(key, null)
+        prefs.removeFromAppOrder(key)
+        prefs.clearSlotsForPackage(key)
+        deleteOverrideFile(key)
+        prefs.clearIconOverride(key)
+        IconUtility.clearCacheFor(key)
+        if (openFolder == key.removePrefix(AppModel.FOLDER_PREFIX)) openFolder = null
+    }
+
+    private fun dropUninstalledSlots() {
+        var cleared = false
+        for (slot in PrefsManager.HOME_SLOTS) {
+            val pkg = prefs.loadShortcut(slot)?.first ?: continue
+            if (pkg.startsWith(AppModel.FOLDER_PREFIX)) continue
+            val installed = try {
+                ctx.packageManager.getApplicationInfo(pkg, 0)
+                true
+            } catch (_: Exception) {
+                false
+            }
+            if (!installed) {
+                prefs.clearSlotsForPackage(pkg)
+                cleared = true
+            }
+        }
+        if (cleared) shortcutRefresh++
     }
 
     private fun refreshHomeIfAppsChanged(previousKeys: Set<String>) {
@@ -368,7 +528,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun getAllApps(): List<AppModel> {
-        val all = AppLoader.loadApps(ctx) + ShortcutHelper.installedShortcuts(ctx, prefs)
+        val all = AppLoader.loadApps(ctx) + ShortcutHelper.installedShortcuts(ctx, prefs) + folders()
         return all.map { app ->
             val customName = prefs.getAppRename(app.key)
             if (customName != null) app.copy(label = customName) else app
@@ -382,6 +542,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun navigateTo(target: Screen) {
         if (reorderMode) finishReorder()
+        openFolder = null
+        folderFromHome = false
         if (target == Screen.ALL_APPS) currentPage = 0
         screen = target
     }
@@ -398,6 +560,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             return true
         }
         if (contextMenuApp != null) { contextMenuApp = null; showRenameDialog = false; return true }
+        if (openFolder != null) { closeFolder(); return true }
         return when (screen) {
             Screen.ONBOARDING -> false
             Screen.SETTINGS -> { screen = Screen.HOME; true }
@@ -453,6 +616,15 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         contextMenuApp = null
         showRenameDialog = false
         if (name == currentLabel) return
+        if (key.startsWith(AppModel.FOLDER_PREFIX)) {
+            if (name == null) return
+            prefs.setAppRename(key, null)
+            prefs.removeFromAppOrder(key)
+            prefs.renameFolder(key.removePrefix(AppModel.FOLDER_PREFIX), name.trim())
+            shortcutRefresh++
+            loadApps()
+            return
+        }
         if (name != prefs.getAppRename(key)) prefs.removeFromAppOrder(key)
         prefs.setAppRename(key, name)
         shortcutRefresh++
@@ -519,6 +691,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun launchApp(context: Context, app: AppModel) {
+        if (app.isFolder) {
+            openFolder(app.folderId)
+            return
+        }
         if (app.shortcutId.isEmpty() &&
             app.packageName == ctx.packageName &&
             DeviceHelper.isDefaultLauncher(ctx)
@@ -554,6 +730,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun launchShortcut(context: Context, slot: String) {
         val saved = prefs.loadShortcut(slot)
+        if (saved != null && saved.first.startsWith(AppModel.FOLDER_PREFIX)) {
+            openFolder(saved.first.removePrefix(AppModel.FOLDER_PREFIX), fromHome = true)
+            return
+        }
         if (saved != null) {
             val shortcutId = prefs.loadSlotShortcutId(slot)
             if (shortcutId != null) {
@@ -587,6 +767,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getShortcutLabel(slot: String, defaultLabel: String): String {
         val pkg = getShortcutPackage(slot) ?: return defaultLabel
+        if (pkg.startsWith(AppModel.FOLDER_PREFIX)) {
+            return folderLabel(pkg.removePrefix(AppModel.FOLDER_PREFIX)).ifEmpty { defaultLabel }
+        }
         val shortcutId = prefs.loadSlotShortcutId(slot)
         if (shortcutId != null) {
             prefs.getAppRename("$pkg|$shortcutId")?.let { return it }
@@ -828,6 +1011,20 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         prefs.pendingIconTarget = null
     }
 
+    fun setLawniconIcon(key: String, name: String) {
+        deleteOverrideFile(key)
+        prefs.setIconOverride(key, "lawn:$name")
+        IconUtility.clearCacheFor(key)
+        shortcutRefresh++
+    }
+
+    fun setLawnicons(enabled: Boolean) {
+        prefs.lawniconsEnabled = enabled
+        IconUtility.evictAll()
+        shortcutRefresh++
+        reloadIcons()
+    }
+
     fun setBundledIcon(key: String, resName: String) {
         deleteOverrideFile(key)
         prefs.setIconOverride(key, "res:$resName")
@@ -873,6 +1070,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         super.onCleared()
         stopClock()
         stopNotificationListener()
+        AppLoader.onChanged = null
+        SmartspaceHelper.onWeather = null
+        clockHandler.removeCallbacks(appsChanged)
         try { ctx.unregisterReceiver(powerReceiver) } catch (_: Exception) {}
         try { ctx.contentResolver.unregisterContentObserver(weatherObserver) } catch (_: Exception) {}
     }

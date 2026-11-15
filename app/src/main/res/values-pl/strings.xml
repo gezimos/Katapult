@@ -157,6 +157,15 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Jasny</string>
     <string name="theme_dark">Ciemny</string>
+    <string name="font_label">Czcionka</string>
+    <string name="font_desc">Lato lub czcionka telefonu</string>
+    <string name="lawnicons_desc">Użyj Lawnicons jako ikon aplikacji</string>
+    <string name="search_icons">Szukaj ikon</string>
+    <string name="lawnicons_promo">Twórca poleca Lawnicons, otwartoźródłowy pakiet tysięcy ikon, które najlepiej wyglądają w Katapult.</string>
+    <string name="unsupported_title">Stworzone dla MuditaOS</string>
+    <string name="unsupported_desc">Ta funkcja jest przeznaczona dla MuditaOS i może nie działać poprawnie w tym systemie.</string>
+    <string name="unsupported_enable">Włącz mimo to</string>
+    <string name="screensaver_unsupported_desc">W tym systemie użyj zamiast tego Always on display lub ekranu uśpienia. Wygaszacz był tylko obejściem dla MuditaOS K.</string>
     <string name="section_appearance">Wygląd</string>
     <string name="section_home">Ekran główny</string>
     <string name="section_all_apps">Wszystkie aplikacje</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">Otwieranie przyciskiem zasilania wymaga włączonej usługi Katapult Action Service.</string>
     <string name="icon_size">Rozmiar ikon</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Dodaj do folderu</string>
+    <string name="remove_from_folder">Usuń z folderu</string>
+    <string name="new_folder">Nowy folder</string>
+    <string name="edit_apps">Edytuj aplikacje</string>
+    <string name="delete_folder">Usuń folder</string>
+    <string name="folder_full">Pełny</string>
 </resources>

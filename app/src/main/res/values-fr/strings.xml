@@ -157,6 +157,15 @@
     <string name="theme_system">Système</string>
     <string name="theme_light">Clair</string>
     <string name="theme_dark">Sombre</string>
+    <string name="font_label">Police</string>
+    <string name="font_desc">Lato ou la police du téléphone</string>
+    <string name="lawnicons_desc">Utiliser Lawnicons pour les icônes</string>
+    <string name="search_icons">Rechercher des icônes</string>
+    <string name="lawnicons_promo">Le développeur recommande Lawnicons, un pack d\'icônes open source avec des milliers d\'icônes qui rendent le mieux dans Katapult.</string>
+    <string name="unsupported_title">Conçu pour MuditaOS</string>
+    <string name="unsupported_desc">Cette fonction est conçue pour MuditaOS et peut ne pas fonctionner correctement sur ce système.</string>
+    <string name="unsupported_enable">Activer quand même</string>
+    <string name="screensaver_unsupported_desc">Sur ce système, utilisez plutôt Always on display ou l\'écran de veille. L\'économiseur d\'écran n\'était qu\'une solution de contournement pour MuditaOS K.</string>
     <string name="section_appearance">Apparence</string>
     <string name="section_home">Écran d\'accueil</string>
     <string name="section_all_apps">Toutes les apps</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">L\'ouverture avec le bouton d\'alimentation nécessite le Katapult Action Service activé.</string>
     <string name="icon_size">Taille des icônes</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Ajouter au dossier</string>
+    <string name="remove_from_folder">Retirer du dossier</string>
+    <string name="new_folder">Nouveau dossier</string>
+    <string name="edit_apps">Modifier les apps</string>
+    <string name="delete_folder">Supprimer le dossier</string>
+    <string name="folder_full">Plein</string>
 </resources>

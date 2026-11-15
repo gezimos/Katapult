@@ -53,7 +53,7 @@ import com.gezimos.katapult.ui.AppIconCircle
 import com.gezimos.katapult.ui.ClockDisplay
 import com.gezimos.katapult.ui.EinkColorFilter
 import com.gezimos.katapult.ui.EinkColorFilterDark
-import com.gezimos.katapult.ui.LatoFamily
+import com.gezimos.katapult.ui.AppFontFamily
 import com.gezimos.katapult.ui.LocalIconFilter
 import com.gezimos.katapult.ui.LocalIconShape
 import com.gezimos.katapult.ui.LocalInk
@@ -275,14 +275,14 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
                         text = row.count.toString(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = LatoFamily,
+                        fontFamily = AppFontFamily,
                         color = ink,
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = row.label,
                         fontSize = 18.sp,
-                        fontFamily = LatoFamily,
+                        fontFamily = AppFontFamily,
                         color = ink,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -296,7 +296,7 @@ private fun NotificationIsland(rows: List<SsRow>, overflow: Int) {
                 text = "+$overflow",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = ink,
                 modifier = Modifier
                     .align(Alignment.TopEnd)

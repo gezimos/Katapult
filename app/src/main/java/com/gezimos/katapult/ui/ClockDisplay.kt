@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.material.icons.rounded.Thermostat
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
@@ -91,7 +92,7 @@ fun ColumnScope.ClockDisplay(
                 Text(
                     text = stringResource(R.string.weather_temp, weather.temperature, weather.unit),
                     fontSize = 18.sp,
-                    fontFamily = LatoFamily,
+                    fontFamily = AppFontFamily,
                     color = LocalInk.current,
                 )
             }
@@ -110,7 +111,7 @@ fun ColumnScope.ClockDisplay(
             Text(
                 text = alarmTime,
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
             )
         }
@@ -146,7 +147,7 @@ fun ColumnScope.ClockDisplay(
                 Text(
                     text = stringResource(R.string.battery_percent, batteryPercent),
                     fontSize = 18.sp,
-                    fontFamily = LatoFamily,
+                    fontFamily = AppFontFamily,
                     color = LocalInk.current,
                 )
             }
@@ -170,7 +171,7 @@ fun ColumnScope.ClockDisplay(
             text = clockTime,
             fontSize = 72.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
         )
         if (clockAmPm != null) {
@@ -179,7 +180,7 @@ fun ColumnScope.ClockDisplay(
                 text = clockAmPm,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
             )
         }
@@ -188,7 +189,7 @@ fun ColumnScope.ClockDisplay(
     Text(
         text = clockDate,
         fontSize = 20.sp,
-        fontFamily = LatoFamily,
+        fontFamily = AppFontFamily,
         color = LocalInk.current,
         modifier = Modifier
             .homeIsland(islandsActive, LocalSurface.current, LocalInk.current, hPad = 12.dp)
@@ -205,6 +206,7 @@ fun ColumnScope.ClockDisplay(
 
 @Composable
 private fun weatherIcon(conditionId: Int, iconInfo: String?): ImageVector {
+    if (conditionId < 0) return Icons.Rounded.Thermostat
     val day = iconInfo == null || iconInfo.endsWith("d")
     val res = when (conditionId) {
         in 200..232 -> R.drawable.ic_weather_thunderstorm

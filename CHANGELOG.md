@@ -2,6 +2,25 @@
 
 All notable changes to Katapult are documented here.
 
+## [1.7]
+
+### Added
+- **Folders**: long-press an app in All Apps and pick Add to Folder. Up to 9 apps each, with rename, custom icon and Edit Apps. Folders can go on a home slot too.
+- **Lawnicons**: when the Lawnicons icon pack is installed, Katapult turns it on and uses it for every app it covers, plus 27 community and Mudita apps. Change Icon gets a Lawnicons tab with search.
+- **Font** in Appearance: Lato or your phone's font.
+- **Google At a Glance weather**: phones without the Mudita weather app can show the temperature from the Google app instead.
+- LineageOS and KompaktOS support: lockscreen features are off with an Enable Anyway option, and the screensaver points to Always on Display or the Sleep screen.
+
+### Changed
+- The clock changes exactly on the minute.
+- Change Icon tabs are now Katapult, Material and Lawnicons.
+- Once you reorder All Apps, new apps go at the end instead of near the front.
+
+### Fixed
+- Installing or uninstalling an app updates All Apps straight away.
+- Settings tiles and the reorder Save button no longer get cut off with a larger system font.
+- A home slot whose app was uninstalled goes back to its default.
+
 ## [1.6]
 
 ### Added

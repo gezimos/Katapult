@@ -435,7 +435,9 @@ class LockscreenWidgetService :
             return
         }
         if (messageOverlay != null) return
-        val lato = try { ResourcesCompat.getFont(this, R.font.lato) } catch (_: Exception) { null }
+        val lato = if (prefs.fontMode == PrefsManager.FONT_LATO) {
+            try { ResourcesCompat.getFont(this, R.font.lato) } catch (_: Exception) { null }
+        } else com.gezimos.katapult.ui.AppFont.systemTypeface
         val view = TextView(this).apply {
             text = message
             setBackgroundColor(if (prefs.darkMode) Color.BLACK else Color.WHITE)
@@ -765,7 +767,9 @@ class LockscreenWidgetService :
 
     private fun buildWidget(rows: List<Pair<String, Int>>, total: Int): View? {
         val ink = if (prefs.darkMode) Color.WHITE else Color.BLACK
-        val lato = try { ResourcesCompat.getFont(this, R.font.lato) } catch (_: Exception) { null }
+        val lato = if (prefs.fontMode == PrefsManager.FONT_LATO) {
+            try { ResourcesCompat.getFont(this, R.font.lato) } catch (_: Exception) { null }
+        } else com.gezimos.katapult.ui.AppFont.systemTypeface
 
         // Transparent column: the island box on top, the resize cue below it (outside the box).
         val root = LinearLayout(this).apply {

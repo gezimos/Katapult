@@ -103,6 +103,7 @@ import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.BrightnessHelper
 import com.gezimos.katapult.util.IconUtility
 import com.gezimos.katapult.util.PrefsManager
+import com.gezimos.katapult.util.SmartspaceHelper
 import com.gezimos.katapult.util.WeatherHelper
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalLayoutApi::class)
@@ -278,7 +279,10 @@ fun HomeScreen(
                         }
                     },
                     onDateLongClick = { handleSlotLongPress("calendar") },
-                    onWeatherClick = { WeatherHelper.openApp(context) },
+                    onWeatherClick = {
+                        if (WeatherHelper.isInstalled(context)) WeatherHelper.openApp(context)
+                        else SmartspaceHelper.click()
+                    },
                     onBatteryClick = {
                         val intent = Intent(Intent.ACTION_POWER_USAGE_SUMMARY)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -427,7 +431,7 @@ fun HomeScreen(
                                 Text(
                                     text = "",
                                     fontSize = 18.sp,
-                                    fontFamily = LatoFamily,
+                                    fontFamily = AppFontFamily,
                                     color = LocalInk.current,
                                 )
                             }
@@ -561,7 +565,7 @@ private fun AppPickerDialog(
             text = title,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
             modifier = Modifier.padding(bottom = 12.dp),
         )
@@ -601,7 +605,7 @@ private fun AppPickerDialog(
                     ) {
                         AppIconCircle(bitmap = bitmap, size = 36.dp, borderWidth = 1.5.dp, shape = iconShape)
                         Spacer(Modifier.width(12.dp))
-                        Text(app.label, fontSize = 18.sp, fontFamily = LatoFamily, color = LocalInk.current)
+                        Text(app.label, fontSize = 18.sp, fontFamily = AppFontFamily, color = LocalInk.current)
                     }
                 } else {
                     Row(Modifier.fillMaxWidth().padding(vertical = 10.dp)) {
@@ -703,7 +707,7 @@ internal fun MusicWidget(
             Text(
                 text = songLabel.ifEmpty { noMediaLabel },
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -862,7 +866,7 @@ private fun ShortcutItem(
                         bounds = { lineLeft to lineRight },
                     ),
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 maxLines = 1,
                 softWrap = false,

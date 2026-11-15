@@ -44,6 +44,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.statusBarsIgnoringVisibility
 import androidx.compose.foundation.layout.navigationBarsIgnoringVisibility
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -123,7 +124,9 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 val threshold = 17.5.dp.toPx()
                 var accumulated = 0f
                 val onEnd = {
-                    if (abs(accumulated) > threshold) {
+                    if (viewModel.openFolder != null) {
+                        if (accumulated > threshold) viewModel.closeFolder()
+                    } else if (abs(accumulated) > threshold) {
                         val wrap = viewModel.prefs.infiniteScroll
                         val page = viewModel.currentPage
                         val last = viewModel.totalPages - 1
@@ -152,6 +155,9 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 }
             },
     ) {
+        val folderId = viewModel.openFolder
+        val drawerNav = viewModel.reorderMode ||
+            (!viewModel.prefs.hideArrowButtons && viewModel.totalPages > 1)
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
@@ -171,7 +177,9 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
             if (!reorder && viewModel.appsPerPage != perPage) {
                 viewModel.updateAppsPerPage(perPage)
             }
-            val pageApps = remember(viewModel.currentPage, viewModel.orderedApps, perPage) {
+            val folderApps = folderId?.let { viewModel.folderContents[it].orEmpty().take(AppModel.FOLDER_LIMIT) }
+            val pageApps = remember(viewModel.currentPage, viewModel.orderedApps, perPage, folderApps) {
+                if (folderApps != null) return@remember folderApps.take(perPage)
                 val start = viewModel.currentPage * perPage
                 val end = minOf(start + perPage, viewModel.orderedApps.size)
                 if (start < viewModel.orderedApps.size) viewModel.orderedApps.subList(start, end) else emptyList()
@@ -234,11 +242,20 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 }
             }
             }
+            if (folderId != null && !drawerNav) {
+                Box(Modifier.align(Alignment.BottomCenter)) {
+                    FolderNavRow(viewModel, folderId)
+                }
+            }
         }
 
         val wrap = viewModel.prefs.infiniteScroll
-        if (viewModel.reorderMode || (!viewModel.prefs.hideArrowButtons && viewModel.totalPages > 1)) {
-            PageNavRow(viewModel, wrap, onResetOrder = { showResetConfirm = true })
+        if (drawerNav) {
+            if (folderId != null) {
+                FolderNavRow(viewModel, folderId)
+            } else {
+                PageNavRow(viewModel, wrap, onResetOrder = { showResetConfirm = true })
+            }
         }
     }
 
@@ -254,7 +271,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                     Text(
                         text = stringResource(R.string.reorder_hint),
                         fontSize = 14.sp,
-                        fontFamily = LatoFamily,
+                        fontFamily = AppFontFamily,
                         color = LocalInk.current,
                         textAlign = TextAlign.Center,
                     )
@@ -268,7 +285,8 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
             viewModel = viewModel,
             app = menuApp,
             iconPicker = iconPicker,
-            showReorder = viewModel.prefs.appSortMode == PrefsManager.APP_SORT_MANUAL,
+            showReorder = viewModel.openFolder == null &&
+                viewModel.prefs.appSortMode == PrefsManager.APP_SORT_MANUAL,
             showHide = true,
             onDismiss = { viewModel.contextMenuApp = null },
         )
@@ -280,7 +298,7 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
             Text(
                 text = stringResource(R.string.reset_order_confirm),
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
@@ -289,6 +307,46 @@ fun AllAppsScreen(viewModel: MainViewModel, iconPicker: ActivityResultLauncher<A
                 showResetConfirm = false
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun FolderNavRow(viewModel: MainViewModel, folderId: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .height(ArrowSize),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Box(Modifier.width(LocalIconSize.current), contentAlignment = Alignment.CenterStart) {
+                    ArrowButton(iconRes = R.drawable.ic_arrow_left, onClick = { viewModel.closeFolder() })
+                }
+            }
+        }
+        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            val label = viewModel.folderLabel(folderId)
+            Text(
+                text = label,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = AppFontFamily,
+                color = LocalInk.current,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .combinedClickable(
+                        onClick = {},
+                        onLongClick = {
+                            viewModel.contextMenuApp = AppModel(AppModel.FOLDER_PREFIX + folderId, label, "")
+                        },
+                    ),
+            )
+        }
+        Spacer(Modifier.weight(1f).height(ArrowSize))
     }
 }
 
@@ -322,6 +380,7 @@ private fun PageNavRow(viewModel: MainViewModel, wrap: Boolean, onResetOrder: ()
             if (viewModel.reorderMode) {
                 val buttonShape = LocalSmallIconShape.current
                 Row(
+                    modifier = Modifier.wrapContentWidth(unbounded = true),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center,
                 ) {
@@ -348,9 +407,10 @@ private fun PageNavRow(viewModel: MainViewModel, wrap: Boolean, onResetOrder: ()
                             text = stringResource(R.string.save_uppercase),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFamily = LatoFamily,
+                            fontFamily = AppFontFamily,
                             color = LocalInk.current,
                             maxLines = 1,
+                            softWrap = false,
                         )
                     }
                 }
@@ -436,7 +496,7 @@ private fun AppGridItem(
             Text(
                 text = app.label,
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 maxLines = 1,
                 softWrap = false,

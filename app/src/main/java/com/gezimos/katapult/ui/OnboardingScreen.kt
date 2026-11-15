@@ -198,7 +198,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
         Text(
             text = stringResource(R.string.required_hint),
             fontSize = 14.sp,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = ink.copy(alpha = if (showHighlight && !allDone) flashAlpha else 1f),
             modifier = Modifier.padding(top = 8.dp),
         )
@@ -242,7 +242,7 @@ fun OnboardingScreen(viewModel: MainViewModel) {
                 text = stringResource(R.string.finish),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = ink,
             )
         }

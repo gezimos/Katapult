@@ -18,7 +18,7 @@ import com.gezimos.katapult.MainViewModel
 import com.gezimos.katapult.R
 import com.gezimos.katapult.ui.BottomSheet
 import com.gezimos.katapult.ui.BottomSheetOption
-import com.gezimos.katapult.ui.LatoFamily
+import com.gezimos.katapult.ui.AppFontFamily
 import com.gezimos.katapult.ui.LocalInk
 import com.gezimos.katapult.util.PrefsManager
 
@@ -36,14 +36,14 @@ fun LockscreenReEnableSheet(viewModel: MainViewModel) {
             text = stringResource(R.string.a11y_service_label),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
             modifier = Modifier.padding(bottom = 8.dp),
         )
         Text(
             text = stringResource(R.string.lockscreen_reenable_message),
             fontSize = 14.sp,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
             modifier = Modifier.padding(bottom = 12.dp),
         )

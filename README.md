@@ -30,6 +30,7 @@
 - **Settings**: Long-press on any empty area of the home screen
 - **Replace home apps**: Long-press on the Phone, SMS, or extra row shortcuts
 - **Clock/Date shortcut**: Long-press on the clock or date to assign an app
+- **Folders**: Long-press an app in All Apps and tap Add to folder
 
 ## Features
 
@@ -50,6 +51,10 @@
 - **Rename apps**: long-press any app in the grid
 - **App context menu**: Reorder, Rename, Hide, App Info, Uninstall
 - **Reorder apps**: swap-based reordering from the context menu, with reset to alphabetical option
+- **Folders**: up to 9 apps each, with rename, custom icon and Edit Apps. Folders can go on a home slot too
+- **Lawnicons**: uses the [Lawnicons](https://github.com/LawnchairLauncher/lawnicons) icon pack when it's installed
+- **Font**: Lato or your phone's font
+- **Weather**: from Mudita Weather, or Google At a Glance on other phones
 - **Lockscreen Notifications (experimental)**: per-app notification counts on the lock screen, with an app allowlist and sort order. Long-press the widget to move/resize it, tap to save.
 - **Screensaver (experimental)**: a Katapult screen saver showing the home clock, date, alarm, battery, and up to 4 notification rows. Start it with a two-finger long-press on the home screen (or the home long-press menu); the power button exits. Select Katapult once in system Screen saver settings (Settings → Experimental → Screensaver opens it).
 
@@ -69,9 +74,9 @@
 
 | Question | Answer |
 |----------|--------|
-| Will it have customizable fonts? | No. |
+| Will it have customizable fonts? | Only Lato or your phone's font, in Appearance. |
 | Will it have a customizable grid? | No. |
-| Will it have third-party icon packs? | No. |
+| Will it have third-party icon packs? | Only Lawnicons. Install it and Katapult uses it. |
 | Will it get as many features as inkOS? | No. |
 | Can I add more apps to the home screen? | No. |
 | Can I adjust the opacity of the wallpaper? | No. |

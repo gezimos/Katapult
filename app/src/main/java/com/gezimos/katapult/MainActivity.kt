@@ -14,6 +14,7 @@ import com.gezimos.katapult.util.AudioWidgetHelper
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.EinkHelper
 import com.gezimos.katapult.util.EinkRefreshHelper
+import com.gezimos.katapult.util.ScreensaverShortcut
 
 class MainActivity : ComponentActivity() {
 
@@ -44,6 +45,8 @@ class MainActivity : ComponentActivity() {
         overridePendingTransition(0, 0)
 
         onBackPressedDispatcher.addCallback(this, backCallback)
+        com.gezimos.katapult.ui.AppFont.refreshSystem(this)
+        ScreensaverShortcut.applyPlatform(this)
 
         if (DeviceHelper.isMuditaKompakt()) {
             einkHelper = EinkHelper(packageName).also { helper ->

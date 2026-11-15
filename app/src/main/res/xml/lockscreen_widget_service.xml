@@ -6,4 +6,5 @@
     android:canRetrieveWindowContent="true"
     android:packageNames="com.android.systemui"
     android:notificationTimeout="100"
+    android:isAccessibilityTool="true"
     android:description="@string/lockscreen_widget_a11y_desc" />

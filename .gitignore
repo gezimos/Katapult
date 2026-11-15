@@ -10,3 +10,5 @@
 local.properties
 .claude
 .vscode
+app/src/test/
+app/src/androidTest/

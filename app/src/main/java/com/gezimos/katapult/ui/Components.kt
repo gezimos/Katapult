@@ -50,10 +50,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gezimos.katapult.R
 
-val LatoFamily = FontFamily(
+private val LatoFont = FontFamily(
     Font(R.font.lato_regular, FontWeight.Normal),
     Font(R.font.lato_bold, FontWeight.Bold),
 )
+
+object AppFont {
+    var useLato by mutableStateOf(true)
+    var systemFamily by mutableStateOf<FontFamily>(FontFamily.Default)
+        private set
+    var systemTypeface: android.graphics.Typeface = android.graphics.Typeface.DEFAULT
+        private set
+
+    fun refreshSystem(context: android.content.Context) {
+        val res = context.resources
+        val id = res.getIdentifier("config_bodyFontFamily", "string", "android")
+        val name = if (id != 0) {
+            try { res.getString(id) } catch (_: Exception) { null }
+        } else null
+        val typeface = if (!name.isNullOrBlank()) {
+            android.graphics.Typeface.create(name, android.graphics.Typeface.NORMAL)
+        } else {
+            android.graphics.Typeface.DEFAULT
+        }
+        systemTypeface = typeface
+        systemFamily = FontFamily(typeface)
+    }
+}
+
+val AppFontFamily: FontFamily
+    get() = if (AppFont.useLato) LatoFont else AppFont.systemFamily
 
 val IconSize = 72.dp
 val LocalIconSize = staticCompositionLocalOf { IconSize }
@@ -284,7 +310,7 @@ fun NotificationBadge(count: Int, modifier: Modifier = Modifier) {
             color = LocalInk.current,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
         )
     }
 }
@@ -314,7 +340,7 @@ fun BottomSheetOption(
         Text(
             text = text,
             fontSize = 18.sp,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
         )
     }

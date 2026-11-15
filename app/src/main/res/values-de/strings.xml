@@ -157,6 +157,15 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Hell</string>
     <string name="theme_dark">Dunkel</string>
+    <string name="font_label">Schriftart</string>
+    <string name="font_desc">Lato oder die Schrift des Telefons</string>
+    <string name="lawnicons_desc">Lawnicons für App-Symbole verwenden</string>
+    <string name="search_icons">Symbole suchen</string>
+    <string name="lawnicons_promo">Der Entwickler empfiehlt Lawnicons, ein Open-Source-Iconpaket mit Tausenden Icons, die in Katapult am besten aussehen.</string>
+    <string name="unsupported_title">Für MuditaOS gemacht</string>
+    <string name="unsupported_desc">Diese Funktion ist für MuditaOS gebaut und funktioniert auf diesem System eventuell nicht richtig.</string>
+    <string name="unsupported_enable">Trotzdem aktivieren</string>
+    <string name="screensaver_unsupported_desc">Nutze auf diesem System stattdessen Always on Display oder den Ruhebildschirm. Der Bildschirmschoner war nur eine Notlösung für MuditaOS K.</string>
     <string name="section_appearance">Darstellung</string>
     <string name="section_home">Startbildschirm</string>
     <string name="section_all_apps">Alle Apps</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">Mit Ein-/Aus-Taste öffnen erfordert den aktivierten Katapult Action Service.</string>
     <string name="icon_size">Symbolgröße</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Zu Ordner hinzufügen</string>
+    <string name="remove_from_folder">Aus Ordner entfernen</string>
+    <string name="new_folder">Neuer Ordner</string>
+    <string name="edit_apps">Apps bearbeiten</string>
+    <string name="delete_folder">Ordner löschen</string>
+    <string name="folder_full">Voll</string>
 </resources>

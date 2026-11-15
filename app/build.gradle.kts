@@ -4,7 +4,7 @@ plugins {
 }
 
 base {
-    archivesName.set("katapult-v1.6")
+    archivesName.set("katapult-v1.7")
 }
 
 android {
@@ -19,8 +19,8 @@ android {
         applicationId = "com.gezimos.katapult"
         minSdk = 30
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.6"
+        versionCode = 8
+        versionName = "1.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

@@ -17,11 +17,26 @@ object AppLoader {
 
     private var receiverRegistered = false
 
+    @Volatile
+    var onChanged: (() -> Unit)? = null
+
     private val invalidator = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             cached = null
             UsageHelper.invalidate()
-            intent.data?.schemeSpecificPart?.let { IconUtility.clearCacheFor(it) }
+            intent.data?.schemeSpecificPart?.let { changed ->
+                IconUtility.clearCacheFor(changed)
+                if (LawniconsHelper.isLawnicons(changed)) {
+                    if (intent.action == Intent.ACTION_PACKAGE_ADDED &&
+                        !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)
+                    ) {
+                        PrefsManager(context).lawniconsEnabled = true
+                    }
+                    LawniconsHelper.invalidate()
+                    IconUtility.evictAll()
+                }
+            }
+            onChanged?.invoke()
         }
     }
 

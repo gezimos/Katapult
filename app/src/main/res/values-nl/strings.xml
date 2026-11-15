@@ -157,6 +157,15 @@
     <string name="theme_system">Systeem</string>
     <string name="theme_light">Licht</string>
     <string name="theme_dark">Donker</string>
+    <string name="font_label">Lettertype</string>
+    <string name="font_desc">Lato of het lettertype van je telefoon</string>
+    <string name="lawnicons_desc">Lawnicons gebruiken voor app-pictogrammen</string>
+    <string name="search_icons">Pictogrammen zoeken</string>
+    <string name="lawnicons_promo">De ontwikkelaar raadt Lawnicons aan, een opensource-iconenpakket met duizenden iconen die het best passen bij Katapult.</string>
+    <string name="unsupported_title">Gemaakt voor MuditaOS</string>
+    <string name="unsupported_desc">Deze functie is gemaakt voor MuditaOS en werkt mogelijk niet goed op dit systeem.</string>
+    <string name="unsupported_enable">Toch inschakelen</string>
+    <string name="screensaver_unsupported_desc">Gebruik op dit systeem in plaats daarvan Always on display of het slaapscherm. De schermbeveiliging was alleen een oplossing voor MuditaOS K.</string>
     <string name="section_appearance">Weergave</string>
     <string name="section_home">Startscherm</string>
     <string name="section_all_apps">Alle apps</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">Openen met de aan-uitknop vereist dat de Katapult Action Service is ingeschakeld.</string>
     <string name="icon_size">Pictogramgrootte</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Toevoegen aan map</string>
+    <string name="remove_from_folder">Uit map verwijderen</string>
+    <string name="new_folder">Nieuwe map</string>
+    <string name="edit_apps">Apps bewerken</string>
+    <string name="delete_folder">Map verwijderen</string>
+    <string name="folder_full">Vol</string>
 </resources>

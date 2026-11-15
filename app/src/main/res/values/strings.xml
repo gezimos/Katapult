@@ -73,6 +73,22 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="font_label">Font</string>
+    <string name="font_desc">Lato or your phone\'s font</string>
+    <string name="lawnicons_desc">Use Lawnicons for app icons</string>
+    <string name="search_icons">Search icons</string>
+    <string name="lawnicons_promo">The developer recommends Lawnicons, an open-source icon pack with thousands of icons that look best in Katapult.</string>
+    <string name="play_store" translatable="false">Play Store</string>
+    <string name="github" translatable="false">GitHub</string>
+    <string name="lawnicons" translatable="false">Lawnicons</string>
+    <string name="tab_katapult" translatable="false">Katapult</string>
+    <string name="tab_material" translatable="false">Material</string>
+    <string name="unsupported_title">Made for MuditaOS</string>
+    <string name="unsupported_desc">This feature is built for MuditaOS and may not work properly on this system.</string>
+    <string name="unsupported_enable">Enable anyway</string>
+    <string name="screensaver_unsupported_desc">On this system, use Always on display or the Sleep screen instead. The screensaver was a workaround for MuditaOS K.</string>
+    <string name="ok">OK</string>
+    <string name="font_lato" translatable="false">Lato</string>
     <string name="change_icon">Change Icon</string>
     <string name="import_icon">Import Icon</string>
     <string name="katapult_icons">Katapult Icons</string>
@@ -298,4 +314,10 @@
     <string name="gestures_readme_desc">About page navigation and swipe gestures</string>
     <string name="gestures_readme_nav">By default you navigate pages horizontally, or with the arrow buttons. You can change the gesture direction to vertical and hide the arrows if you prefer.</string>
     <string name="gestures_readme_apps">Swipe for All Apps lets you swipe up or left to open the All Apps page, depending on the gesture direction.</string>
+    <string name="add_to_folder">Add to folder</string>
+    <string name="remove_from_folder">Remove from folder</string>
+    <string name="new_folder">New folder</string>
+    <string name="edit_apps">Edit apps</string>
+    <string name="delete_folder">Delete folder</string>
+    <string name="folder_full">Full</string>
 </resources>

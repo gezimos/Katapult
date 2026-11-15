@@ -157,6 +157,15 @@
     <string name="theme_system">Systém</string>
     <string name="theme_light">Světlý</string>
     <string name="theme_dark">Tmavý</string>
+    <string name="font_label">Písmo</string>
+    <string name="font_desc">Lato nebo písmo telefonu</string>
+    <string name="lawnicons_desc">Použít Lawnicons pro ikony aplikací</string>
+    <string name="search_icons">Hledat ikony</string>
+    <string name="lawnicons_promo">Vývojář doporučuje Lawnicons, open-source balíček s tisíci ikon, které v Katapultu vypadají nejlépe.</string>
+    <string name="unsupported_title">Vytvořeno pro MuditaOS</string>
+    <string name="unsupported_desc">Tato funkce je určena pro MuditaOS a na tomto systému nemusí fungovat správně.</string>
+    <string name="unsupported_enable">Přesto povolit</string>
+    <string name="screensaver_unsupported_desc">Na tomto systému použijte místo toho Always on display nebo obrazovku spánku. Spořič obrazovky byl jen náhradním řešením pro MuditaOS K.</string>
     <string name="section_appearance">Vzhled</string>
     <string name="section_home">Domovská obrazovka</string>
     <string name="section_all_apps">Všechny aplikace</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">Otevření tlačítkem napájení vyžaduje zapnutou službu Katapult Action Service.</string>
     <string name="icon_size">Velikost ikon</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Přidat do složky</string>
+    <string name="remove_from_folder">Odebrat ze složky</string>
+    <string name="new_folder">Nová složka</string>
+    <string name="edit_apps">Upravit aplikace</string>
+    <string name="delete_folder">Smazat složku</string>
+    <string name="folder_full">Plná</string>
 </resources>

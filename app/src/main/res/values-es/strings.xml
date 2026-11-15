@@ -157,6 +157,15 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Oscuro</string>
+    <string name="font_label">Fuente</string>
+    <string name="font_desc">Lato o la fuente del teléfono</string>
+    <string name="lawnicons_desc">Usar Lawnicons para los iconos de apps</string>
+    <string name="search_icons">Buscar iconos</string>
+    <string name="lawnicons_promo">El desarrollador recomienda Lawnicons, un paquete de iconos de código abierto con miles de iconos que lucen mejor en Katapult.</string>
+    <string name="unsupported_title">Hecho para MuditaOS</string>
+    <string name="unsupported_desc">Esta función está pensada para MuditaOS y puede no funcionar bien en este sistema.</string>
+    <string name="unsupported_enable">Activar de todos modos</string>
+    <string name="screensaver_unsupported_desc">En este sistema, usa Always on display o la pantalla de reposo. El salvapantallas era solo una solución para MuditaOS K.</string>
     <string name="section_appearance">Apariencia</string>
     <string name="section_home">Pantalla de inicio</string>
     <string name="section_all_apps">Todas las apps</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">Abrir con el botón de encendido requiere el Katapult Action Service activado.</string>
     <string name="icon_size">Tamaño de iconos</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Añadir a carpeta</string>
+    <string name="remove_from_folder">Quitar de la carpeta</string>
+    <string name="new_folder">Nueva carpeta</string>
+    <string name="edit_apps">Editar apps</string>
+    <string name="delete_folder">Eliminar carpeta</string>
+    <string name="folder_full">Llena</string>
 </resources>

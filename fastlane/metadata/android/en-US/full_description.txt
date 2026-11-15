@@ -31,6 +31,10 @@ Features
 • Rename any app by long-pressing it in the grid
 • App context menu: Reorder, Rename, Change Icon, Hide, App Info, Notifications, Clear Notifications, Uninstall
 • Reorder apps with swap-based reordering, or reset back to alphabetical order
+• Folders: up to 9 apps each, with rename, custom icon and Edit Apps. Folders can go on a home slot too
+• Lawnicons: uses the Lawnicons icon pack when it's installed
+• Font: Lato or your phone's font
+• Weather from Mudita Weather, or Google At a Glance on other phones
 
 Permissions
 

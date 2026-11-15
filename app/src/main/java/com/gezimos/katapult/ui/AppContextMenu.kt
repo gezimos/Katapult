@@ -11,9 +11,14 @@ import androidx.compose.material.icons.rounded.AppShortcut
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Image
+import androidx.compose.material.icons.rounded.Checklist
+import androidx.compose.material.icons.rounded.CreateNewFolder
+import androidx.compose.material.icons.rounded.FolderOff
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material.icons.rounded.NotificationsOff
+import androidx.compose.material.icons.rounded.OpenInNew
 import androidx.compose.material.icons.rounded.RestartAlt
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.SwapVert
@@ -29,6 +34,7 @@ import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,6 +79,7 @@ import com.gezimos.katapult.model.AppModel
 import com.gezimos.katapult.service.DirectBadgeHelper
 import com.gezimos.katapult.util.DeviceHelper
 import com.gezimos.katapult.util.IconUtility
+import com.gezimos.katapult.util.LawniconsHelper
 import com.gezimos.katapult.util.ShortcutHelper
 import android.graphics.Bitmap
 import androidx.compose.ui.geometry.Size
@@ -102,20 +109,25 @@ fun AppContextMenu(
     val context = LocalContext.current
     var changeIconApp by remember { mutableStateOf<AppModel?>(null) }
     var shortcutsApp by remember { mutableStateOf<AppModel?>(null) }
+    var pickFolder by remember { mutableStateOf(false) }
+    var newFolder by remember { mutableStateOf(false) }
+    var editFolder by remember { mutableStateOf(false) }
+    val currentFolder = remember(app.key) { if (app.isFolder) null else viewModel.folderOf(app) }
 
     val callLogPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted -> if (granted) viewModel.clearMissedCalls() }
 
     if (!viewModel.showRenameDialog && !viewModel.reorderMode &&
-        changeIconApp == null && shortcutsApp == null
+        changeIconApp == null && shortcutsApp == null &&
+        !pickFolder && !newFolder && !editFolder
     ) {
         BottomSheet(onDismiss = onDismiss) {
             Text(
                 text = app.label,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 12.dp),
             )
@@ -127,7 +139,28 @@ fun AppContextMenu(
             BottomSheetOption(stringResource(R.string.rename), icon = Icons.Rounded.Edit) {
                 viewModel.showRenameDialog = true
             }
-            if (app.shortcutId.isNotEmpty()) {
+            if (!app.isFolder && showHide) {
+                if (currentFolder != null) {
+                    BottomSheetOption(stringResource(R.string.remove_from_folder), icon = Icons.Rounded.FolderOff) {
+                        viewModel.removeFromFolder(app)
+                    }
+                } else {
+                    BottomSheetOption(stringResource(R.string.add_to_folder), icon = Icons.Rounded.Folder) {
+                        if (viewModel.folders().isEmpty()) newFolder = true else pickFolder = true
+                    }
+                }
+            }
+            if (app.isFolder) {
+                BottomSheetOption(stringResource(R.string.change_icon), icon = Icons.Rounded.Image) {
+                    changeIconApp = app
+                }
+                BottomSheetOption(stringResource(R.string.edit_apps), icon = Icons.Rounded.Checklist) {
+                    editFolder = true
+                }
+                BottomSheetOption(stringResource(R.string.delete_folder), icon = Icons.Rounded.Delete) {
+                    viewModel.deleteFolder(app)
+                }
+            } else if (app.shortcutId.isNotEmpty()) {
                 BottomSheetOption(stringResource(R.string.change_icon), icon = Icons.Rounded.Image) {
                     changeIconApp = app
                 }
@@ -224,6 +257,64 @@ fun AppContextMenu(
         )
     }
 
+    if (pickFolder) {
+        FolderPickerSheet(
+            viewModel = viewModel,
+            onDismiss = {
+                pickFolder = false
+                onDismiss()
+            },
+            onPick = { id ->
+                pickFolder = false
+                viewModel.addToFolder(app, id)
+            },
+            onNew = {
+                pickFolder = false
+                newFolder = true
+            },
+        )
+    }
+
+    if (newFolder) {
+        RenameDialog(
+            currentName = "",
+            title = stringResource(R.string.new_folder),
+            onDismiss = {
+                newFolder = false
+                onDismiss()
+            },
+            onConfirm = { name ->
+                newFolder = false
+                viewModel.createFolder(app, name)
+            },
+        )
+    }
+
+    if (editFolder) {
+        val id = app.folderId
+        val candidates = remember { viewModel.folderCandidates(id) }
+        var members by remember { mutableStateOf(viewModel.folderMembers(id)) }
+        AppMultiSelectSheet(
+            title = stringResource(R.string.edit_apps) + " (${members.size}/${AppModel.FOLDER_LIMIT})",
+            apps = candidates,
+            roundedIcons = viewModel.roundedIcons,
+            isChecked = { it.key in members },
+            isEnabled = { members.size < AppModel.FOLDER_LIMIT },
+            onToggle = { target ->
+                viewModel.toggleFolderApp(id, target.key)
+                members = viewModel.folderMembers(id)
+                if (members.isEmpty()) {
+                    editFolder = false
+                    onDismiss()
+                }
+            },
+            onDismiss = {
+                editFolder = false
+                onDismiss()
+            },
+        )
+    }
+
     if (viewModel.showRenameDialog) {
         RenameDialog(
             currentName = app.label,
@@ -256,10 +347,45 @@ fun AppContextMenu(
 }
 
 @Composable
+private fun FolderPickerSheet(
+    viewModel: MainViewModel,
+    onDismiss: () -> Unit,
+    onPick: (String) -> Unit,
+    onNew: () -> Unit,
+) {
+    val folders = remember { viewModel.folders().sortedBy { it.label.lowercase() } }
+    BottomSheet(onDismiss = onDismiss) {
+        Text(
+            text = stringResource(R.string.add_to_folder),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = AppFontFamily,
+            color = LocalInk.current,
+            modifier = Modifier.padding(bottom = 12.dp),
+        )
+        folders.forEach { folder ->
+            val full = viewModel.folderSize(folder.folderId) >= AppModel.FOLDER_LIMIT
+            Box(Modifier.alpha(if (full) 0.4f else 1f)) {
+                BottomSheetOption(
+                    if (full) "${folder.label} (${stringResource(R.string.folder_full)})" else folder.label,
+                    icon = Icons.Rounded.Folder,
+                ) {
+                    if (!full) onPick(folder.folderId)
+                }
+            }
+        }
+        BottomSheetOption(stringResource(R.string.new_folder), icon = Icons.Rounded.CreateNewFolder) {
+            onNew()
+        }
+    }
+}
+
+@Composable
 private fun RenameDialog(
     currentName: String,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
+    title: String = stringResource(R.string.rename),
 ) {
     var textFieldValue by remember {
         mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(
@@ -271,10 +397,10 @@ private fun RenameDialog(
 
     BottomSheet(onDismiss = onDismiss, imePadding = true) {
         Text(
-            text = stringResource(R.string.rename),
+            text = title,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
             modifier = Modifier.padding(bottom = 12.dp),
         )
@@ -284,7 +410,7 @@ private fun RenameDialog(
             singleLine = true,
             textStyle = TextStyle(
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
             ),
             cursorBrush = SolidColor(Color.Transparent),
@@ -299,7 +425,7 @@ private fun RenameDialog(
             Text(
                 text = stringResource(R.string.cancel),
                 fontSize = 18.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier
                     .clickable { onDismiss() }
@@ -310,7 +436,7 @@ private fun RenameDialog(
                 text = stringResource(R.string.save),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier
                     .clickable { onConfirm(textFieldValue.text) }
@@ -347,6 +473,7 @@ private fun ChangeIconDialog(
     }
 
     val bundled = remember { IconUtility.bundledIcons }
+    val lawniconsInstalled = remember { LawniconsHelper.isInstalled(context) }
     val columns = 5
     val rows = 4
     val itemsPerPage = columns * rows
@@ -371,7 +498,7 @@ private fun ChangeIconDialog(
                 text = app.label,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier.weight(1f),
             )
@@ -396,8 +523,9 @@ private fun ChangeIconDialog(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            IconSourceTab(stringResource(R.string.katapult_icons), tab == 0) { tab = 0 }
-            IconSourceTab(stringResource(R.string.material_icons), tab == 1) { tab = 1 }
+            IconSourceTab(stringResource(R.string.tab_katapult), tab == 0) { tab = 0 }
+            IconSourceTab(stringResource(R.string.tab_material), tab == 1) { tab = 1 }
+            IconSourceTab(stringResource(R.string.lawnicons), tab == 2) { tab = 2 }
         }
 
         if (tab == 0) {
@@ -405,7 +533,7 @@ private fun ChangeIconDialog(
                 text = stringResource(R.string.import_icon),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
@@ -418,7 +546,7 @@ private fun ChangeIconDialog(
                 text = stringResource(R.string.katapult_icons),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
@@ -473,7 +601,7 @@ private fun ChangeIconDialog(
                 }
                 PickerPageBar(page, totalPages, onPrev = { page-- }, onNext = { page++ })
             }
-        } else {
+        } else if (tab == 1) {
             val density = LocalDensity.current
             var mPage by remember { mutableIntStateOf(0) }
             val mTotalPages = (materialIcons.size + itemsPerPage - 1) / itemsPerPage
@@ -537,7 +665,150 @@ private fun ChangeIconDialog(
                 }
                 PickerPageBar(mPage, mTotalPages, onPrev = { mPage-- }, onNext = { mPage++ })
             }
+        } else if (!lawniconsInstalled) {
+            LawniconsPromo()
+        } else {
+            LawniconsPicker(
+                app = app,
+                sizePx = sizePx,
+                shape = pickerShape,
+                columns = columns,
+                rows = rows,
+                onPick = { name ->
+                    viewModel.setLawniconIcon(app.key, name)
+                    onDismiss()
+                },
+            )
         }
+    }
+}
+
+@Composable
+private fun LawniconsPromo() {
+    val context = LocalContext.current
+    fun open(url: String) {
+        try {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        } catch (_: Exception) {
+        }
+    }
+    Text(
+        text = stringResource(R.string.lawnicons_promo),
+        fontSize = 16.sp,
+        fontFamily = AppFontFamily,
+        color = LocalInk.current,
+        modifier = Modifier.padding(bottom = 8.dp),
+    )
+    BottomSheetOption(stringResource(R.string.play_store), icon = Icons.Rounded.OpenInNew) {
+        open("https://play.google.com/store/apps/details?id=app.lawnchair.lawnicons.play")
+    }
+    BottomSheetOption(stringResource(R.string.github), icon = Icons.Rounded.OpenInNew) {
+        open("https://github.com/LawnchairLauncher/lawnicons")
+    }
+}
+
+@Composable
+private fun LawniconsPicker(
+    app: AppModel,
+    sizePx: Int,
+    shape: androidx.compose.ui.graphics.Shape,
+    columns: Int,
+    rows: Int,
+    onPick: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    val ink = LocalInk.current
+    var query by remember { mutableStateOf("") }
+    val all by androidx.compose.runtime.produceState(initialValue = emptyList<String>(), app.key) {
+        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val names = LawniconsHelper.allDrawables(context)
+            val match = LawniconsHelper.drawableFor(context, app.packageName, app.activityName)
+            if (match != null) listOf(match) + names.filter { it != match } else names
+        }
+    }
+    val filtered = remember(all, query) {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) all
+        else all.filter { it.contains(q) || it.replace('_', ' ').contains(q) }
+    }
+    val itemsPerPage = columns * rows
+    var page by remember(filtered) { mutableIntStateOf(0) }
+    val totalPages = ((filtered.size + itemsPerPage - 1) / itemsPerPage).coerceAtLeast(1)
+    val pageItems = remember(filtered, page) {
+        filtered.drop(page * itemsPerPage).take(itemsPerPage)
+    }
+    var dragAccumulator by remember { mutableFloatStateOf(0f) }
+
+    BasicTextField(
+        value = query,
+        onValueChange = { query = it },
+        singleLine = true,
+        textStyle = TextStyle(fontSize = 16.sp, fontFamily = AppFontFamily, color = ink),
+        cursorBrush = SolidColor(Color.Transparent),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, ink, RoundedCornerShape(10.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        decorationBox = { inner ->
+            if (query.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.search_icons),
+                    fontSize = 16.sp,
+                    fontFamily = AppFontFamily,
+                    color = ink,
+                )
+            }
+            inner()
+        },
+    )
+    Spacer(Modifier.height(8.dp))
+
+    Column(
+        modifier = Modifier
+            .pointerInput(page, totalPages) {
+                detectHorizontalDragGestures(
+                    onDragStart = { dragAccumulator = 0f },
+                    onDragEnd = {
+                        if (abs(dragAccumulator) > 80f) {
+                            if (dragAccumulator < 0 && page < totalPages - 1) page++
+                            else if (dragAccumulator > 0 && page > 0) page--
+                        }
+                    },
+                    onHorizontalDrag = { _, amount -> dragAccumulator += amount },
+                )
+            },
+    ) {
+        for (row in 0 until rows) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                for (col in 0 until columns) {
+                    val idx = row * columns + col
+                    if (idx < pageItems.size) {
+                        val name = pageItems[idx]
+                        val bitmap = remember(name, sizePx) {
+                            IconUtility.renderLawnicon(context, name, sizePx)
+                        }
+                        Box(modifier = Modifier.clickable { onPick(name) }) {
+                            AppIconCircle(
+                                bitmap = bitmap,
+                                size = 48.dp,
+                                borderWidth = 1.5.dp,
+                                shape = shape,
+                            )
+                        }
+                    } else {
+                        Box(Modifier.size(48.dp))
+                    }
+                }
+            }
+        }
+        PickerPageBar(page, totalPages, onPrev = { page-- }, onNext = { page++ }, showDots = false)
     }
 }
 
@@ -557,14 +828,20 @@ private fun IconSourceTab(text: String, selected: Boolean, onClick: () -> Unit) 
             text = text,
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = if (selected) LocalSurface.current else LocalInk.current,
         )
     }
 }
 
 @Composable
-private fun PickerPageBar(page: Int, totalPages: Int, onPrev: () -> Unit, onNext: () -> Unit) {
+private fun PickerPageBar(
+    page: Int,
+    totalPages: Int,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
+    showDots: Boolean = true,
+) {
     if (totalPages <= 1) return
     Row(
         Modifier.fillMaxWidth().padding(top = 8.dp),
@@ -580,7 +857,7 @@ private fun PickerPageBar(page: Int, totalPages: Int, onPrev: () -> Unit, onNext
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            for (i in 0 until totalPages) {
+            if (showDots) for (i in 0 until totalPages) {
                 Box(
                     Modifier
                         .padding(horizontal = 2.dp)
@@ -663,7 +940,7 @@ private fun AppShortcutsDialog(
             text = stringResource(R.string.app_shortcuts),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            fontFamily = LatoFamily,
+            fontFamily = AppFontFamily,
             color = LocalInk.current,
             modifier = Modifier.padding(bottom = 12.dp),
         )
@@ -673,7 +950,7 @@ private fun AppShortcutsDialog(
                     if (hasPermission) R.string.no_app_shortcuts_app else R.string.no_app_shortcuts,
                 ),
                 fontSize = 14.sp,
-                fontFamily = LatoFamily,
+                fontFamily = AppFontFamily,
                 color = LocalInk.current,
                 modifier = Modifier.padding(bottom = 12.dp),
             )
@@ -722,7 +999,7 @@ private fun AppShortcutsDialog(
                         Text(
                             label,
                             fontSize = 18.sp,
-                            fontFamily = LatoFamily,
+                            fontFamily = AppFontFamily,
                             color = LocalInk.current,
                             maxLines = 1,
                             modifier = Modifier.weight(1f),

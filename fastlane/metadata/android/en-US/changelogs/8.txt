@@ -1,0 +1,15 @@
+Added
+• Folders: up to 9 apps each, also on home slots
+• Lawnicons icon pack support
+• Font: Lato or your phone's font
+• Google At a Glance weather
+• LineageOS and KompaktOS support
+
+Changed
+• Clock changes exactly on the minute
+• New apps go at the end after a reorder
+
+Fixed
+• App list updates straight away on install or uninstall
+• Text no longer cut off with a larger system font
+• Home slots reset when their app is uninstalled

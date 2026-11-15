@@ -2,6 +2,7 @@ package com.gezimos.katapult.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.gezimos.katapult.ui.AppFont
 import com.gezimos.katapult.model.AppModel
 import org.json.JSONArray
 import org.json.JSONObject
@@ -15,7 +16,12 @@ class PrefsManager(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("katapult_prefs", Context.MODE_PRIVATE)
 
-    init { seedDefaultsOnce() }
+    init {
+        seedDefaultsOnce()
+        AppFont.refreshSystem(appContext)
+        AppFont.useLato = fontMode == FONT_LATO
+        LawniconsHelper.enabled = lawniconsEnabled
+    }
 
     /**
      * Defaults that ship on from 1.5, applied to fresh installs only. Existing users keep
@@ -115,6 +121,105 @@ class PrefsManager(context: Context) {
         if (changed) editor.apply()
     }
 
+    data class Folder(val id: String, val name: String, val apps: List<String>) {
+        val key: String get() = AppModel.FOLDER_PREFIX + id
+    }
+
+    fun getFolders(): List<Folder> {
+        val json = strPref(KEY_FOLDERS, null) ?: return emptyList()
+        return try {
+            val array = JSONArray(json)
+            (0 until array.length()).mapNotNull { i ->
+                val obj = array.optJSONObject(i) ?: return@mapNotNull null
+                val id = obj.optString("id").ifEmpty { return@mapNotNull null }
+                val apps = obj.optJSONArray("apps")
+                Folder(
+                    id = id,
+                    name = obj.optString("name"),
+                    apps = if (apps == null) emptyList()
+                    else (0 until apps.length()).mapNotNull { apps.optString(it).ifBlank { null } },
+                )
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    fun saveFolders(folders: List<Folder>) {
+        val array = JSONArray()
+        for (f in folders) {
+            if (f.apps.isEmpty()) continue
+            array.put(
+                JSONObject()
+                    .put("id", f.id)
+                    .put("name", f.name)
+                    .put("apps", JSONArray(f.apps)),
+            )
+        }
+        prefs.edit().putString(KEY_FOLDERS, array.toString()).apply()
+    }
+
+    fun folderOf(key: String): Folder? = getFolders().firstOrNull { key in it.apps }
+
+    fun createFolder(name: String, firstApp: String): Folder {
+        val folder = Folder(java.util.UUID.randomUUID().toString().take(8), name, listOf(firstApp))
+        saveFolders(getFolders().map { it.copy(apps = it.apps - firstApp) } + folder)
+        return folder
+    }
+
+    fun addToFolder(id: String, key: String): Boolean {
+        val folders = getFolders()
+        val target = folders.firstOrNull { it.id == id } ?: return false
+        if (key !in target.apps && target.apps.size >= AppModel.FOLDER_LIMIT) return false
+        saveFolders(folders.map {
+            when {
+                it.id == id -> if (key in it.apps) it else it.copy(apps = it.apps + key)
+                else -> it.copy(apps = it.apps - key)
+            }
+        })
+        return true
+    }
+
+    fun pruneFolders(installed: Set<String>): List<Folder> {
+        val folders = getFolders()
+        val cleaned = folders.map { f -> f.copy(apps = f.apps.filter { it in installed }) }
+        if (cleaned == folders) return emptyList()
+        saveFolders(cleaned)
+        return cleaned.filter { it.apps.isEmpty() }
+    }
+
+    fun removeFromFolder(key: String) {
+        saveFolders(getFolders().map { it.copy(apps = it.apps - key) })
+    }
+
+    fun setFolderApps(id: String, keys: List<String>) {
+        val set = keys.take(AppModel.FOLDER_LIMIT)
+        saveFolders(getFolders().map {
+            if (it.id == id) it.copy(apps = set) else it.copy(apps = it.apps - set.toSet())
+        })
+    }
+
+    fun renameFolder(id: String, name: String) {
+        saveFolders(getFolders().map { if (it.id == id) it.copy(name = name) else it })
+    }
+
+    fun deleteFolder(id: String) {
+        saveFolders(getFolders().filterNot { it.id == id })
+    }
+
+    fun clearSlotsForPackage(packageName: String) {
+        val editor = prefs.edit()
+        var changed = false
+        for (slot in HOME_SLOTS) {
+            if (strPref("${slot}_package", null) != packageName) continue
+            editor.remove("${slot}_package")
+                .remove("${slot}_activity")
+                .remove("${slot}_shortcut_id")
+            changed = true
+        }
+        if (changed) editor.apply()
+    }
+
     fun getSavedShortcuts(): List<AppModel> {
         val json = strPref(KEY_PINNED_SHORTCUTS, null) ?: return emptyList()
         return try {
@@ -175,48 +280,18 @@ class PrefsManager(context: Context) {
         }
 
         val newApps = appMap.values.sortedBy { it.label.lowercase() }
+        val alphabetical = result.zipWithNext().all { (a, b) -> a.label.lowercase() <= b.label.lowercase() }
         for (app in newApps) {
-            val label = app.label.lowercase()
-            val anchors = longestNonDecreasingIndices(result)
-            val insertIndex = when {
-                anchors.isEmpty() -> 0
-                else -> {
-                    val idx = anchors.indexOfFirst { result[it].label.lowercase() > label }
-                    if (idx < 0) anchors.last() + 1 else anchors[idx]
-                }
+            if (!alphabetical) {
+                result.add(app)
+                continue
             }
-            result.add(insertIndex, app)
+            val label = app.label.lowercase()
+            val idx = result.indexOfFirst { it.label.lowercase() > label }
+            result.add(if (idx < 0) result.size else idx, app)
         }
 
         return result
-    }
-
-    private fun longestNonDecreasingIndices(list: List<AppModel>): List<Int> {
-        val n = list.size
-        if (n == 0) return emptyList()
-        val labels = List(n) { list[it].label.lowercase() }
-        val tails = IntArray(n)
-        val prev = IntArray(n) { -1 }
-        var length = 0
-        for (i in 0 until n) {
-            val l = labels[i]
-            var lo = 0
-            var hi = length
-            while (lo < hi) {
-                val mid = (lo + hi) ushr 1
-                if (labels[tails[mid]] > l) hi = mid else lo = mid + 1
-            }
-            if (lo > 0) prev[i] = tails[lo - 1]
-            tails[lo] = i
-            if (lo == length) length++
-        }
-        val out = ArrayDeque<Int>()
-        var k = tails[length - 1]
-        while (k != -1) {
-            out.addFirst(k)
-            k = prev[k]
-        }
-        return out.toList()
     }
 
     var notificationIndicators: Boolean
@@ -258,6 +333,30 @@ class PrefsManager(context: Context) {
         get() = intPref(KEY_THEME_MODE, if (boolPref(KEY_DARK_MODE, false)) THEME_DARK else THEME_LIGHT)
         set(value) = prefs.edit().putInt(KEY_THEME_MODE, value).apply()
 
+    var lawniconsEnabled: Boolean
+        get() = boolPref(KEY_LAWNICONS, true)
+        set(value) {
+            prefs.edit().putBoolean(KEY_LAWNICONS, value).apply()
+            LawniconsHelper.enabled = value
+        }
+
+    var allowUnsupported: Boolean
+        get() = boolPref(KEY_ALLOW_UNSUPPORTED, false)
+        set(value) = prefs.edit().putBoolean(KEY_ALLOW_UNSUPPORTED, value).apply()
+
+    val unsupportedBlocked: Boolean
+        get() = DeviceHelper.isLineageOs() && !allowUnsupported
+
+    var fontMode: Int
+        get() = intPref(
+            KEY_FONT_MODE,
+            if (DeviceHelper.isMuditaKompakt() && !DeviceHelper.isLineageOs()) FONT_LATO else FONT_SYSTEM,
+        )
+        set(value) {
+            prefs.edit().putInt(KEY_FONT_MODE, value).apply()
+            AppFont.useLato = value == FONT_LATO
+        }
+
     val darkMode: Boolean
         get() = when (themeMode) {
             THEME_DARK -> true
@@ -274,7 +373,7 @@ class PrefsManager(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_HIDE_STATUS_BAR, value).apply()
 
     var hideStatusBarClock: Boolean
-        get() = boolPref(KEY_HIDE_STATUS_BAR_CLOCK, false)
+        get() = !unsupportedBlocked && boolPref(KEY_HIDE_STATUS_BAR_CLOCK, false)
         set(value) = prefs.edit().putBoolean(KEY_HIDE_STATUS_BAR_CLOCK, value).apply()
 
     var einkRefreshOnHome: Boolean
@@ -349,7 +448,7 @@ class PrefsManager(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_VERTICAL_APP_GESTURES, value).apply()
 
     var lockscreenWidget: Boolean
-        get() = boolPref(KEY_LOCKSCREEN_WIDGET, false)
+        get() = !unsupportedBlocked && boolPref(KEY_LOCKSCREEN_WIDGET, false)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_WIDGET, value).apply()
 
     var iconSize: Int
@@ -357,7 +456,7 @@ class PrefsManager(context: Context) {
         set(value) = prefs.edit().putInt(KEY_ICON_SIZE, value).apply()
 
     var lockscreenMusicWidget: Boolean
-        get() = boolPref(KEY_LOCKSCREEN_MUSIC_WIDGET, false)
+        get() = !unsupportedBlocked && boolPref(KEY_LOCKSCREEN_MUSIC_WIDGET, false)
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_MUSIC_WIDGET, value).apply()
 
     var lockscreenWidgetY: Int
@@ -373,11 +472,11 @@ class PrefsManager(context: Context) {
         set(value) = prefs.edit().putBoolean(KEY_LOCKSCREEN_WIDGET_LATEST_FIRST, value).apply()
 
     var lockscreenMessage: String?
-        get() = strPref(KEY_LOCKSCREEN_MESSAGE, null)
+        get() = if (unsupportedBlocked) null else strPref(KEY_LOCKSCREEN_MESSAGE, null)
         set(value) = prefs.edit().putString(KEY_LOCKSCREEN_MESSAGE, value).apply()
 
     var screensaverEnabled: Boolean
-        get() = boolPref(KEY_SCREENSAVER_ENABLED, false)
+        get() = !DeviceHelper.isLineageOs() && boolPref(KEY_SCREENSAVER_ENABLED, false)
         set(value) = prefs.edit().putBoolean(KEY_SCREENSAVER_ENABLED, value).apply()
 
     var screensaverIslands: Boolean
@@ -578,6 +677,7 @@ class PrefsManager(context: Context) {
         const val ICON_SIZE_LARGE = 80
         private const val KEY_APP_ORDER = "app_order"
         private const val KEY_PINNED_SHORTCUTS = "pinned_shortcuts"
+        private const val KEY_FOLDERS = "folders"
         private const val KEY_NOTIFICATION_INDICATORS = "notification_indicators"
         private const val KEY_CLOCK_FORMAT = "clock_format"
         private const val KEY_DATE_FORMAT = "date_format"
@@ -588,6 +688,11 @@ class PrefsManager(context: Context) {
         private const val KEY_ROUNDED_ICONS = "rounded_icons"
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_FONT_MODE = "font_mode"
+        private const val KEY_ALLOW_UNSUPPORTED = "allow_unsupported_features"
+        private const val KEY_LAWNICONS = "lawnicons_enabled"
+        const val FONT_SYSTEM = 0
+        const val FONT_LATO = 1
 
         const val THEME_LIGHT = 0
         const val THEME_DARK = 1

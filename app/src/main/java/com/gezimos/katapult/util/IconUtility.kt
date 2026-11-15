@@ -164,7 +164,8 @@ object IconUtility {
             bitmapCache.get("$packageName|$shortcutId:$sizePx:${override ?: ""}")
         } else {
             val override = overrideFor(context, packageName)
-            bitmapCache.get("$packageName:$activityClass:$sizePx:${override ?: ""}")
+            val theme = if (LawniconsHelper.active(context)) ":L" else ""
+            bitmapCache.get("$packageName:$activityClass:$sizePx:${override ?: ""}$theme")
         }
     }
 
@@ -190,15 +191,29 @@ object IconUtility {
         if (packageName.isBlank() || sizePx <= 0) return null
 
         val override = overrideFor(context, packageName)
+        val themed = LawniconsHelper.active(context)
 
-        val cacheKey = "$packageName:$activityClass:$sizePx:${override ?: ""}"
+        val cacheKey = "$packageName:$activityClass:$sizePx:${override ?: ""}${if (themed) ":L" else ""}"
         bitmapCache.get(cacheKey)?.let { return it }
 
         val bitmap = try {
             val overrideBitmap = override?.let { loadOverrideBitmap(context, it, sizePx) }
+            if (packageName.startsWith(com.gezimos.katapult.model.AppModel.FOLDER_PREFIX)) {
+                val folderBitmap = overrideBitmap
+                    ?: (if (themed) renderLawnicon(context, "folder_in_folder", sizePx) else null)
+                    ?: renderBundledIcon(ContextCompat.getDrawable(context, R.drawable.files)!!, sizePx)
+                bitmapCache.put(cacheKey, folderBitmap)
+                return folderBitmap
+            }
+            val lawnBitmap = if (overrideBitmap == null && themed) {
+                LawniconsHelper.drawableFor(context, packageName, activityClass)
+                    ?.let { renderLawnicon(context, it, sizePx) }
+            } else null
             val customRes = customIcons[packageName]
             if (overrideBitmap != null) {
                 overrideBitmap
+            } else if (lawnBitmap != null) {
+                lawnBitmap
             } else if (customRes != null) {
                 val drawable = ContextCompat.getDrawable(context, customRes)!!
                 renderBundledIcon(drawable, sizePx)
@@ -242,6 +257,7 @@ object IconUtility {
                     val resId = resolveBundled(override.removePrefix("res:")) ?: return null
                     renderBundledIcon(ContextCompat.getDrawable(context, resId)!!, sizePx)
                 }
+                override.startsWith("lawn:") -> renderLawnicon(context, override.removePrefix("lawn:"), sizePx)
                 else -> null
             }
         } catch (_: Exception) {
@@ -275,6 +291,22 @@ object IconUtility {
             if (drawableRes == 0) null else ResourcesCompat.getDrawable(res, drawableRes, null)
         } catch (_: Exception) {
             null
+        }
+    }
+
+    fun evictAll() {
+        bitmapCache.evictAll()
+    }
+
+    fun renderLawnicon(context: Context, name: String, sizePx: Int): Bitmap? {
+        val (drawable, adaptive) = LawniconsHelper.glyph(context, name) ?: return null
+        return if (adaptive) {
+            renderMonochromeIcon(drawable, sizePx)
+        } else {
+            val tinted = drawable.mutate()
+            tinted.setTint(Color.BLACK)
+            tinted.setTintMode(PorterDuff.Mode.SRC_IN)
+            renderBundledIcon(tinted, sizePx)
         }
     }
 

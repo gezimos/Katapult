@@ -21,6 +21,15 @@ object WeatherHelper {
 
     val WidgetUri: Uri = Uri.parse("content://$PACKAGE/widget_weather")
 
+    fun isInstalled(context: Context): Boolean = try {
+        context.packageManager.resolveContentProvider(PACKAGE, 0) != null
+    } catch (_: Exception) {
+        false
+    }
+
+    fun hasSource(context: Context): Boolean =
+        isInstalled(context) || SmartspaceHelper.isAvailable(context)
+
     fun openApp(context: Context) {
         val intent = context.packageManager.getLaunchIntentForPackage(PACKAGE)
             ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) ?: return

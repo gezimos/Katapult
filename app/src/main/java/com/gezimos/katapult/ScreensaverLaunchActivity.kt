@@ -4,11 +4,16 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import com.gezimos.katapult.lockscreen.ScreensaverActivity
+import com.gezimos.katapult.util.DeviceHelper
 
 class ScreensaverLaunchActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (DeviceHelper.isLineageOs()) {
+            finish()
+            return
+        }
         try {
             startActivity(
                 Intent(this, ScreensaverActivity::class.java).addFlags(

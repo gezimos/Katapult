@@ -157,6 +157,15 @@
     <string name="theme_system">Sistema</string>
     <string name="theme_light">Claro</string>
     <string name="theme_dark">Escuro</string>
+    <string name="font_label">Fonte</string>
+    <string name="font_desc">Lato ou a fonte do telefone</string>
+    <string name="lawnicons_desc">Usar Lawnicons nos ícones das apps</string>
+    <string name="search_icons">Pesquisar ícones</string>
+    <string name="lawnicons_promo">O desenvolvedor recomenda o Lawnicons, um pacote de ícones de código aberto com milhares de ícones que ficam melhores no Katapult.</string>
+    <string name="unsupported_title">Feito para MuditaOS</string>
+    <string name="unsupported_desc">Esta função foi feita para o MuditaOS e pode não funcionar bem neste sistema.</string>
+    <string name="unsupported_enable">Ativar mesmo assim</string>
+    <string name="screensaver_unsupported_desc">Neste sistema, use o Always on display ou o ecrã de suspensão. A proteção de ecrã era apenas uma solução para o MuditaOS K.</string>
     <string name="section_appearance">Aparência</string>
     <string name="section_home">Ecrã inicial</string>
     <string name="section_all_apps">Todas as apps</string>
@@ -298,4 +307,10 @@
     <string name="screensaver_readme_accessibility">Abrir com o botão de ligar requer o Katapult Action Service ativado.</string>
     <string name="icon_size">Tamanho dos ícones</string>
     <string name="icon_size_value">%1$d x %2$d</string>
+    <string name="add_to_folder">Adicionar à pasta</string>
+    <string name="remove_from_folder">Remover da pasta</string>
+    <string name="new_folder">Nova pasta</string>
+    <string name="edit_apps">Editar apps</string>
+    <string name="delete_folder">Excluir pasta</string>
+    <string name="folder_full">Cheia</string>
 </resources>
